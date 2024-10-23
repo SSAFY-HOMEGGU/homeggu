@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="w-[100%] h-[100%] border-t border-solid border-[#828C94] bg-[#FFF] flex justify-between items-start px-20 py-8">
+    <footer className="w-[100%] h-[100%] border-t border-solid border-subText bg-white flex justify-between items-start px-20 py-8">
       {/* 첫 번째 요소: 로고 및 텍스트 */}
       <div className="flex flex-col items-start">
         <Link href="/home">
@@ -15,7 +15,7 @@ export default function Footer() {
             sizes="(max-width: 100px) 100vw, 100px"
           />
         </Link>
-        <p className="text-[#2D2E2E] font-tmoney text-[1rem] font-normal">
+        <p className="text-normalText font-tmoney text-[1rem] font-normal">
           당신을 위한 종합중고거래가구쇼핑플랫폼!
           <br />
           지금 바로 시작하세요.
@@ -24,10 +24,10 @@ export default function Footer() {
 
       {/* 두 번째 요소: 사업자 정보 */}
       <div className="flex flex-col space-y-2">
-        <p className="text-[#2D2E2E] font-noto font-bold text-[1rem]">
+        <p className="text-normalText font-noto font-bold text-[1rem]">
           (주)홈꾸 사업자 정보
         </p>
-        <p className="text-[#2F3438] font-noto font-normal text-[1rem]">
+        <p className="text-subText font-noto font-normal text-[1rem]">
           대표이사: 장유진, 박선민
           <br />
           사업자번호: 498-27-01372
@@ -46,31 +46,31 @@ export default function Footer() {
       <div className="flex flex-col space-y-2">
         <Link
           href="/policies/privacy"
-          className="text-[#2D2E2E] font-sans font-semibold text-[1rem]"
+          className="text-normalText font-sans font-semibold text-[1rem]"
         >
           개인정보처리방침
         </Link>
         <Link
           href="/policies/terms"
-          className="text-[#2D2E2E] font-sans text-[1rem]"
+          className="text-normalText font-sans text-[1rem]"
         >
           이용약관
         </Link>
         <Link
           href="/policies/operation"
-          className="text-[#2D2E2E] font-sans text-[1rem]"
+          className="text-normalText font-sans text-[1rem]"
         >
           운영정책
         </Link>
         <Link
           href="/policies/youth-policy"
-          className="text-[#2D2E2E] font-sans text-[1rem]"
+          className="text-normalText font-sans text-[1rem]"
         >
           청소년보호정책
         </Link>
         <Link
           href="/policies/notice"
-          className="text-[#2D2E2E] font-sans text-[1rem]"
+          className="text-normalText font-sans text-[1rem]"
         >
           공지사항
         </Link>
@@ -78,7 +78,7 @@ export default function Footer() {
 
       {/* 네 번째 요소: SNS 아이콘 */}
       <div className="flex flex-col items-start space-y-4">
-        <p className="text-[#2D2E2E] font-inter font-semibold text-[1rem]">
+        <p className="text-normalText font-inter font-semibold text-[1rem]">
           Follow us
         </p>
         <div className="flex space-x-4">
