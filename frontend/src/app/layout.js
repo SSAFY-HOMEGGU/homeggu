@@ -1,16 +1,5 @@
-import localFont from "next/font/local";
+import Footer from "./components/Footer";
 import "./globals.css";
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
 
 export const metadata = {
   title: "Create Next App",
@@ -22,10 +11,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <div className="grid-container max-w-screen-xl mx-auto min-h-screen">
-          <div className="content-area bg-white p-10 shadow-md">
+          <div className="content-area bg-white py-10 shadow-md">
             {children}
           </div>
         </div>
+        <Footer />
       </body>
     </html>
   );
