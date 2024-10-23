@@ -1,0 +1,49 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+} */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Tmoney+RoundWind&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 글로벌 폰트 설정 */
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr); /* 12 컬럼 그리드 */
+}
+
+.content-area {
+  grid-column: 3 / span 8; /* 3번째부터 8개의 컬럼 차지 */
+}
+
