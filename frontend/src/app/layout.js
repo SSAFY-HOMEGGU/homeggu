@@ -1,6 +1,6 @@
 import Footer from "./components/Footer";
 import "./globals.css";
-import ClientComponent from './components/ClientComponent';
+import ClientComponent from "./components/ClientComponent";
 
 export const metadata = {
   title: "Create Next App",
@@ -8,17 +8,13 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-
   return (
     <html lang="en">
       <body>
+        <ClientComponent />
         <div className="grid-container max-w-screen-xl mx-auto min-h-screen">
           {/* <div className="content-area bg-white py-10 shadow-md"> */}
-          <div className="content-area bg-white shadow-md">
-            <ClientComponent>
-              {children}
-            </ClientComponent>
-          </div>
+          <div className="content-area bg-white">{children}</div>
         </div>
         <Footer />
       </body>

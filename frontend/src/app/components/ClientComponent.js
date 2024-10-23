@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { IoIosClose } from "react-icons/io";
+import Header from "./header";
 
 export default function ClientComponent({ children }) {
   const [isVisible, setIsVisible] = useState(true);
@@ -14,11 +15,16 @@ export default function ClientComponent({ children }) {
           <button
             className="absolute top-0 right-0 m-1"
             onClick={() => setIsVisible(false)}
-          > 
+          >
             <IoIosClose className="text-white text-[1.2rem]" />
           </button>
         </div>
       )}
+      <div className="grid-container">
+        <div className="content-area">
+          <Header />
+        </div>
+      </div>
       {children}
     </>
   );
