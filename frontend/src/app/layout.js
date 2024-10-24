@@ -13,8 +13,9 @@ export default function RootLayout({ children }) {
       <body>
         <ClientComponent />
         <div className="grid-container max-w-screen-xl mx-auto min-h-screen">
-          {/* <div className="content-area bg-white py-10 shadow-md"> */}
           <div className="content-area bg-white">{children}</div>
+          {/* <div className="bg-white">{children}</div> */}
+          {/* {children} */}
         </div>
         <Footer />
       </body>

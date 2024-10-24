@@ -1,4 +1,5 @@
 "use client";
+import Image from 'next/image';
 
 import { useState } from "react";
 import { IoIosClose } from "react-icons/io";
@@ -11,7 +12,16 @@ export default function ClientComponent({ children }) {
     <>
       {isVisible && (
         <div className="relative">
-          <img src="/images/banner.png" alt="최상단 배너" />
+          {/* <img src="/images/banner.png" alt="최상단 배너" /> */}
+          <div className="relative w-full h-[2.5rem]">
+            <Image 
+              src="/images/banner.png" 
+              alt="최상단 배너" 
+              fill
+              style={{ objectFit: "cover" }}
+              priority 
+            />
+          </div>
           <button
             className="absolute top-0 right-0 m-1"
             onClick={() => setIsVisible(false)}
@@ -21,7 +31,7 @@ export default function ClientComponent({ children }) {
         </div>
       )}
       <div className="grid-container">
-        <div className="content-area">
+        <div className="header-area">
           <Header />
         </div>
       </div>
