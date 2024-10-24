@@ -5,6 +5,9 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import addProfileImg from "/public/icons/addprofileimg.svg";
 import infoIcon from "/public/icons/info.svg";
+import AddressSearch from "../../../components/AddressSearch";
+import { BlueButton } from "../../../components/Button";
+import InputBox from "../../../components/InputBox"; // InputBox 컴포넌트 가져오기
 
 // RegisterModal을 동적 import로 로드
 const Register = dynamic(() => import("../../../components/RegisterModal"), {
@@ -16,6 +19,14 @@ export default function ProfilePage() {
   const [uploadedImage, setUploadedImage] = useState(null); // 업로드한 이미지 상태
   const accountBoxRef = useRef(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const [selectedZipCode, setSelectedZipCode] = useState("");
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false); // 스크립트 로드 상태
+  const [name, setName] = useState(""); // 이름 상태
+  const [phoneNumber, setPhoneNumber] = useState(""); // 전화번호 상태
+  const [detailAddress, setDetailAddress] = useState(""); // 상세주소 상태
+  const [receiverName, setReceiverName] = useState(""); // 받는 사람 이름 상태
+  const [receiverPhone, setReceiverPhone] = useState(""); // 받는 사람 전화번호 상태
 
   // 계좌 정보 초기값
   const [accountInfo, setAccountInfo] = useState({
@@ -33,21 +44,51 @@ export default function ProfilePage() {
     }
   }, []);
 
-  // 토글 외부 클릭 시 토글 숨기기
+  // Daum 주소 검색 스크립트 로드
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        accountBoxRef.current &&
-        !accountBoxRef.current.contains(event.target)
-      ) {
-        setShowAccountDelete(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
+    const script = document.createElement("script");
+    script.src =
+      "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      setIsScriptLoaded(true); // 스크립트가 로드되면 상태 업데이트
+    };
+
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.removeChild(script);
     };
   }, []);
+
+  // 주소 검색 버튼 클릭 시 팝업 보이기
+  const handleAddressSearch = () => {
+    if (isScriptLoaded && window.daum && window.daum.Postcode) {
+      new window.daum.Postcode({
+        oncomplete: function (data) {
+          let fullAddress = data.address;
+          if (data.addressType === "R") {
+            if (data.bname !== "") {
+              fullAddress += " " + data.bname;
+            }
+            if (data.buildingName !== "") {
+              fullAddress += " " + data.buildingName;
+            }
+          }
+          setSelectedZipCode(data.zonecode); // 우편번호 설정
+          setSelectedAddress(fullAddress); // 주소 설정
+        },
+      }).open();
+    } else {
+      console.error("주소 검색 스크립트가 아직 로드되지 않았습니다.");
+    }
+  };
+
+  // 수정하기 버튼 클릭 핸들러
+  const handleEdit = () => {
+    // 수정하기 버튼을 눌렀을 때 실행할 로직 추가
+    alert("수정하기 버튼이 클릭되었습니다.");
+  };
 
   return (
     <div>
@@ -65,7 +106,7 @@ export default function ProfilePage() {
         />
       </div>
 
-      {/* 중앙 정렬된 컨테이너 (너비는 인풋 너비에 맞춤) */}
+      {/* 중앙 정렬된 컨테이너 */}
       <div
         style={{ width: "46.072rem", margin: "2rem auto", textAlign: "left" }}
       >
@@ -95,112 +136,85 @@ export default function ProfilePage() {
             style={{ display: "none" }} // 파일 업로드 input 숨김
           />
         </div>
+
         {/* 회원 정보 */}
-        <h2
-          className="mt-8"
-          style={{
-            color: "var(--normalText, #2F3438)",
-            fontFamily: "'Noto Sans KR', sans-serif",
-            fontSize: "1.25rem",
-            fontWeight: "400",
-            lineHeight: "normal",
-          }}
-        >
+        <h2 className="mt-8 text-[#2F3438] font-normal text-[1.25rem]">
           회원 정보 수정
         </h2>
-        {/* 인풋 컴포넌트 자리 두 개 */}
         <div className="flex flex-col space-y-4 mt-4">
-          <input
+          <InputBox
             type="text"
             placeholder="이름"
-            style={{
-              width: "46.072rem",
-              height: "2.375rem",
-            }}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            width="w-[46.072rem]"
           />
-          <input
+          <InputBox
             type="text"
             placeholder="전화번호"
-            style={{
-              width: "46.072rem",
-              height: "2.375rem",
-            }}
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            width="w-[46.072rem]"
           />
         </div>
 
         {/* 기본 배송지 정보 */}
-        <h2
-          className="mt-8"
-          style={{
-            color: "var(--normalText, #2F3438)",
-            fontFamily: "'Noto Sans KR', sans-serif",
-            fontSize: "1.25rem",
-            fontWeight: "400",
-            lineHeight: "normal",
-          }}
-        >
+        <h2 className="mt-8 text-[#2F3438] font-normal text-[1.25rem]">
           기본 배송지 정보
         </h2>
-
-        {/* 인풋 컴포넌트 자리 5개 */}
         <div className="flex flex-col space-y-4 mt-4">
+          {/* 우편번호 입력 필드 */}
           <input
             type="text"
+            value={selectedZipCode} // 우편번호 상태값 적용
             placeholder="우편번호"
-            style={{
-              width: "46.072rem",
-              height: "2.375rem",
-            }}
+            style={{ width: "46.072rem", height: "2.8rem" }}
+            className={`border border--greyButtonText rounded-md 
+              px-3 py-2 focus:outline-none`}
+            readOnly // 사용자가 직접 수정하지 않도록 readOnly 설정
+            onClick={handleAddressSearch} // 우편번호 필드 클릭 시 팝업 열기
           />
+
+          {/* 선택된 주소 출력 */}
           <input
             type="text"
+            value={selectedAddress} // 주소가 선택되면 여기에 표시됨
             placeholder="주소"
             style={{
               width: "46.072rem",
-              height: "2.375rem",
+              height: "2.8rem",
             }}
+            className={`border border--greyButtonText rounded-md 
+        px-3 py-2 focus:outline-none`}
+            readOnly
           />
-          <input
+          <InputBox
             type="text"
             placeholder="상세주소"
-            style={{
-              width: "46.072rem",
-              height: "2.375rem",
-            }}
+            value={detailAddress}
+            onChange={(e) => setDetailAddress(e.target.value)}
+            width="w-[46.072rem]"
           />
-          <input
+          <InputBox
             type="text"
             placeholder="받는 사람 이름"
-            style={{
-              width: "46.072rem",
-              height: "2.375rem",
-            }}
+            value={receiverName}
+            onChange={(e) => setReceiverName(e.target.value)}
+            width="w-[46.072rem]"
           />
-          <input
+          <InputBox
             type="text"
             placeholder="받는 사람 전화번호"
-            style={{
-              width: "46.072rem",
-              height: "2.375rem",
-            }}
+            value={receiverPhone}
+            onChange={(e) => setReceiverPhone(e.target.value)}
+            width="w-[46.072rem]"
           />
         </div>
 
-        {/* 계좌관리 섹션 */}
-        <h2
-          className="mt-8"
-          style={{
-            color: "var(--normalText, #2F3438)",
-            fontFamily: "'Noto Sans KR', sans-serif",
-            fontSize: "1.25rem",
-            fontWeight: "400",
-            lineHeight: "normal",
-          }}
-        >
-          계좌관리
+        {/* 계좌 관리 섹션 */}
+        <h2 className="mt-8 text-[#2F3438] font-normal text-[1.25rem]">
+          계좌 관리
         </h2>
-
-        {/* 등록된 계좌 박스 */}
         <div
           className="flex mt-4 relative"
           style={{
@@ -212,122 +226,40 @@ export default function ProfilePage() {
           ref={accountBoxRef}
         >
           <div className="p-7 flex w-full">
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                width: "100%",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row", // 가로 방향 정렬
-                  justifyContent: "space-between", // 양측 정렬
-                  alignItems: "center", // 수직 가운데 정렬 (옵션, 필요 시)
-                  width: "100%", // 전체 너비 사용
-                }}
-              >
-                <span
-                  style={{
-                    color: "var(--subText, #828C94)",
-                    fontFamily: "'Noto Sans KR', sans-serif",
-                    fontSize: "1.0625rem",
-                    fontWeight: "350",
-                    textAlign: "left",
-                    flexGrow: 1, // 좌측 항목 차지 영역
-                  }}
-                >
+            <div className="flex flex-col w-full">
+              <div className="flex justify-between items-center">
+                <span className="text-[#828C94] font-normal text-[1.0625rem]">
                   예금주:
                 </span>
-                <span
-                  style={{
-                    color: "var(--normalText, #2F3438)",
-                    fontFamily: "'Noto Sans KR', sans-serif",
-                    fontSize: "1.0625rem",
-                    fontWeight: "350",
-                    textAlign: "right",
-                    flexGrow: 1, // 우측 항목 차지 영역
-                  }}
-                >
+                <span className="text-[#2F3438] font-normal text-[1.0625rem]">
                   {accountInfo.accountHolder}
                 </span>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "0.5rem",
-                  width: "100%", // 전체 너비 사용
-                }}
-              >
-                <span
-                  style={{
-                    color: "var(--subText, #828C94)",
-                    fontFamily: "'Noto Sans KR', sans-serif",
-                    fontSize: "1.0625rem",
-                    fontWeight: "350",
-                    textAlign: "left",
-                    flexGrow: 1, // 좌측 항목 차지 영역
-                  }}
-                >
+              <div className="flex justify-between mt-2">
+                <span className="text-[#828C94] font-normal text-[1.0625rem]">
                   은행명:
                 </span>
-                <span
-                  style={{
-                    color: "var(--normalText, #2F3438)",
-                    fontFamily: "'Noto Sans KR', sans-serif",
-                    fontSize: "1.0625rem",
-                    fontWeight: "350",
-                    textAlign: "right",
-                    flexGrow: 1, // 우측 항목 차지 영역
-                  }}
-                >
+                <span className="text-[#2F3438] font-normal text-[1.0625rem]">
                   {accountInfo.bankName}
                 </span>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "0.5rem",
-                  width: "100%", // 전체 너비 사용
-                }}
-              >
-                <span
-                  style={{
-                    color: "var(--subText, #828C94)",
-                    fontFamily: "'Noto Sans KR', sans-serif",
-                    fontSize: "1.0625rem",
-                    fontWeight: "350",
-                    textAlign: "left",
-                    flexGrow: 1, // 좌측 항목 차지 영역
-                  }}
-                >
+              <div className="flex justify-between mt-2">
+                <span className="text-[#828C94] font-normal text-[1.0625rem]">
                   계좌번호:
                 </span>
-                <span
-                  style={{
-                    color: "var(--normalText, #2F3438)",
-                    fontFamily: "'Noto Sans KR', sans-serif",
-                    fontSize: "1.0625rem",
-                    fontWeight: "350",
-                    textAlign: "right",
-                    flexGrow: 1, // 우측 항목 차지 영역
-                  }}
-                >
+                <span className="text-[#2F3438] font-normal text-[1.0625rem]">
                   {accountInfo.accountNumber}
                 </span>
               </div>
             </div>
 
-            {/* 정보 아이콘 우측 상단 배치 */}
+            {/* 정보 아이콘 */}
             <Image
               src={infoIcon}
               alt="Info Icon"
               width={5}
               height={5}
-              onClick={() => setShowAccountDelete(!showAccountDelete)} // 클릭 시 계좌 삭제 표시 토글
+              onClick={() => setShowAccountDelete(!showAccountDelete)}
               style={{
                 cursor: "pointer",
                 position: "absolute",
@@ -339,22 +271,14 @@ export default function ProfilePage() {
             {/* 계좌 삭제 버튼 */}
             {showAccountDelete && (
               <div
+                className="absolute top-10 right-[-12rem] w-[11rem] h-[2.5rem] flex justify-center items-center cursor-pointer"
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "10.97969rem",
-                  height: "2.5rem",
-                  position: "absolute",
-                  top: "10px", // 박스 오른쪽 상단과 수평
-                  right: "-12rem", // 박스 바깥에 위치하게 설정
-                  backgroundColor: "var(--ButtonText, #FFF)",
-                  border: "1px solid var(--GreyButtonText, #C2C8CB)",
+                  backgroundColor: "#FFF",
+                  border: "1px solid #C2C8CB",
                   borderRadius: "0.625rem",
-                  cursor: "pointer",
                 }}
                 onClick={() => {
-                  setAccountInfo(null); // 계좌 삭제 시 계좌 정보 초기화
+                  setAccountInfo(null); // 계좌 정보 초기화
                   setShowAccountDelete(false); // 삭제 후 토글 숨기기
                 }}
               >
@@ -364,32 +288,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 계좌 등록 버튼 */}
-        <button
-          onClick={() => setShowRegisterModal(true)} // 모달 열기
-          style={{
-            width: "46rem",
-            height: "2.875rem",
-            flexShrink: 0,
-            borderRadius: "0.625rem",
-            border: "1px dashed var(--GreyButtonText, #C2C8CB)",
-            background: "var(--GreyButton, #F6F8FA)",
-            marginTop: "1rem",
-          }}
-        >
-          <span
-            style={{
-              color: "var(--subText, #828C94)",
-              textAlign: "center",
-              fontFamily: "'Noto Sans KR', sans-serif",
-              fontSize: "1.0625rem",
-              fontWeight: "350",
-              lineHeight: "normal",
-            }}
+        {/* 수정하기 버튼 */}
+        <div className="flex justify-center mt-8">
+          <BlueButton
+            onClick={handleEdit}
+            width="w-[18rem]"
+            height="h-[3.5rem]"
           >
-            + 계좌 등록
-          </span>
-        </button>
+            수정하기
+          </BlueButton>
+        </div>
 
         {/* Register 모달 창 */}
         {showRegisterModal && (
