@@ -31,11 +31,9 @@ export default function ClientComponent({ children }) {
         </div>
       )}
       <div className="grid-container">
-        <div className="header-area">
-          <Header />
-        </div>
+        <Header />
+        {children}
       </div>
-      {children}
     </>
   );
 }

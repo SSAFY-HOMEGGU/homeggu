@@ -9,13 +9,13 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="kr">
       <body>
-        <ClientComponent />
-        <div className="grid-container max-w-screen-xl mx-auto min-h-screen">
-          <div className="content-area bg-white">{children}</div>
-          {/* <div className="bg-white">{children}</div> */}
-          {/* {children} */}
+        <ClientComponent /> {/* 이 부분을 content-area 바깥으로 이동 */}
+        <div className="grid-container">
+          <div className="content-area">
+            <div className="max-w-screen-xl min-h-screen">{children}</div>
+          </div>
         </div>
         <Footer />
       </body>
