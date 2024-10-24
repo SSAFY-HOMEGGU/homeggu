@@ -1,7 +1,6 @@
-// app/policies/notice.js
 export default function Notice() {
   return (
-    <div className="container mx-auto p-6 bg-white rounded">
+    <div className="p-6 bg-white">
       <h1 className="text-3xl font-bold text-center mb-6">공지사항</h1>
 
       <div className="space-y-6">
