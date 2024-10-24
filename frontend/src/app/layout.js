@@ -11,11 +11,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="kr">
       <body>
-        <ClientComponent /> {/* 이 부분을 content-area 바깥으로 이동 */}
+        <ClientComponent />
         <div className="grid-container">
-          <div className="content-area">
-            <div className="max-w-screen-xl min-h-screen">{children}</div>
-          </div>
+          <div className="content-area">{children}</div>
         </div>
         <Footer />
       </body>
