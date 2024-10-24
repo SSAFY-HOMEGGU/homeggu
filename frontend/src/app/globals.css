@@ -44,7 +44,12 @@ body {
 }
 
 .content-area {
-  grid-column: 3 / span 8; /* 3번째부터 8개의 컬럼 차지 */
+  /* grid-column: 3 / span 8; 3번째부터 8개의 컬럼 차지 */
+  grid-column: 1 / span 12; /* 3번째부터 8개의 컬럼 차지 */
+}
+
+.header-area{
+  grid-column: 3 / span 8;
 }
 
 .client-component-container {
