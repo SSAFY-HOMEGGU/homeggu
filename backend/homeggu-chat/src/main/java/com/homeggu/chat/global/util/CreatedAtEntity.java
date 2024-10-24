@@ -1,4 +1,4 @@
-package com.homeggu.chat.util;
+package com.homeggu.chat.global.util;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

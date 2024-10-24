@@ -1,6 +1,4 @@
-package com.homeggu.chat.service;
-
-import com.homeggu.chat.entity.ChatRoom;
+package com.homeggu.chat.domain.chatting.service;
 
 public interface ChatRoomService {
     Long addChatRoom(Long salesBoardId);

@@ -1,9 +1,8 @@
-package com.homeggu.chat.controller;
+package com.homeggu.chat.domain.chatting.controller;
 
 
-import com.homeggu.chat.service.ChatRoomService;
+import com.homeggu.chat.domain.chatting.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
