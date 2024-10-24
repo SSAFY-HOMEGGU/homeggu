@@ -88,7 +88,7 @@ export default function Footer() {
             rel="noopener noreferrer"
           >
             <Image
-              src="/images/instagram.svg"
+              src="/icons/instagram.svg"
               alt="Instagram"
               width={30}
               height={30}
@@ -100,7 +100,7 @@ export default function Footer() {
             rel="noopener noreferrer"
           >
             <Image
-              src="/images/facebook.svg"
+              src="/icons/facebook.svg"
               alt="Facebook"
               width={30}
               height={30}
@@ -112,7 +112,7 @@ export default function Footer() {
             rel="noopener noreferrer"
           >
             <Image
-              src="/images/gitlab.svg"
+              src="/icons/gitlab.svg"
               alt="GitLab"
               width={30}
               height={30}
@@ -123,7 +123,7 @@ export default function Footer() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Image src="/images/jira.svg" alt="Jira" width={30} height={30} />
+            <Image src="/icons/jira.svg" alt="Jira" width={30} height={30} />
           </a>
         </div>
       </div>
