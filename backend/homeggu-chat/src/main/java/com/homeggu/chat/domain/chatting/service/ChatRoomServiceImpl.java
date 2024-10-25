@@ -14,14 +14,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
 
     @Override
-    public Long addChatRoom(Long salesBoardId) {
+    public ChatRoom addChatRoom(Long salesBoardId) {
         ChatRoom newChatRoom = ChatRoom.builder()
                 .salesBoardId(salesBoardId)
                 .build();
 
         ChatRoom savedRoom = chatRoomRepository.save(newChatRoom);
 
-        return savedRoom.getChatRoomId();
+        return savedRoom;
     }
 
 }

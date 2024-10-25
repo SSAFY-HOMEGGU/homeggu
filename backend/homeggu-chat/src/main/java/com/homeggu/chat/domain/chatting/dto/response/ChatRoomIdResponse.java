@@ -1,10 +1,12 @@
 package com.homeggu.chat.domain.chatting.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
-@Builder
+@Data
+@AllArgsConstructor
 public class ChatRoomIdResponse {
-    private Long salesBoardId;
+    private Long chatRoomId;
 }
