@@ -8,13 +8,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatMessageRequest {
     private Long chatRoomId; // 방 번호
-    private String userId; // 채팅을 보낸 사람
+    private Long userId; // 채팅을 보낸 사람
     private String message; // 메시지
     private LocalDateTime time; // 채팅 발송 시간
     private boolean isRead; // 읽기 여부
 
     @Builder
-    public ChatMessageRequest(Long chatRoomId, String userId, String message, LocalDateTime time, boolean isRead) {
+    public ChatMessageRequest(Long chatRoomId, Long userId, String message, LocalDateTime time, boolean isRead) {
         this.chatRoomId = chatRoomId;
         this.userId = userId;
         this.message = message;
