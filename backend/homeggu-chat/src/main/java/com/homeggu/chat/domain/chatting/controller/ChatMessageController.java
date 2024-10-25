@@ -23,7 +23,6 @@ public class ChatMessageController {
 
     private final RabbitTemplate rabbitTemplate;
 
-    // /exchange/chat.exchange/room.{chatRoomId} 를 구독한 클라이언트에 메시지가 전송된다.
     @MessageMapping("chat.enter.{chatRoomId}")
     public void enterUser(@Payload ChatMessageRequest message, @DestinationVariable Long chatRoomId) {
         message.setTime(LocalDateTime.now());
@@ -32,7 +31,6 @@ public class ChatMessageController {
         rabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, message);
     }
 
-    // /pub/chat.message.{chatRoomId} 로 요청하면 브로커를 통해 처리
     @MessageMapping("chat.message.{chatRoomId}")
     public void sendMessage(@Payload ChatMessageRequest message, @DestinationVariable String chatRoomId) {
         message.setTime(LocalDateTime.now());
@@ -41,9 +39,8 @@ public class ChatMessageController {
         rabbitTemplate.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, message);
     }
 
-    //기본적으로 chat.queue가 exchange에 바인딩 되어있기 때문에 모든 메시지 처리
     @RabbitListener(queues = CHAT_QUEUE_NAME)
     public void receive(ChatMessageRequest message){
-        log.info("received : " + message.getMessage());
+        log.debug("received : " + message.getMessage());
     }
 }
