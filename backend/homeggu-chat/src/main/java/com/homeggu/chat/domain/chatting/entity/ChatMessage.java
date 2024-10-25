@@ -1,10 +1,11 @@
 package com.homeggu.chat.domain.chatting.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ public class ChatMessage {
 
     @Id
     @Column(nullable = false)
-    private Long chatMessageId;
+    private ObjectId id;
 
     @Column(nullable = false)
     private Long chatRoomId;
