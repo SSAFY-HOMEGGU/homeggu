@@ -1,4 +1,4 @@
-package com.homeggu.chat.dto.response;
+package com.homeggu.chat.domain.chatting.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

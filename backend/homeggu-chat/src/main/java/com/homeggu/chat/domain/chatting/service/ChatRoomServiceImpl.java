@@ -1,7 +1,7 @@
-package com.homeggu.chat.service;
+package com.homeggu.chat.domain.chatting.service;
 
-import com.homeggu.chat.entity.ChatRoom;
-import com.homeggu.chat.repository.ChatRoomRepository;
+import com.homeggu.chat.domain.chatting.entity.ChatRoom;
+import com.homeggu.chat.domain.chatting.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

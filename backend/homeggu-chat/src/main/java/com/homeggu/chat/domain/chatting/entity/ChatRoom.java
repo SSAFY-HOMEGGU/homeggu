@@ -1,4 +1,4 @@
-package com.homeggu.chat.entity;
+package com.homeggu.chat.domain.chatting.entity;
 
 
 import jakarta.persistence.*;
