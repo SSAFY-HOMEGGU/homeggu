@@ -101,6 +101,6 @@ export default function CategoryProducts({ categoryName, products }) {
           <Product key={product.id} product={product} />
         ))}
       </div>
-    </div>
+    </div>   
   );
 }
