@@ -6,8 +6,12 @@ import com.homeggu.domain.auth.entity.User;
 import com.homeggu.domain.auth.entity.UserProfile;
 import com.homeggu.domain.auth.repository.UserProfileRepository;
 import com.homeggu.domain.auth.repository.UserRepository;
+import com.homeggu.global.util.dto.JwtResponse;
+import com.homeggu.global.util.jwt.JwtProvider;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -26,6 +30,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
+    private final JwtProvider jwtProvider;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String kakaoClientId;
@@ -44,7 +50,7 @@ public class AuthService {
     private String[] lastNicknames;
 
     // 카카오 로그인 메서드
-    public UserProfile kakaoLogin(String code) {
+    public String kakaoLogin(String code) {
         // 1. 카카오 서버로 kakao access token 발급 요청
         String kakaoAccessToken = getKakaoToken(code);
 
@@ -56,8 +62,9 @@ public class AuthService {
         // 3. 이메일로 유저를 조회하여 없으면 회원가입, 있으면 로그인
         User existedUser = userRepository.findByEmail(email).orElse(null);
         if (existedUser != null) {
-            // 유저가 존재하는 경우 로그인
-            return userProfileRepository.findByUser(existedUser).orElseThrow();
+            // 유저가 존재하는 userId jwt에 담아 전송
+            JwtResponse jwtResponse = jwtProvider.generateToken(existedUser.getUserId());
+            return jwtResponse.getAccessToken();
         } else {
             User newUser = User.builder().email(email).username(username).build();
             userRepository.save(newUser);
@@ -70,8 +77,9 @@ public class AuthService {
                     .build();
             userProfileRepository.save(newUserProfile);
 
-            // 회원가입 후 유저 정보 반환
-            return newUserProfile;
+            // 회원가입 후 userId jwt에 담아 전송
+            JwtResponse jwtResponse = jwtProvider.generateToken(newUser.getUserId());
+            return jwtResponse.getAccessToken();
         }
     }
 
@@ -182,5 +190,24 @@ public class AuthService {
             randomNickname = generatedRandomNickname();
         } while (userProfileRepository.existsByNickname(randomNickname));  // 중복되면 계속 생성
         return randomNickname; // 중복되지 않으면 랜덤 닉네임 return
+    }
+
+    // 카카오 로그아웃
+    public boolean kakaoLogout(String accessToken) {
+        try {
+            // accessToken에서 userId 추출
+            Claims claims = jwtProvider.parseToken(accessToken);
+            int userId = claims.get("userId", Integer.class);
+            String redisKey = "refresh_token_" + userId;
+
+            // Redis에서 해당 유저의 refresh token 삭제
+            redisTemplate.delete(redisKey);
+
+            // 로그아웃 성공
+            return true;
+        } catch (Exception e) {
+            // 로그아웃 실패
+            return false;
+        }
     }
 }

@@ -38,6 +38,6 @@ public class UserProfile extends UpdateTimeEntity {
     private int balance;
 
     @OneToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user", referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private User user;
 }

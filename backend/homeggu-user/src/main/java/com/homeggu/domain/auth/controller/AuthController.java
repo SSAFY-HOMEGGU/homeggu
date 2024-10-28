@@ -1,11 +1,13 @@
 package com.homeggu.domain.auth.controller;
 
+import com.homeggu.domain.auth.dto.request.KaKaoLogoutRequest;
 import com.homeggu.domain.auth.dto.request.KakaoLoginRequest;
 import com.homeggu.domain.auth.dto.response.AccessTokenResponse;
 import com.homeggu.domain.auth.entity.User;
 import com.homeggu.domain.auth.entity.UserProfile;
 import com.homeggu.domain.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,14 +21,24 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // 카카오 소셜 로그인
+    // 카카오 로그인
     // 프론트에서 보낸 인가 코드를 이용해 카카오 서버에서 access token을 발급받습니다.
     // 이후에 자체 access token을 생성해 response로 전송합니다.
-    @PostMapping("/kakao")
+    @PostMapping("/kakao/login")
     public ResponseEntity<?> kakaoLogin(@RequestBody KakaoLoginRequest loginRequest) {
-        AccessTokenResponse accessToken = new AccessTokenResponse(); // 서비스에서 반환할 예정
         String code = loginRequest.getCode();
-        UserProfile userProfile = authService.kakaoLogin(code);
-        return ResponseEntity.ok(userProfile);
+        String accessToken = authService.kakaoLogin(code);
+        return ResponseEntity.ok(accessToken);
+    }
+
+    // 카카오 로그아웃
+    @PostMapping("/kakao/logout")
+    public ResponseEntity<?> logout(@RequestBody KaKaoLogoutRequest logoutRequest) {
+        String accessToken = logoutRequest.getAccessToken();
+        if (authService.kakaoLogout(accessToken)) {
+            return ResponseEntity.ok("로그아웃 성공");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그아웃 실패");
+        }
     }
 }
