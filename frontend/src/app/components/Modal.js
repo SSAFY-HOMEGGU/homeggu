@@ -13,6 +13,8 @@ export default function Modal({
   onConfirm,
   confirmText = "확인",
   cancelText = "취소",
+  showConfirmButton = true,
+  showCancelButton = true,
 }) {
   if (!show) return null;
 
@@ -90,45 +92,51 @@ export default function Modal({
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
+            justifyContent:
+              showConfirmButton && showCancelButton ? "center" : "space-evenly",
             marginTop: "2.5rem",
+            width: showConfirmButton && !showCancelButton ? "12rem" : "auto", // 가운데 정렬
           }}
         >
-          <button
-            className="modal-button cancel-button"
-            onClick={onClose}
-            style={{
-              width: "12rem",
-              height: "2.5rem",
-              borderRadius: "0.625rem",
-              border: "1px solid var(--GreyButtonText, #C2C8CB)",
-              backgroundColor: "var(--ButtonText, #FFF)",
-              marginRight: "1rem",
-              cursor: "pointer",
-              fontFamily: "'Noto Sans KR', sans-serif",
-              fontSize: "1.0625rem",
-              color: "var(--subText, #828C94)",
-            }}
-          >
-            {cancelText}
-          </button>
-          <button
-            className="modal-button confirm-button"
-            onClick={onConfirm}
-            style={{
-              width: "12rem",
-              height: "2.5rem",
-              borderRadius: "0.625rem",
-              backgroundColor: "#F6F8FA",
-              border: "1px solid var(--GreyButtonText, #C2C8CB)",
-              color: "#828C94",
-              cursor: "pointer",
-              fontFamily: "'Noto Sans KR', sans-serif",
-              fontSize: "1.0625rem",
-            }}
-          >
-            {confirmText}
-          </button>
+          {showCancelButton && (
+            <button
+              className="modal-button cancel-button"
+              onClick={onClose}
+              style={{
+                width: "12rem",
+                height: "2.5rem",
+                borderRadius: "0.625rem",
+                border: "1px solid var(--GreyButtonText, #C2C8CB)",
+                backgroundColor: "var(--ButtonText, #FFF)",
+                marginRight: showConfirmButton ? "1rem" : "0",
+                cursor: "pointer",
+                fontFamily: "'Noto Sans KR', sans-serif",
+                fontSize: "1.0625rem",
+                color: "var(--subText, #828C94)",
+              }}
+            >
+              {cancelText}
+            </button>
+          )}
+          {showConfirmButton && (
+            <button
+              className="modal-button confirm-button"
+              onClick={onConfirm}
+              style={{
+                width: "12rem",
+                height: "2.5rem",
+                borderRadius: "0.625rem",
+                backgroundColor: "#F6F8FA",
+                border: "1px solid var(--GreyButtonText, #C2C8CB)",
+                color: "#828C94",
+                cursor: "pointer",
+                fontFamily: "'Noto Sans KR', sans-serif",
+                fontSize: "1.0625rem",
+              }}
+            >
+              {confirmText}
+            </button>
+          )}
         </div>
       </div>
 

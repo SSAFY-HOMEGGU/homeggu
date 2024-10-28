@@ -22,7 +22,7 @@ export default function Dashboard() {
   const [activeFilter, setActiveFilter] = useState("최신순");
 
   // 상품 데이터 (임의)
-  const totalItems = 15; // 총 상품 개수   
+  const totalItems = 15; // 총 상품 개수
 
   return (
     <div>
