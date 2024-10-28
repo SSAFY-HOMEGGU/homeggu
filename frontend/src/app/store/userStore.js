@@ -8,6 +8,7 @@ const useUserStore = create((set) => ({
     phone: '',
     address: '',
     isLoggedIn: false,
+    token: '',
   },
   // 사용자 정보 업데이트 함수
   updateUser: (newInfo) => set((state) => ({
@@ -21,6 +22,13 @@ const useUserStore = create((set) => ({
     user: {
       ...state.user,
       isLoggedIn: status,
+    }
+  })),
+  // 토큰 업데이트 함수
+  updateToken: (token) => set((state) => ({
+    user: {
+      ...state.user,
+      token, // 토큰 정보 업데이트
     }
   })),
 }));

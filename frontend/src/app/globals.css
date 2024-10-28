@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+@import 'swiper/css/autoplay';
+
+
 body {
   font-family: "Noto Sans KR", sans-serif;
   min-height: 100vh;
