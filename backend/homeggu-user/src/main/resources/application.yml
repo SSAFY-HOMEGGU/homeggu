@@ -1,3 +1,60 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /
+
 spring:
   application:
-    name: user
+    name: homeggu-user
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
+        show_sql: true
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        jdbc:
+          time_zone: Asia/Seoul
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/user
+    username: root
+    password: ssafy
+  sql:
+    init:
+      mode: always
+
+  data:
+    web:
+      pageable:
+        max-page-size: 2000
+        default-page-size: 10
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-name: kakao
+            authorization-grant-type: authorization_code
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            scope:
+              - profile_nickname
+              - account_email
+
+random-nickname:
+  first-names: "수상한,사랑스러운,비련의,근육질의,애처로운,멋있는,천진난만한,소심한"
+  last-names: "돌멩이,여주인공,길고양이,억만장자,나뭇잎,행인1,주인공 엄마,화분,강아지,비둘기,히어로,먼지,버스,마법사,댄서,모범생,알바생,CEO,할아버지,할머니,외국인"
