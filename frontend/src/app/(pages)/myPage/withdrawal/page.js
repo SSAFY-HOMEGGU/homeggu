@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import alertIcon from "/public/icons/alert.svg"; // 경고 아이콘
-import Modal from "../../components/Modal"; // 모달 컴포넌트 불러오기
+import Modal from "../../../components/Modal"; // 모달 컴포넌트 불러오기
 
 export default function WithdrawalPage() {
   const [showModal, setShowModal] = useState(false);

@@ -25,7 +25,7 @@ export default function Product({ product }) {
   return (
     <Link href={`/product/${product.id}`}>
       <div 
-        className="relative w-[17rem] h-[17rem] flex-shrink-0 border rounded-[0.8rem] bg-lightgray bg-cover bg-center" 
+        className="relative w-[14rem] h-[14rem] flex-shrink-0 border rounded-[0.8rem] bg-lightgray bg-cover bg-center" 
         style={{ backgroundImage: `url(${product.imageUrl})` }}
       >
          <div onClick={handleLikeClick} className="absolute bottom-2 right-2 cursor-pointer">

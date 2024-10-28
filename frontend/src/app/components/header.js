@@ -7,12 +7,14 @@ import { usePathname} from 'next/navigation'
 import Link from 'next/link';
 import { useState } from 'react';
 import useUserStore from '../store/userStore';
+import CategoryModal from './CategoryModal';
 
 export default function Header() {
   const router = useRouter();
   const currentPath = usePathname();
   const { user, setLoginStatus } = useUserStore();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLogout = () => {
     setLoginStatus(false); // Zustand 상태에서 로그아웃 처리
@@ -35,9 +37,16 @@ export default function Header() {
         <Link href='/'>
           <h1 className="font-tmoney text-[2rem] font-bold">홈꾸</h1>
         </Link>
-        <Link href="/category" className={`font-tmoney text-[1rem] ${currentPath === "/category" ? "text-point1 font-extrabold" : "text-normalText  font-normal" }`}>
-          카테고리
-        </Link>
+        <div
+          onMouseEnter={() => setIsModalOpen(true)}
+          // onMouseLeave={() => setIsModalOpen(false)}
+          className="relative"
+        >
+          <Link href="/category" className={`font-tmoney text-[1rem] ${currentPath === "/category" ? "text-point1 font-extrabold" : "text-normalText  font-normal" }`}>
+            카테고리
+          </Link>
+          {isModalOpen && <CategoryModal onClose={() => setIsModalOpen(false)} />}
+        </div>
         <Link href="/interior" className={`font-tmoney text-[1rem] ${currentPath === "/interior" ? "text-point1 font-extrabold" : "text-normalText  font-normal" }`}>
           3D 인테리어
         </Link>
