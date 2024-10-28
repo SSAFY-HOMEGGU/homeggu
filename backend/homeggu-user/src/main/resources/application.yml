@@ -14,6 +14,8 @@ spring:
 
   jpa:
     open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
     properties:
       hibernate:
         default_batch_fetch_size: 50
@@ -53,3 +55,6 @@ spring:
               - profile_nickname
               - account_email
 
+random-nickname:
+  first-names: "수상한,사랑스러운,비련의,근육질의,애처로운,멋있는,천진난만한,소심한"
+  last-names: "돌멩이,여주인공,길고양이,억만장자,나뭇잎,행인1,주인공 엄마,화분,강아지,비둘기,히어로,먼지,버스,마법사,댄서,모범생,알바생,CEO,할아버지,할머니,외국인"

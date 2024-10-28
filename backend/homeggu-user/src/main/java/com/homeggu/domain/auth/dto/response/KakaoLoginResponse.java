@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class KaKaoLoginResponse {
+public class KakaoLoginResponse {
     private String email;
     private String username;
 }

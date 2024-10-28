@@ -1,6 +1,6 @@
 package com.homeggu.domain.auth.entity;
 
-import com.homeggu.global.baseTimeEntity.BaseTimeEntity;
+import com.homeggu.global.baseTimeEntity.CreateTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class User extends BaseTimeEntity {
+public class User extends CreateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
