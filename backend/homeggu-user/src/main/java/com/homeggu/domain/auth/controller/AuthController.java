@@ -24,9 +24,8 @@ public class AuthController {
     // 이후에 자체 access token을 생성해 response로 전송합니다.
     @PostMapping("/kakao")
     public ResponseEntity<?> kakaoLogin(@RequestBody KakaoLoginRequest loginRequest) {
-        AccessTokenResponse accessToken = new AccessTokenResponse(); // 서비스에서 반환할 예정
         String code = loginRequest.getCode();
-        UserProfile userProfile = authService.kakaoLogin(code);
-        return ResponseEntity.ok(userProfile);
+        String accessToken = authService.kakaoLogin(code);
+        return ResponseEntity.ok(accessToken);
     }
 }
