@@ -1,6 +1,8 @@
 package com.homeggu.global.util.jwt;
 
 import com.homeggu.global.util.dto.JwtResponse;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -15,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class JwtProvider {
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; // 7일
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 6 * 60 * 60 * 1000L; // 6시간
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 2 * 60 * 60 * 1000L; // 2시간
 
     private final SecretKey secretKey;
     private final RedisTemplate<String, String> redisTemplate;
@@ -52,5 +54,14 @@ public class JwtProvider {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    // access token으로 claims(payload) 획득
+    public Claims parseToken(String accessToken) {
+        try {
+            return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(accessToken).getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 }

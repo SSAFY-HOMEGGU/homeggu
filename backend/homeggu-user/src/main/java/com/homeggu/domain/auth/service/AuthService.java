@@ -8,8 +8,10 @@ import com.homeggu.domain.auth.repository.UserProfileRepository;
 import com.homeggu.domain.auth.repository.UserRepository;
 import com.homeggu.global.util.dto.JwtResponse;
 import com.homeggu.global.util.jwt.JwtProvider;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -29,6 +31,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final JwtProvider jwtProvider;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String kakaoClientId;
@@ -187,5 +190,24 @@ public class AuthService {
             randomNickname = generatedRandomNickname();
         } while (userProfileRepository.existsByNickname(randomNickname));  // 중복되면 계속 생성
         return randomNickname; // 중복되지 않으면 랜덤 닉네임 return
+    }
+
+    // 카카오 로그아웃
+    public boolean kakaoLogout(String accessToken) {
+        try {
+            // accessToken에서 userId 추출
+            Claims claims = jwtProvider.parseToken(accessToken);
+            int userId = claims.get("userId", Integer.class);
+            String redisKey = "refresh_token_" + userId;
+
+            // Redis에서 해당 유저의 refresh token 삭제
+            redisTemplate.delete(redisKey);
+
+            // 로그아웃 성공
+            return true;
+        } catch (Exception e) {
+            // 로그아웃 실패
+            return false;
+        }
     }
 }
