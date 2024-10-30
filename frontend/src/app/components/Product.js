@@ -12,21 +12,28 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import LikeStore from '../store/likeStore';
+import useProductStore from '@/app/store/productStore';
 
 export default function Product({ product }) {
   const { likedProducts, setlikedProducts } = LikeStore();
+  const { setSelectedProduct } = useProductStore();
+
   const isLiked = likedProducts.includes(product.id);
 
   const handleLikeClick = (e) => {
     e.preventDefault();
     setlikedProducts(product.id); // 좋아요 상태 변경
   };
+
+  const handleProductClick = () => {
+    setSelectedProduct(product); // 상품을 선택하면 Zustand에 상품 정보를 저장
+  };
   
   return (
-    <Link href={`/product/${product.id}`}>
+    <Link href={`/product/${product.id}`} onClick={handleProductClick}>
       <div 
         className="relative w-[14rem] h-[14rem] flex-shrink-0 border rounded-[0.8rem] bg-lightgray bg-cover bg-center" 
-        style={{ backgroundImage: `url(${product.imageUrl})` }}
+        style={{ backgroundImage: `url(${product.imageUrl[0]})` }}
       >
          <div onClick={handleLikeClick} className="absolute bottom-2 right-2 cursor-pointer">
             <Image

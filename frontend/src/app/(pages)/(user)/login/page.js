@@ -1,119 +1,64 @@
-
-// "use client";
-// import { useEffect } from 'react';
-// import Script from 'next/script';
-// import Image from 'next/image';
-// import { useRouter, useSearchParams } from 'next/navigation';
-// // import axios from 'axios';
-
-// export default function KakaoLogin() {
-//   const KAKAO_APP_KEY = '51fc12f90d265c8108d66e76fee0151f';
-//   const redirect_URL = 'http://localhost:3000';
-//   const router = useRouter();
-//   const searchParams = useSearchParams();
-
-//   useEffect(() => {
-//     // Kakao 초기화
-//     if (typeof window !== 'undefined' && window.Kakao) {
-//       const kakao = window.Kakao;
-//       if (!kakao.isInitialized()) {
-//         kakao.init(KAKAO_APP_KEY); 
-//       }
-//     }
-
-//     // URL에서 인가 코드 가져오기
-//     const code = searchParams.get('code');
-//     if (code) {
-//       // 인가 코드로 액세스 토큰 요청
-//       getAccessToken(code);
-//     }
-//   }, [searchParams]);
-
-//   const handleLogin = () => {
-//     if (typeof window !== 'undefined' && window.Kakao) {
-//       window.Kakao.Auth.authorize({
-//         redirectUri: redirect_URL,
-//       });
-//     }
-//   };
-
-//   // 액세스 토큰 요청 함수
-//   const getAccessToken = async (code) => {
-//     try {
-//       const response = await axios.post('/api/getAccessToken', { code });
-//       const { access_token } = response.data;
-//       if (access_token) {
-//         window.Kakao.Auth.setAccessToken(access_token);
-//         localStorage.setItem('kakao_access_token', access_token);
-//         console.log('Access token saved to local storage:', access_token);
-//       }
-//     } catch (error) {
-//       console.error('Failed to get access token', error);
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <Script
-//         src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
-//         integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
-//         crossOrigin="anonymous"
-//         strategy="beforeInteractive"
-//       />
-//       <button id="kakao-login-btn" onClick={handleLogin}>
-//         <Image
-//           src="/images/kakao_login_large_narrow.png"
-//           alt="카카오 로그인 버튼"
-//           width={222}
-//           height={45}
-//         />
-//       </button>
-//       <p id="token-result"></p>
-//     </div>
-//   );
-// }
-// pages/index.js
 "use client";
 import { useEffect } from 'react';
-import Head from 'next/head';
+import Image from 'next/image';
 
-export default function Home() {
-  const KAKAO_APP_KEY = '51fc12f90d265c8108d66e76fee0151f';
-  const redirect_URL = 'http://localhost:3000/kakaoCallback';
+export default function Login() {
+  const KAKAO_APP_KEY = 'bef4fb28fb81b27f00b0158e38269ec0';
+  const REDIRECT_URI = 'http://localhost:3000/kakaoCallback';
 
   useEffect(() => {
-    // Kakao JavaScript SDK 로드
-    const script = document.createElement('script');
-    script.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
-    script.integrity = 'sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4';
-    script.crossOrigin = 'anonymous';
-    script.onload = () => {
-      window.Kakao.init(KAKAO_APP_KEY); 
+    // Kakao SDK 초기화
+    const loadKakaoSDK = () => {
+      const script = document.createElement('script');
+      script.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+      script.integrity = 'sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4';
+      script.crossOrigin = 'anonymous';
+      script.async = true;
+      
+      script.onload = () => {
+        if (!window.Kakao.isInitialized()) {
+          window.Kakao.init(KAKAO_APP_KEY);
+        }
+      };
+      
+      document.head.appendChild(script);
     };
-    document.head.appendChild(script);
+
+    loadKakaoSDK();
+    
   }, []);
 
   const handleLogin = () => {
-    if (window.Kakao) {
-      window.Kakao.Auth.authorize({
-        redirectUri: redirect_URL,
-      });
+    if (!window.Kakao?.Auth) {
+      console.error('Kakao SDK not loaded');
+      return;
     }
+
+    window.Kakao.Auth.authorize({
+      redirectUri: REDIRECT_URI,
+    });
   };
 
   return (
-    <div>
-      <Head>
-        <title>Next.js Kakao Login</title>
-      </Head>
-      <button onClick={handleLogin}>
-        <img
-          src="/images/kakao_login_large_narrow.png"
-          alt="카카오 로그인 버튼"
-          width="222"
+    <div className="flex items-center justify-center">
+      <div className='flex flex-col items-center justify-center h-[30rem]'>
+        <Image
+          src="/images/logo.png"
+          alt="로고"
+          width={150}
+          height={150}
         />
-      </button>
+        {/* <h1 className='font-tmoney text-[2rem] mb-4'>홈꾸</h1> */}
+        <p className='mb-4'>SNS 계정으로 간편 로그인/회원가입</p>
+        <button onClick={handleLogin}>
+          <Image
+            src="/images/kakao_login_large_narrow.png"
+            alt="카카오 로그인 버튼"
+            width={220}
+            height={220}
+          />
+        </button>
+      </div>
     </div>
   );
 }
-
