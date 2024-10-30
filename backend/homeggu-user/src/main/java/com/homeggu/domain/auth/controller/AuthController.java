@@ -2,9 +2,6 @@ package com.homeggu.domain.auth.controller;
 
 import com.homeggu.domain.auth.dto.request.KaKaoLogoutRequest;
 import com.homeggu.domain.auth.dto.request.KakaoLoginRequest;
-import com.homeggu.domain.auth.dto.response.AccessTokenResponse;
-import com.homeggu.domain.auth.entity.User;
-import com.homeggu.domain.auth.entity.UserProfile;
 import com.homeggu.domain.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

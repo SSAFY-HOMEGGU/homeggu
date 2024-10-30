@@ -1,6 +1,6 @@
-package com.homeggu.domain.auth.entity;
+package com.homeggu.domain.user.entity;
 
-import com.homeggu.global.baseTimeEntity.CreateTimeEntity;
+import com.homeggu.domain.auth.entity.User;
 import com.homeggu.global.baseTimeEntity.UpdateTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
