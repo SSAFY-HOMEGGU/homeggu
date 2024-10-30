@@ -1,5 +1,6 @@
 package com.homeggu.global.util.jwt;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,9 +36,8 @@ public class JwtFilter extends OncePerRequestFilter {
         // 4. JWT 토큰의 유효성 검사
         if (jwtProvider.validateToken(token)) {
             // 5. 유효한 경우 토큰에서 사용자 정보 추출
-            String userIdStr = jwtProvider.parseToken(token).getSubject();
-            // 문자열로 반환된 userId를 int로 변환
-            int userId = Integer.parseInt(userIdStr);
+            Claims claims = jwtProvider.parseToken(token);
+            int userId = claims.get("userId", Integer.class);
 
             // 6. 사용자 인증 객체 생성 후 SecurityContext에 설정
             Authentication authentication = new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
