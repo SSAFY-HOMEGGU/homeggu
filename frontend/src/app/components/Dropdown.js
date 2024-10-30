@@ -1,6 +1,7 @@
 // 주의사항
 // 1. options,onSelect 넘겨줘야함
 // 2. 너비 조정 가능
+// 3. 선택된 옵션 색 변경 가능
 {/* 
   <Dropdown 
     options={["Option 1", "Option 2", "Option 3"]} 
@@ -11,7 +12,7 @@
 import { useState } from 'react';
 import { IoCaretDown } from "react-icons/io5";
 
-export default function Dropdown({ options = [], onSelect, width = "w-[14rem]" }) {
+export default function Dropdown({ options = [], onSelect, width = "w-[14rem]", selectedFont = "text-normalText"}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -25,8 +26,8 @@ export default function Dropdown({ options = [], onSelect, width = "w-[14rem]" }
     <div className="relative inline-block text-left">
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className={`${width} h-[2.8rem] px-4 py-2 border-[0.03rem] border-greyButtonText rounded-[0.5rem] flex items-center justify-between`}>
-        {selectedOption || "Select an option"}
+        className={`${width} ${selectedFont} h-[2.8rem] px-4 py-2 border-[0.03rem] border-greyButtonText rounded-[0.5rem] flex items-center justify-between`}>
+        {selectedOption || options[0]}
         <IoCaretDown className="text-[1.2rem] ml-2 text-greyButtonText" />
       </button>
 
@@ -36,7 +37,7 @@ export default function Dropdown({ options = [], onSelect, width = "w-[14rem]" }
             {options.map((option, index) => (
               <li key={index} 
                   onClick={() => handleSelect(option)} 
-                  className="px-4 py-2 text-greyButtonText cursor-pointer hover:bg-gray-100 text-left">
+                  className="px-4 py-2 text-subText cursor-pointer hover:bg-gray-100 text-left">
                 {option}
               </li>
             ))}

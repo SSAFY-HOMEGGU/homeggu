@@ -37,7 +37,7 @@ export default function CategoryProducts({ categoryName, products }) {
   return (
     <div className="mt-[1rem]">
       {/* 가격과 옵션을 절반씩 차지하게 설정 */}
-      <div className="w-full h-[4rem] flex items-center flex-shrink-0 border rounded-[1rem]">
+      <div className="w-full h-[3.5rem] flex items-center flex-shrink-0 border rounded-[1rem] mb-[1rem]">
         
         {/* 가격 영역 */}
         <div className="w-1/2 flex items-center">
@@ -98,7 +98,7 @@ export default function CategoryProducts({ categoryName, products }) {
       </h2>
       <div className="grid grid-cols-4 gap-4 md:grid-cols-4 sm:grid-cols-2 grid-cols-1">
         {filteredProducts.map((product) => (
-          <Product key={product.id} product={product} />
+          <Product key={product.id} product={product} seller={product.seller}/>
         ))}
       </div>
     </div>   
