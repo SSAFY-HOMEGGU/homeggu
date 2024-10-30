@@ -1,13 +1,12 @@
-package com.homeggu.domain.auth.repository;
+package com.homeggu.domain.user.repository;
 
-import com.homeggu.domain.auth.entity.User;
-import com.homeggu.domain.auth.entity.UserProfile;
+import com.homeggu.domain.user.entity.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
 public interface UserProfileRepository extends JpaRepository<UserProfile, Integer> {
-    Optional<UserProfile> findByUser(User user);
+    Optional<UserProfile> findByUserProfileId(int userProfileId);
 
     boolean existsByNickname(String nickname);
 }
