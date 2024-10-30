@@ -7,13 +7,15 @@ export default function Footer() {
       {/* 첫 번째 요소: 로고 및 텍스트 */}
       <div className="flex flex-col items-start">
         <Link href="/home">
-          <Image
-            src="/images/logo.png"
-            alt="logo"
-            width={100}
-            height={50}
-            sizes="(max-width: 100px) 100vw, 100px"
-          />
+          <div className="relative w-[170px] h-[120px]">
+            <Image
+              src="/images/logo.png"
+              alt="logo"
+              fill
+              sizes="(max-width: 150px) 100vw, 200px"
+              style={{ objectFit: "contain" }}
+            />
+          </div>
         </Link>
         <p className="text-normalText font-tmoney text-[1rem] font-normal">
           당신을 위한 종합중고거래가구쇼핑플랫폼!
