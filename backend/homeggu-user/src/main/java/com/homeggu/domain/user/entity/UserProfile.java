@@ -29,6 +29,9 @@ public class UserProfile extends UpdateTimeEntity {
     private String addressDetail;
 
     @Column
+    private String addressNickname;
+
+    @Column
     private String userImagePath;
 
     @Column
@@ -40,4 +43,28 @@ public class UserProfile extends UpdateTimeEntity {
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id", referencedColumnName = "userId")
     private User user;
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateAddress(String address) {
+        this.address = address;
+    }
+
+    public void updateAddressDetail(String addressDetail) {
+        this.addressDetail = addressDetail;
+    }
+
+    public void updateAddressNickname(String addressNickname) {
+        this.addressNickname = addressNickname;
+    }
+
+    public void updateUserImagePath(String userImagePath) {
+        this.userImagePath = userImagePath;
+    }
+
+    public void updatePhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 }
