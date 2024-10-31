@@ -30,7 +30,7 @@ export default function Dashboard() {
       <Profile user={user} />
 
       {/* 내 상품 섹션 */}
-      <div className="mt-8">q
+      <div className="mt-8">
         <h2
           style={{
             color: "var(--normalText, #2F3438)",
