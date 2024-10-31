@@ -27,14 +27,16 @@ export default function Header() {
     try {
       const userInfoStr = localStorage.getItem('userInfo');
       if (userInfoStr) {
-        const userInfo = JSON.parse(userInfoStr);
+        const userInfo = userInfoStr;
+        console.log(userInfo);
   
         await axios.post(
-          'http://localhost:8080/oauth/kakao/logout',
-          { accessToken: userInfo},
+          'http://localhost:8084/oauth/kakao/logout',
+          { "accessToken": userInfo},
           {
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${userInfo}`
             },
             withCredentials: true,
           }
@@ -49,6 +51,8 @@ export default function Header() {
       console.error('로그아웃 처리 중 에러:', error);
     }
   };
+
+
   const handleMyPageClick = (e) => {
     e.preventDefault();
     if (localStorage.getItem('userInfo')) {
