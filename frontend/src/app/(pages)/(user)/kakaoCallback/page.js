@@ -29,20 +29,13 @@ export default function KakaoCallback() {
 
         const response = await axios.post(
           'http://localhost:8084/oauth/kakao/login',
-          { code },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            withCredentials: true,
-          }
+          { "code": code },
         );
 
-        console.log('서버 응답:', response);
+        console.log('서버 응답:', response.data);
         
         if (response.data) {
-          localStorage.setItem('userInfo', JSON.stringify(response.data));
+          localStorage.setItem('userInfo', response.data);
           router.push('/');
         }
       } catch (error) {
