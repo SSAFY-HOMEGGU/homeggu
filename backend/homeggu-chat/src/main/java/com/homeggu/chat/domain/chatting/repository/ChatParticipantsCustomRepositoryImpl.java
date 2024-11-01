@@ -28,7 +28,6 @@ public class ChatParticipantsCustomRepositoryImpl implements ChatParticipantsCus
                                 .where(chatParticipants.userId.eq(userId))
                 ).and(chatParticipants.userId.ne(userId)))
                 .fetch();
-//        return null;
     }
 
 }

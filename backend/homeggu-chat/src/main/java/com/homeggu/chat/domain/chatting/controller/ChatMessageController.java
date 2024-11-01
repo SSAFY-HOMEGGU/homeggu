@@ -15,6 +15,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -33,8 +34,8 @@ public class ChatMessageController {
     private final ChatMessageService chatMessageService;
 
     @GetMapping("chat/room/{chatRoomId}")
-    public ResponseEntity<?> getMessage(@PathVariable Long chatRoomId) {
-        List<ChatMessageResponse> messages = chatMessageService.getMessages(chatRoomId);
+    public ResponseEntity<?> getMessage(@PathVariable Long chatRoomId, @RequestParam(required = false) Integer recent) {
+        List<ChatMessageResponse> messages = chatMessageService.getMessages(chatRoomId, recent);
         return ResponseEntity.status(OK).body(messages);
     }
 
