@@ -1,12 +1,15 @@
 package com.homeggu.chat.domain.chatting.service;
 
 import com.homeggu.chat.domain.chatting.dto.request.ChatParticipantsRequest;
+import com.homeggu.chat.domain.chatting.dto.response.ChatRoomResponse;
 import com.homeggu.chat.domain.chatting.entity.ChatParticipants;
 import com.homeggu.chat.domain.chatting.entity.ChatRoom;
 import com.homeggu.chat.domain.chatting.repository.ChatParticipantsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Transactional
 @Service
@@ -29,6 +32,11 @@ public class ChatParticipantsServiceImpl implements ChatParticipantsService {
 
         chatParticipantsRepository.save(sellerChatInfo);
         chatParticipantsRepository.save(buyerChatInfo);
+    }
+
+    @Override
+    public List<ChatRoomResponse> getChatParticipants(Long userId) {
+        return chatParticipantsRepository.getChatParticipants(userId);
     }
 
 }
