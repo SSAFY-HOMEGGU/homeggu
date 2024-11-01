@@ -11,6 +11,5 @@ import java.util.Optional;
 
 public interface AccountRepository extends JpaRepository<Account, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT a FROM Account a WHERE a.userId = :userId")
-    Optional<Account> findByUserIdWithLock(@Param("userId") Long userId);
+    Optional<Account> findByUserId(Long userId);
 }

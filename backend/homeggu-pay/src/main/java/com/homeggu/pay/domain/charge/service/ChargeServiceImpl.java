@@ -23,8 +23,8 @@ public class ChargeServiceImpl implements ChargeService {
 
     @Override
     public void createCharge(Long userId, ChargeRequest chargeRequest) {
-        Account account = accountRepository.findByUserIdWithLock(userId).orElseThrow();
-        HgMoney hgMoney = hgMoneyRepository.findByUserIdWithLock(userId).orElseThrow();
+        Account account = accountRepository.findByUserId(userId).orElseThrow();
+        HgMoney hgMoney = hgMoneyRepository.findByUserId(userId).orElseThrow();
 
         // 계좌 잔액 부족시 예외 처리
         Long chargeAmount = chargeRequest.getChargeAmount();

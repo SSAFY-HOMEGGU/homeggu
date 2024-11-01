@@ -11,6 +11,5 @@ import java.util.Optional;
 
 public interface HgMoneyRepository extends JpaRepository<HgMoney, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT h FROM HgMoney h WHERE h.userId = :userId")
-    Optional<HgMoney> findByUserIdWithLock(@Param("userId") Long userId);
+    Optional<HgMoney> findByUserId(Long userId);
 }
