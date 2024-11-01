@@ -1,7 +1,8 @@
 "use client";
+import { fetchLogin } from '@/app/api/userApi';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 export default function KakaoCallback() {
   const router = useRouter();
@@ -20,31 +21,31 @@ export default function KakaoCallback() {
 
         // axios 요청 전 설정 로그
         console.log('요청 전송 준비:', {
-          url: 'http://localhost:8084/oauth/kakao/login',
+          url: {fetchLogin},
           data: { code },
-          headers: {
-            'Content-Type': 'application/json'
-          }
         });
 
-        const response = await axios.post(
-          'http://localhost:8084/oauth/kakao/login',
-          { "code": code },
-        );
+        const response = await fetchLogin(code);
+        console.log('서버 응답:', response);
 
-        console.log('서버 응답:', response.data);
-        
-        if (response.data) {
-          localStorage.setItem('userInfo', response.data);
+        if (response) {
+          localStorage.setItem('accessToken', response);
+          try {
+          
+            const decodedToken = jwtDecode(response);
+            const userId = decodedToken.userId; // 또는 decodedToken.sub 등 토큰에 담긴 키값
+            
+            console.log('userId:', userId);
+            localStorage.setItem('userId', userId);
+          } catch (error) {
+            console.error('토큰 디코딩 에러:', error);
+          }
+
           router.push('/');
+
         }
       } catch (error) {
-        console.error('상세 에러 정보:', {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-          headers: error.response?.headers
-        });
+        console.error('상세 에러 정보:', {error});
         router.push('/login');
       }
     };

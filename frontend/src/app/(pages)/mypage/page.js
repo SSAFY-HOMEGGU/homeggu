@@ -25,7 +25,7 @@ export default function Dashboard() {
   const totalItems = 15; // 총 상품 개수
 
   return (
-    <div>
+    <>
       {/* 프로필 섹션을 컴포넌트로 사용 */}
       <Profile user={user} />
 
@@ -43,7 +43,8 @@ export default function Dashboard() {
           내 상품
         </h2>
         {/* 탭 섹션 */}
-        <div className="flex mt-4 relative mb-6" style={{ width: "65rem" }}>
+        {/* <div className="flex mt-4 relative mb-6" style={{ width: "65rem" }}> */}
+        <div className="flex mt-4 relative mb-6 w-full">
           {["전체", "예약중", "판매완료"].map((tab) => (
             <button
               key={tab}
@@ -157,7 +158,8 @@ export default function Dashboard() {
       </div>
 
       {/* 최근 본 상품 섹션 */}
-      <div className="flex mt-4 relative" style={{ width: "65rem" }}>
+      {/* <div className="flex mt-4 relative" style={{ width: "65rem" }}> */}
+      <div className="flex mt-4 relative w-full">
         <span
           style={{
             color: "var(--normalText, #2F3438)",
@@ -200,6 +202,6 @@ export default function Dashboard() {
       <div className="h-[280px] bg-gray-100 my-4">
         {/* 상품 컴포넌트가 들어갈 자리입니다 */}
       </div>
-    </div>
+    </>
   );
 }

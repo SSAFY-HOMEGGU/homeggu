@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import useProductStore from '@/app/store/productStore';
 import ImageSwiper from "@/app/components/ImageSwiper";
 import MapComponent from './MapComponent';
@@ -14,6 +14,17 @@ import MapModal from './MapModal';
 export default function ProductInfo() {
   const { selectedProduct } = useProductStore(); // Zustand에서 선택된 상품 정보 가져오기
   const [showMap, setShowMap] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // 클라이언트 환경에서만 실행
+      const userId = localStorage.getItem('userId');
+      console.log('userId',userId)
+      setUserId(userId);
+    }
+  }, []);
+
   if (!selectedProduct) {
     return <div>Loading...</div>;
   }
@@ -110,7 +121,7 @@ export default function ProductInfo() {
             </div>
             {/* 구매자일 경우 */}
             <div className='mt-4'>
-            {selectedProduct.seller ? (
+            {selectedProduct.sellerId ===  userId ? (
               <SellerActions product={selectedProduct} />
             ) : (
               <BuyerActions product={selectedProduct} />

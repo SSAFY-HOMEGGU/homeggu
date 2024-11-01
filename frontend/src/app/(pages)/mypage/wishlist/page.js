@@ -20,7 +20,7 @@ export default function WishlistPage() {
       <Profile user={user} />
 
       {/* 찜한 상품 섹션 */}
-      <div className="mt-8">
+      <div className="mt-8 w-full">
         <h2
           style={{
             color: "var(--normalText, #2F3438)",
@@ -34,7 +34,7 @@ export default function WishlistPage() {
         </h2>
 
         {/* 회색 밑줄 */}
-        <div className="flex mt-4 relative" style={{ width: "65rem" }}>
+        <div className="flex mt-4 relative">
           <div
             style={{
               position: "absolute",
