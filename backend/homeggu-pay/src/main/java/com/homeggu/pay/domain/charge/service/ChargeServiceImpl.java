@@ -23,11 +23,17 @@ public class ChargeServiceImpl implements ChargeService {
 
     @Override
     public void createCharge(Long userId, ChargeRequest chargeRequest) {
+
+        // 잘못된 입력값 예외 처리
+        Long chargeAmount = chargeRequest.getChargeAmount();
+        if (chargeAmount <= 0) {
+            throw new IllegalArgumentException("Charge amount must be positive.");
+        }
+
         Account account = accountRepository.findByUserId(userId).orElseThrow();
         HgMoney hgMoney = hgMoneyRepository.findByUserId(userId).orElseThrow();
 
         // 계좌 잔액 부족시 예외 처리
-        Long chargeAmount = chargeRequest.getChargeAmount();
         if (account.getAccountBalance() < chargeAmount) {
             throw new AccountBalanceException();
         }
