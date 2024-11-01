@@ -7,6 +7,9 @@ import com.homeggu.chat.domain.chatting.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,10 +24,13 @@ public class ChatMessageService {
 
     private final ChatMessageRepository chatMessageRepository;
 
-    public List<ChatMessageResponse> getMessages(Long chatRoomId) {
-        return chatMessageRepository.findByChatRoomId(chatRoomId);
+    public List<ChatMessageResponse> getMessages(Long chatRoomId, Integer recent) {
+        if (recent == null || recent == 0) {
+            return chatMessageRepository.findByChatRoomId(chatRoomId);
+        }
+        Pageable pageable = PageRequest.of(0, recent, Sort.by("createAt").descending());
+        return chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
     }
-
 
     @RabbitListener(queues = CHAT_QUEUE_NAME)
     public void receive(ChatMessageRequest chatMessageRequest) {
