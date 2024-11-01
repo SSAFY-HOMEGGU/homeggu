@@ -8,7 +8,7 @@ export default function bed() {
       price: "50,000원",
       date: "2024-10-01",
       imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: true
+      sellerId: 1
     },
     {
       id: 2,
@@ -16,7 +16,7 @@ export default function bed() {
       price: "30,000원",
       date: "2024-10-02",
       imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: false
+      sellerId: 2
     },
     {
       id: 3,
@@ -24,7 +24,7 @@ export default function bed() {
       price: "50,000원",
       date: "2024-10-01",
       imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: true
+      seller: 1
     },
     {
       id: 4,
@@ -32,7 +32,7 @@ export default function bed() {
       price: "30,000원",
       date: "2024-10-02",
       imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: true
+      seller: 2
     },
   ];
 

@@ -2,9 +2,9 @@ import Link from "next/link";
 
 export default function SideMenu() {
   return (
-    <aside className="mt-6">
+    <aside className="">
       {/* a버전: 마이 페이지 */}
-      <h1 className="text-black font-noto text-[1.5rem] font-bold mb-6">
+      <h1 className="text-black font-noto text-[1.3rem] font-bold mb-6">
         마이 페이지
       </h1>
 
@@ -42,7 +42,7 @@ export default function SideMenu() {
       </ul>
 
       {/* 밑줄 */}
-      <hr className="my-6 border-t border-gray-300 w-4/5" />
+      <hr className="my-6 border-t border-gray-300 w-full" />
 
       {/* b버전: 내 정보 */}
       <h2 className="text-normalText font-noto text-[1.25rem] font-bold mb-3">

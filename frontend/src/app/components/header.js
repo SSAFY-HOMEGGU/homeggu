@@ -1,5 +1,6 @@
 "use client";
 
+import { fetchLogout } from '../api/userApi';
 import Image from 'next/image';
 import { IoIosSearch } from "react-icons/io";
 import { useRouter } from 'next/navigation';
@@ -17,32 +18,18 @@ export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem('userInfo');
-  //   setLoginStatus(false); // Zustand 상태에서 로그아웃 처리
-  //   setIsDropdownOpen(false);
-  //   router.push("/"); // 로그아웃 후 홈으로 이동
-  // };
   const handleLogout = async () => {
     try {
-      const userInfoStr = localStorage.getItem('userInfo');
-      if (userInfoStr) {
-        const userInfo = userInfoStr;
-        console.log(userInfo);
+      const accessTokenStr = localStorage.getItem('accessToken');
+      if (accessTokenStr) {
+        const accessToken = accessTokenStr;
+        console.log(accessToken);
   
-        await axios.post(
-          'http://localhost:8084/oauth/kakao/logout',
-          { "accessToken": userInfo},
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${userInfo}`
-            },
-            withCredentials: true,
-          }
-        );
+        const response = await fetchLogout(accessToken);
+        console.log('서버 응답:', response);
   
-        localStorage.removeItem('userInfo');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('userId');
         setLoginStatus(false);
         setIsDropdownOpen(false);
         router.push("/");
@@ -55,7 +42,7 @@ export default function Header() {
 
   const handleMyPageClick = (e) => {
     e.preventDefault();
-    if (localStorage.getItem('userInfo')) {
+    if (localStorage.getItem('accessToken')) {
       // 로그인 상태일 때만 드롭다운 메뉴 열기
       setIsDropdownOpen(!isDropdownOpen);
     } else {
@@ -130,7 +117,7 @@ export default function Header() {
           </button>
 
           {/* 드롭다운 메뉴 */}
-          {isDropdownOpen && localStorage.getItem('userInfo') && (
+          {isDropdownOpen && localStorage.getItem('accessToken') && (
             <div className="absolute left-1/2 transform -translate-x-1/2 top-[2rem] mt-1 w-[6rem] bg-white border border-gray-300 rounded shadow-lg z-50">
               <Link href="/mypage" className="block px-4 py-2 text-[0.8rem] hover:bg-gray-200">마이페이지</Link>
               <button 

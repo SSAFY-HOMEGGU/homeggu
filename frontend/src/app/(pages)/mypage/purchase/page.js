@@ -20,7 +20,7 @@ export default function PurchasePage() {
       <Profile user={user} />
 
       {/* 구매내역 타이틀 */}
-      <div className="mt-8">
+      <div className="mt-8 w-full">
         <h2
           style={{
             color: "var(--normalText, #2F3438)",
@@ -34,7 +34,8 @@ export default function PurchasePage() {
         </h2>
 
         {/* 회색 밑줄 */}
-        <div className="flex mt-4 relative" style={{ width: "65rem" }}>
+        {/* <div className="flex mt-4 relative" style={{ width: "65rem" }}> */}
+        <div className="flex mt-4 relative">
           <div
             style={{
               position: "absolute",

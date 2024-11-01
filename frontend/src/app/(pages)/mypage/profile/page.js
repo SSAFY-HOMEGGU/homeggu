@@ -94,7 +94,7 @@ export default function ProfilePage() {
     <div>
       {/* 내 정보 수정 타이틀 */}
       <h1 className="text-2xl font-bold">내 정보 수정</h1>
-      <div className="flex mt-4 relative" style={{ width: "65rem" }}>
+      <div className="flex mt-4 relative w-full">
         <div
           style={{
             position: "absolute",

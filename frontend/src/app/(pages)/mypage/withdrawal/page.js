@@ -16,7 +16,7 @@ export default function WithdrawalPage() {
     <div>
       {/* 탈퇴하기 타이틀 */}
       <h1 className="text-2xl font-bold">탈퇴하기</h1>
-      <div className="flex mt-4 relative" style={{ width: "65rem" }}>
+      <div className="flex mt-4 relative w-full">
         <div
           style={{
             position: "absolute",
