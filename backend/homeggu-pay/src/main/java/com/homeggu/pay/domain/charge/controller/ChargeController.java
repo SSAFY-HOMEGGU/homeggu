@@ -24,8 +24,8 @@ public class ChargeController {
     @Operation(summary = "머니 충전", description = "계좌의 현금을 홈꾸머니로 변환합니다.")
     public ResponseEntity<Void> createCharge(/*@AuthPrincipal @Parameter(hidden = true) Long userId,*/
                                             @RequestBody ChargeRequest chargeRequest) {
-        Long userId = (long) 11; // 테스트를 위해 임의로 설정 -> MSA 설정 이후 수정하기
+        Long userId = 1L; // 테스트를 위해 임의로 설정 -> MSA 설정 이후 수정하기
         chargeService.createCharge(userId, chargeRequest);
-        return ResponseEntity.status(OK).build();
+        return ResponseEntity.status(CREATED).build();
     }
 }

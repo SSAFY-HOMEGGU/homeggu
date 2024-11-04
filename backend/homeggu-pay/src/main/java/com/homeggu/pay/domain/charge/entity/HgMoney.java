@@ -16,11 +16,18 @@ public class HgMoney { // 홈꾸머니
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long hgMoneyId;
 
-    private Long userId; // MSA 설정 후, "User" 객체를 속성으로 가지도록 수정 필요
+    private Long userId;
+//    @OneToOne
+//    @JoinColumn(name = "user_id")
+//    private User user;
 
     private Long hgMoneyBalance;
     
     public void increaseBalance(Long chargeAmount) {
-        this.hgMoneyBalance += chargeAmount; // 충전시 머니 잔액 증가
+        this.hgMoneyBalance += chargeAmount;
+    }
+
+    public void decreaseBalance(Long chargeAmount) {
+        this.hgMoneyBalance -= chargeAmount;
     }
 }

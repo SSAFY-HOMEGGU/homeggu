@@ -1,9 +1,6 @@
 package com.homeggu.pay.domain.charge.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +13,10 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long accountId;
 
-    private Long userId; // MSA 설정 후, "User" 객체를 속성으로 가지도록 수정 필요
+    private Long userId;
+//    @OneToOne
+//    @JoinColumn(name = "user_id")
+//    private User user;
 
     private String accountNumber;
 
