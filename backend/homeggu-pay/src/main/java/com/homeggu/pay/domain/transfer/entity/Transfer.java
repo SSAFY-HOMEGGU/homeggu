@@ -44,6 +44,10 @@ public class Transfer {
         this.createAt = LocalDateTime.now();
     }
 
+    public void confirmSafePay(Long receiverBalance) {
+        this.receiverBalance = receiverBalance;
+    }
+
     @Builder
     public Transfer(Long salesBoardId, Long senderId, Long receiverId, Long transferAmount, Long senderBalance, Long receiverBalance) {
         this.salesBoardId = salesBoardId;

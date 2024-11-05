@@ -2,6 +2,7 @@ package com.homeggu.pay.domain.transfer.service;
 
 import com.homeggu.pay.domain.charge.entity.HgMoney;
 import com.homeggu.pay.domain.charge.repository.HgMoneyRepository;
+import com.homeggu.pay.domain.transfer.dto.request.ConfirmRequest;
 import com.homeggu.pay.domain.transfer.dto.request.TransferRequest;
 import com.homeggu.pay.domain.transfer.entity.SafeTransfer;
 import com.homeggu.pay.domain.transfer.entity.Transfer;
@@ -82,6 +83,22 @@ public class TransferServiceImpl implements TransferService {
 
         transferRepository.save(transfer);
         safeTransferRepository.save(safeTransfer);
+    }
+
+    @Override
+    public void confirmSafePay(ConfirmRequest confirmRequest) {
+        Long transferId = confirmRequest.getTransferId();
+
+        Transfer transfer = transferRepository.findById(transferId).orElseThrow();
+        SafeTransfer safeTransfer = safeTransferRepository.findById(transferId).orElseThrow();
+
+        // 송금 내역에서 receiver_balance 업데이트
+        HgMoney receiverHgMoney = hgMoneyRepository.findByUserId(transfer.getReceiverId()).orElseThrow();
+        receiverHgMoney.increaseBalance(transfer.getTransferAmount());
+        transfer.confirmSafePay(receiverHgMoney.getHgMoneyBalance());
+
+        // 안전송금 내역 업데이트
+        safeTransfer.confirm();
     }
 
 }
