@@ -1,14 +1,12 @@
 package com.homeggu.pay.domain.transfer.controller;
 
+import com.homeggu.pay.domain.transfer.dto.request.ConfirmRequest;
 import com.homeggu.pay.domain.transfer.dto.request.TransferRequest;
 import com.homeggu.pay.domain.transfer.service.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -25,8 +23,6 @@ public class TransferController {
                                                 @RequestBody TransferRequest transferRequest) {
         Long senderId = 1L; // 테스트를 위해 임의로 설정 -> MSA 설정 이후 수정하기
 
-        System.out.println(transferRequest.isSafePay());
-
         if (!transferRequest.isSafePay()) {
             transferService.createNormalTransfer(senderId, transferRequest);
         } else {
@@ -34,5 +30,12 @@ public class TransferController {
         }
 
         return ResponseEntity.status(CREATED).build();
+    }
+
+    @PatchMapping("/confirm")
+    @Operation(summary = "안전송금 확정", description = "안전송금 상태를 미확정에서 확정으로 변경합니다.")
+    public ResponseEntity<Void> confirmSafePay(@RequestBody ConfirmRequest confirmRequest) {
+        transferService.confirmSafePay(confirmRequest);
+        return ResponseEntity.status(NO_CONTENT).build();
     }
 }
