@@ -1,5 +1,6 @@
 package com.homeggu.pay.domain.transfer.controller;
 
+import com.homeggu.pay.domain.transfer.dto.request.CancelRequest;
 import com.homeggu.pay.domain.transfer.dto.request.ConfirmRequest;
 import com.homeggu.pay.domain.transfer.dto.request.TransferRequest;
 import com.homeggu.pay.domain.transfer.service.TransferService;
@@ -33,9 +34,17 @@ public class TransferController {
     }
 
     @PatchMapping("/confirm")
-    @Operation(summary = "안전송금 확정", description = "안전송금 상태를 미확정에서 확정으로 변경합니다.")
+    @Operation(summary = "안전송금 확정", description = "안전송금 상태를 '미확정'에서 '확정'으로 변경합니다.")
     public ResponseEntity<Void> confirmSafePay(@RequestBody ConfirmRequest confirmRequest) {
         transferService.confirmSafePay(confirmRequest);
         return ResponseEntity.status(NO_CONTENT).build();
     }
+
+    @PatchMapping("/cancel")
+    @Operation(summary = "안전송금 취소", description = "안전송금 상태를 '미확정'에서 '취소'로 변경합니다.")
+    public ResponseEntity<Void> cancelSafePay(@RequestBody CancelRequest cancelRequest) {
+        transferService.cancelSafePay(cancelRequest);
+        return ResponseEntity.status(NO_CONTENT).build();
+    }
+
 }

@@ -2,9 +2,11 @@ package com.homeggu.pay.domain.transfer.service;
 
 import com.homeggu.pay.domain.charge.entity.HgMoney;
 import com.homeggu.pay.domain.charge.repository.HgMoneyRepository;
+import com.homeggu.pay.domain.transfer.dto.request.CancelRequest;
 import com.homeggu.pay.domain.transfer.dto.request.ConfirmRequest;
 import com.homeggu.pay.domain.transfer.dto.request.TransferRequest;
 import com.homeggu.pay.domain.transfer.entity.SafeTransfer;
+import com.homeggu.pay.domain.transfer.entity.StateCategory;
 import com.homeggu.pay.domain.transfer.entity.Transfer;
 import com.homeggu.pay.domain.transfer.repository.SafeTransferRepository;
 import com.homeggu.pay.domain.transfer.repository.TransferRepository;
@@ -92,13 +94,32 @@ public class TransferServiceImpl implements TransferService {
         Transfer transfer = transferRepository.findById(transferId).orElseThrow();
         SafeTransfer safeTransfer = safeTransferRepository.findById(transferId).orElseThrow();
 
+        // 안전송금 내역 업데이트
+        if (safeTransfer.getStateCategory().equals(StateCategory.PENDING)) {
+            safeTransfer.confirm();
+        }
+
         // 송금 내역에서 receiver_balance 업데이트
         HgMoney receiverHgMoney = hgMoneyRepository.findByUserId(transfer.getReceiverId()).orElseThrow();
         receiverHgMoney.increaseBalance(transfer.getTransferAmount());
         transfer.confirmSafePay(receiverHgMoney.getHgMoneyBalance());
+    }
+
+    @Override
+    public void cancelSafePay(CancelRequest cancelRequest) {
+        Long transferId = cancelRequest.getTransferId();
+
+        Transfer transfer = transferRepository.findById(transferId).orElseThrow();
+        SafeTransfer safeTransfer = safeTransferRepository.findById(transferId).orElseThrow();
 
         // 안전송금 내역 업데이트
-        safeTransfer.confirm();
+        if (safeTransfer.getStateCategory().equals(StateCategory.PENDING)) {
+            safeTransfer.cancel();
+        }
+
+        // 송금자 머니 원상복구
+        HgMoney senderHgMoney = hgMoneyRepository.findByUserId(transfer.getSenderId()).orElseThrow();
+        senderHgMoney.increaseBalance(transfer.getTransferAmount());
     }
 
 }
