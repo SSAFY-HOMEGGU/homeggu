@@ -23,13 +23,7 @@ public class TransferController {
     public ResponseEntity<Void> createTransfer(/*@AuthPrincipal @Parameter(hidden = true) Long senderId,*/
                                                 @RequestBody TransferRequest transferRequest) {
         Long senderId = 1L; // 테스트를 위해 임의로 설정 -> MSA 설정 이후 수정하기
-
-        if (!transferRequest.isSafePay()) {
-            transferService.createNormalTransfer(senderId, transferRequest);
-        } else {
-            transferService.createSafeTransfer(senderId, transferRequest);
-        }
-
+        transferService.createTransfer(senderId, transferRequest);
         return ResponseEntity.status(CREATED).build();
     }
 

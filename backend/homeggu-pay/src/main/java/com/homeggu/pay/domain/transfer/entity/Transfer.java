@@ -39,22 +39,34 @@ public class Transfer {
 
     private LocalDateTime createAt; // 송금일시
 
+    @Enumerated(EnumType.STRING)
+    private StateCategory stateCategory; // 안전송금 확정여부 상태
+
+    private LocalDateTime confirmAt; // 확정일시
+
     @PrePersist
     public void prePersist() {
         this.createAt = LocalDateTime.now();
     }
 
-    public void confirmSafePay(Long receiverBalance) {
+    public void confirm(Long receiverBalance) {
         this.receiverBalance = receiverBalance;
+        this.stateCategory = StateCategory.CONFIRMED;
+        this.confirmAt = LocalDateTime.now();
+    }
+
+    public void cancel() {
+        this.stateCategory = StateCategory.CANCELLED;
     }
 
     @Builder
-    public Transfer(Long salesBoardId, Long senderId, Long receiverId, Long transferAmount, Long senderBalance, Long receiverBalance) {
+    public Transfer(Long salesBoardId, Long senderId, Long receiverId, Long transferAmount, Long senderBalance, Long receiverBalance, StateCategory stateCategory) {
         this.salesBoardId = salesBoardId;
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.transferAmount = transferAmount;
         this.senderBalance = senderBalance;
         this.receiverBalance = receiverBalance;
+        this.stateCategory = stateCategory;
     }
 }

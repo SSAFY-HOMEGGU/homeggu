@@ -5,10 +5,8 @@ import com.homeggu.pay.domain.charge.repository.HgMoneyRepository;
 import com.homeggu.pay.domain.transfer.dto.request.CancelRequest;
 import com.homeggu.pay.domain.transfer.dto.request.ConfirmRequest;
 import com.homeggu.pay.domain.transfer.dto.request.TransferRequest;
-import com.homeggu.pay.domain.transfer.entity.SafeTransfer;
 import com.homeggu.pay.domain.transfer.entity.StateCategory;
 import com.homeggu.pay.domain.transfer.entity.Transfer;
-import com.homeggu.pay.domain.transfer.repository.SafeTransferRepository;
 import com.homeggu.pay.domain.transfer.repository.TransferRepository;
 import com.homeggu.pay.global.exception.custom.HgMoneyBalanceException;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransferServiceImpl implements TransferService {
 
     private final TransferRepository transferRepository;
-    private final SafeTransferRepository safeTransferRepository;
     private final HgMoneyRepository hgMoneyRepository;
 
     private void validateTransfer(Long transferAmount, HgMoney senderHgMoney) {
@@ -37,7 +34,7 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    public void createNormalTransfer(Long senderId, TransferRequest transferRequest) {
+    public void createTransfer(Long senderId, TransferRequest transferRequest) {
         Long transferAmount = transferRequest.getTransferAmount();
         HgMoney senderHgMoney = hgMoneyRepository.findByUserId(senderId).orElseThrow();
         HgMoney receiverHgMoney = hgMoneyRepository.findByUserId(transferRequest.getReceiverId()).orElseThrow();
@@ -45,7 +42,10 @@ public class TransferServiceImpl implements TransferService {
         validateTransfer(transferAmount, senderHgMoney);
 
         senderHgMoney.decreaseBalance(transferAmount); // 송금자 잔액 감소
-        receiverHgMoney.increaseBalance(transferAmount); // 수취자 잔액 증가
+
+        if (!transferRequest.isSafePay()) { // 안전송금이 아닌 경우만, 즉시 수취자 잔액 증가
+            receiverHgMoney.increaseBalance(transferAmount);
+        }
 
         // 송금 내역 생성
         Transfer transfer = Transfer.builder()
@@ -54,72 +54,39 @@ public class TransferServiceImpl implements TransferService {
                 .receiverId(transferRequest.getReceiverId())
                 .transferAmount(transferAmount)
                 .senderBalance(senderHgMoney.getHgMoneyBalance())
-                .receiverBalance(receiverHgMoney.getHgMoneyBalance())
+                .receiverBalance(transferRequest.isSafePay() ? null : receiverHgMoney.getHgMoneyBalance()) // 안전송금의 경우 확정 후 업데이트
+                .stateCategory(transferRequest.isSafePay() ? StateCategory.PENDING : null)
                 .build();
 
         transferRepository.save(transfer);
-    }
-
-    @Override
-    public void createSafeTransfer(Long senderId, TransferRequest transferRequest) {
-        Long transferAmount = transferRequest.getTransferAmount();
-        HgMoney senderHgMoney = hgMoneyRepository.findByUserId(senderId).orElseThrow();
-
-        validateTransfer(transferAmount, senderHgMoney);
-
-        senderHgMoney.decreaseBalance(transferAmount); // 송금자 잔액 감소
-
-        // 송금 내역 생성
-        Transfer transfer = Transfer.builder()
-                .salesBoardId(transferRequest.getSalesBoardId())
-                .senderId(senderId)
-                .receiverId(transferRequest.getReceiverId())
-                .transferAmount(transferAmount)
-                .senderBalance(senderHgMoney.getHgMoneyBalance())
-                .build(); // receiverBalance는 '안전송금 확인' 이후 업데이트
-
-        // 안전송금 내역 생성
-        SafeTransfer safeTransfer = SafeTransfer.builder()
-                .transfer(transfer)
-                .build();
-
-        transferRepository.save(transfer);
-        safeTransferRepository.save(safeTransfer);
     }
 
     @Override
     public void confirmSafePay(ConfirmRequest confirmRequest) {
-        Long transferId = confirmRequest.getTransferId();
+        Transfer transfer = transferRepository.findById(confirmRequest.getTransferId()).orElseThrow();
+        HgMoney receiverHgMoney = hgMoneyRepository.findByUserId(transfer.getReceiverId()).orElseThrow();
 
-        Transfer transfer = transferRepository.findById(transferId).orElseThrow();
-        SafeTransfer safeTransfer = safeTransferRepository.findById(transferId).orElseThrow();
-
-        // 안전송금 내역 업데이트
-        if (safeTransfer.getStateCategory().equals(StateCategory.PENDING)) {
-            safeTransfer.confirm();
+        if (!transfer.getStateCategory().equals(StateCategory.PENDING)) {
+            throw new IllegalStateException("Transfer is not in a pending state and cannot be confirmed.");
         }
 
-        // 송금 내역에서 receiver_balance 업데이트
-        HgMoney receiverHgMoney = hgMoneyRepository.findByUserId(transfer.getReceiverId()).orElseThrow();
-        receiverHgMoney.increaseBalance(transfer.getTransferAmount());
-        transfer.confirmSafePay(receiverHgMoney.getHgMoneyBalance());
+        receiverHgMoney.increaseBalance(transfer.getTransferAmount()); // 수취자 홈꾸머니 잔액 증가
+        transfer.confirm(receiverHgMoney.getHgMoneyBalance()); // 안전송금 확정
     }
 
     @Override
     public void cancelSafePay(CancelRequest cancelRequest) {
-        Long transferId = cancelRequest.getTransferId();
+        Transfer transfer = transferRepository.findById(cancelRequest.getTransferId()).orElseThrow();
+        HgMoney senderHgMoney = hgMoneyRepository.findByUserId(transfer.getSenderId()).orElseThrow();
 
-        Transfer transfer = transferRepository.findById(transferId).orElseThrow();
-        SafeTransfer safeTransfer = safeTransferRepository.findById(transferId).orElseThrow();
+        System.out.println(transfer.getStateCategory());
 
-        // 안전송금 내역 업데이트
-        if (safeTransfer.getStateCategory().equals(StateCategory.PENDING)) {
-            safeTransfer.cancel();
+        if (!transfer.getStateCategory().equals(StateCategory.PENDING)) {
+            throw new IllegalStateException("Transfer is not in a pending state and cannot be cancelled.");
         }
 
-        // 송금자 머니 원상복구
-        HgMoney senderHgMoney = hgMoneyRepository.findByUserId(transfer.getSenderId()).orElseThrow();
-        senderHgMoney.increaseBalance(transfer.getTransferAmount());
+        senderHgMoney.increaseBalance(transfer.getTransferAmount()); // 송금자 홈꾸머니 잔액 원상복구
+        transfer.cancel(); // 안전송금 취소
     }
 
 }
