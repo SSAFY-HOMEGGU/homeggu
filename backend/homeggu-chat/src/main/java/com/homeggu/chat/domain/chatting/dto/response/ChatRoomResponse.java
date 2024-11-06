@@ -8,10 +8,12 @@ import lombok.Data;
 public class ChatRoomResponse {
     private Long userId;
     private Long chatRoomId;
+    private Long salesBoardId;
 
     @QueryProjection
-    public ChatRoomResponse(Long userId, Long chatRoomId) {
+    public ChatRoomResponse(Long userId, Long chatRoomId, Long salesBoardId) {
         this.userId = userId;
         this.chatRoomId = chatRoomId;
+        this.salesBoardId = salesBoardId;
     }
 }
