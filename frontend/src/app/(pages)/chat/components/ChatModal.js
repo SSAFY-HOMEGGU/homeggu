@@ -4,7 +4,7 @@ import React from 'react';
 import ChatContainer from './ChatContainer';
 import { IoIosClose } from "react-icons/io";
 
-export default function ChatModal({ isOpen, onClose, productId,chatRoomId }) {
+export default function ChatModal({ isOpen, onClose, productId,chatRoomId, userId }) {
   if (!isOpen) return null;
 
   return (
@@ -21,7 +21,7 @@ export default function ChatModal({ isOpen, onClose, productId,chatRoomId }) {
           
         </div>
       <div className="h-[400px]">
-        <ChatContainer chatRoomId={chatRoomId} />
+        <ChatContainer chatRoomId={chatRoomId} userId={userId} />
       </div>
       </div>
     </div>

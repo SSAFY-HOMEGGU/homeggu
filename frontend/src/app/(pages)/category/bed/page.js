@@ -1,41 +1,31 @@
+'use client'
+
+import { useEffect } from "react";
 import CategoryProducts from "../components/CategoryProducts";
+import useProductListStore from '@/app/store/useProductListStore';
 
-export default function bed() {
-  const products = [
-    {
-      id: 1,
-      name: "상품 이름 1",
-      price: "50,000원",
-      date: "2024-10-01",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      sellerId: 1
-    },
-    {
-      id: 2,
-      name: "상품 이름 2",
-      price: "30,000원",
-      date: "2024-10-02",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      sellerId: 2
-    },
-    {
-      id: 3,
-      name: "상품 이름 1",
-      price: "50,000원",
-      date: "2024-10-01",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: 1
-    },
-    {
-      id: 4,
-      name: "상품 이름 2",
-      price: "30,000원",
-      date: "2024-10-02",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: 2
-    },
-  ];
+export default function BedPage() {
+  const { products, fetchProducts } = useProductListStore();
 
-  return <CategoryProducts categoryName="침대" products={products} />;
+  useEffect(() => {
+    // 초기 데이터 로딩 시 필터 적용
+    fetchProducts({
+      category: 'bed',
+      min_price: 0,
+      max_price: Infinity,
+      isSell: 'N',
+      page: 0,
+      size: 10
+    });
+  },[fetchProducts]);
 
+  // bed 카테고리 상품만 필터링
+  const bedProducts = products.filter(product => product.category === 'bed');
+
+  return (
+    <CategoryProducts 
+      categoryName="침대" 
+      products={bedProducts}
+    />
+  );
 }

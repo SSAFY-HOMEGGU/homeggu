@@ -1,40 +1,20 @@
-import CategoryProducts from "./components/CategoryProducts"
+'use client'
 
-export default function category() {
-  const products = [
-    {
-      id: 1,
-      name: "상품 이름 1",
-      price: "50,000원",
-      date: "2024-10-01",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: true
-    },
-    {
-      id: 2,
-      name: "상품 이름 2",
-      price: "30,000원",
-      date: "2024-10-02",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: true
-    },
-    {
-      id: 3,
-      name: "상품 이름 1",
-      price: "50,000원",
-      date: "2024-10-01",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: true
-    },
-    {
-      id: 4,
-      name: "상품 이름 2",
-      price: "30,000원",
-      date: "2024-10-02",
-      imageUrl: ["/images/bed2.png","/images/bed3.png"],
-      seller: true
-    },
-  ];
+import { useEffect } from "react";
+import CategoryProducts from "./components/CategoryProducts";
+import useProductListStore from '@/app/store/useProductListStore';
 
-  return <CategoryProducts categoryName="전체" products={products} />;
+export default function CategoryPage() {
+  const { fetchProducts } = useProductListStore();
+
+  useEffect(() => {
+    // 전체 상품 목록 조회
+    fetchProducts({
+      page: 0,
+      size: 10
+      // 전체 카테고리이므로 category 필터는 적용하지 않음
+    });
+  },[fetchProducts]);
+
+  return <CategoryProducts categoryName="전체" />;
 }
