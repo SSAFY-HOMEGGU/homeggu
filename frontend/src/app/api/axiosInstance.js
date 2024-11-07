@@ -16,11 +16,22 @@ export const userInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true
 });
 
-// 3. 기본 API용 axios instance (8080 포트, 토큰 필요)
+// 3. 채팅 API용 axios instance (8080 포트, 토큰 필요)
 export const chatInstance = axios.create({
     baseURL: 'http://localhost:8083',
+    timeout: 5000,
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// 4. 상품 API용 axios instance (8082 포트, 토큰 필요)
+export const productInstance = axios.create({
+    baseURL: 'http://localhost:8082',
     timeout: 5000,
     withCredentials: true,
     headers: {
@@ -89,3 +100,5 @@ addTokenInterceptor(userInstance);
 addTokenInterceptor(chatInstance);
 addResponseInterceptor(userInstance);
 addResponseInterceptor(chatInstance);
+
+

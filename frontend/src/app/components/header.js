@@ -13,10 +13,20 @@ import axios from 'axios';
 
 export default function Header() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
   const currentPath = usePathname();
   const { user, setLoginStatus } = useUserStore();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+
 
   const handleLogout = async () => {
     try {
@@ -32,7 +42,12 @@ export default function Header() {
         localStorage.removeItem('userId');
         setLoginStatus(false);
         setIsDropdownOpen(false);
-        router.push("/");
+        setShowLogoutModal(true); 
+        // router.push("/");
+        setTimeout(() => {
+          setShowLogoutModal(false);
+          router.push("/");
+        }, 1000);
       }
     } catch (error) {
       console.error('로그아웃 처리 중 에러:', error);
@@ -51,6 +66,7 @@ export default function Header() {
   };
   
   return (
+    <>
     <header className="content-area h-[4rem] flex items-center justify-between bg-white">
       <div className="flex items-center space-x-4">
         <Link href='/'>
@@ -75,6 +91,8 @@ export default function Header() {
           <IoIosSearch className="text-gray-400 mr-2" />
           <input
             type="text"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearch}
             placeholder="중고 거래 상품 검색"
             className="flex-1 outline-none text-[0.65rem]  w-[11rem]"
           />
@@ -131,5 +149,21 @@ export default function Header() {
         </div>
       </div>
     </header>
+    {showLogoutModal && (
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="bg-white w-[30rem] h-[10rem] px-8 py-4 rounded-lg shadow-lg border border-gray-200 flex items-center justify-center gap-4">
+          <Image
+            src='/icons/alert.svg'
+            alt='경고'
+            width={30}
+            height={30}
+          />
+
+          <p className="text-center text-gray-800">로그아웃되었습니다.</p>
+        </div>
+      </div>
+    )}
+
+    </>
   );
 }

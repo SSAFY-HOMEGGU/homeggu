@@ -1,7 +1,19 @@
 import { chatInstance } from "./axiosInstance";
 
-// 채팅 내용 목록
-export const getChatList = (chatRoomId, recent) => {
+
+// 채팅 목록 내역
+export const getChatList = (userId) => {
+  return chatInstance.get(`/chat/${userId}`)
+  .then(response => response.data) 
+  .catch(error => {
+    console.error('상세 에러 정보:', error);
+    throw error;
+  });
+}
+
+
+// 채팅 History
+export const getChatHistory = (chatRoomId, recent) => {
   return chatInstance.get(`/chat/room/${chatRoomId}`, {
     params: {
       recent: recent

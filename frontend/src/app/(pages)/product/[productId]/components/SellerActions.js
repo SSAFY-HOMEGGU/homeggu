@@ -4,6 +4,7 @@ import React from 'react'
 import Dropdown from '@/app/components/Dropdown'
 
 function SellerActions() {
+  console.log('seller페이지')
   return (
     <div className='flex flex-row items-center'>
       <h1 className='mr-[1rem]'>상태 변경</h1>

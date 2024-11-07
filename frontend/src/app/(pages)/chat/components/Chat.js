@@ -1,92 +1,50 @@
-// // components/chat/Chat.js
-// 'use client'
-
-// import React, { useState } from 'react';
-// import { fetchChatSend } from '@/app/api/chatApi';
-
-// export default function Chat({ messages, sendMessage }) {
-//   const [newMessage, setNewMessage] = useState("");
-
-//   const handleSendMessage = (e) => {
-//     e.preventDefault();
-//     if (newMessage.trim()) {
-//       sendMessage(newMessage);
-//       setNewMessage("");
-//     }
-//   };
-
-//   return (
-//     <div className="flex flex-col h-full">
-//       <div className="flex-1 overflow-y-auto p-4">
-//         {messages.map((msg, index) => (
-//           <div key={index} className="mb-2">
-//             <strong>{msg.userId}: </strong>
-//             {msg.message}
-//           </div>
-//         ))}
-//       </div>
-//       <form onSubmit={handleSendMessage} className="border-t p-4">
-//         <div className="flex gap-2">
-//           <input
-//             type="text"
-//             value={newMessage}
-//             onChange={(e) => setNewMessage(e.target.value)}
-//             className="flex-1 border rounded-lg px-3 py-2"
-//             placeholder="메시지를 입력하세요..."
-//           />
-//           <button 
-//             type="submit"
-//             className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-//           >
-//             전송
-//           </button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// }
 'use client'
 
 import React from 'react';
+import { LuPlus } from "react-icons/lu";
+import { IoSend } from "react-icons/io5";
+import ChatMessage from './ChatMessage';
 
 export default function Chat({ 
   messages, 
   newMessage, 
   setNewMessage, 
   handleSendMessage,
-  connected = true  // 연결 상태 prop 추가 (기본값 true)
+  connected = true
 }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((msg, index) => (
-          <div key={index} className="mb-2">
-            <strong>{msg.userId}: </strong>
-            {msg.message}
-          </div>
+          <ChatMessage key={index} msg={msg} />
         ))}
       </div>
       <form onSubmit={handleSendMessage} className="border-t p-4">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            className="flex-1 border rounded-lg px-3 py-2"
-            placeholder="메시지를 입력하세요..."
-            disabled={!connected}
-          />
-          <button 
-            type="submit"
-            className={`px-4 py-2 rounded-lg ${
-              connected 
-                ? 'bg-blue-500 text-white hover:bg-blue-600' 
-                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-            }`}
-            disabled={!connected}
-          >
-            전송
-          </button>
+        <div className="flex flex-row items-center gap-2">
+          <LuPlus className="text-[1.2rem] text-greyButtonText cursor-pointer" />
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              className="w-full rounded-lg pl-3 pr-12 py-2 outline-none border-none bg-gray-50"
+              placeholder="메시지를 입력하세요"
+              disabled={!connected}
+            />
+            <button 
+              type="submit"
+              className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg ${
+                connected 
+                  ? newMessage.trim() 
+                    ? 'text-point2' 
+                    : 'text-greyButtonText'
+                  : 'text-gray-400 cursor-not-allowed'
+              }`}
+              disabled={!connected}
+            >
+              <IoSend className="text-[1.2rem]" />
+            </button>
+          </div>
         </div>
       </form>
     </div>

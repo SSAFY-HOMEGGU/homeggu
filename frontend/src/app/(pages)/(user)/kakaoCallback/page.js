@@ -1,14 +1,18 @@
 "use client";
 import { fetchLogin } from '@/app/api/userApi';
-import { useEffect } from 'react';
+import { useEffect,useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 
 export default function KakaoCallback() {
   const router = useRouter();
+  const loginAttempted = useRef(false);
 
   useEffect(() => {
     const getKakaoToken = async () => {
+      if (loginAttempted.current) return;
+      loginAttempted.current = true;
+
       try {
         const code = new URLSearchParams(window.location.search).get('code');
         console.log('인가 코드:', code); // 코드 확인
