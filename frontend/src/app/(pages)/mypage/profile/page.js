@@ -4,47 +4,84 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import addProfileImg from "/public/icons/addprofileimg.svg";
-import infoIcon from "/public/icons/info.svg";
-import AddressSearch from "../../../components/AddressSearch";
 import { BlueButton } from "../../../components/Button";
-import InputBox from "../../../components/InputBox"; // InputBox 컴포넌트 가져오기
+import InputBox from "../../../components/InputBox";
+import {
+  fetchUserProfile,
+  uploadProfileImage,
+  updateUserProfile,
+  checkNickname,
+} from "@/app/api/userApi";
+import useUserStore from "@/app/store/userStore";
 
-// RegisterModal을 동적 import로 로드
 const Register = dynamic(() => import("../../../components/RegisterModal"), {
   ssr: false,
 });
 
 export default function ProfilePage() {
-  const [showAccountDelete, setShowAccountDelete] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState(null); // 업로드한 이미지 상태
-  const accountBoxRef = useRef(null);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [profileImageFile, setProfileImageFile] = useState(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState("");
   const [selectedZipCode, setSelectedZipCode] = useState("");
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false); // 스크립트 로드 상태
-  const [name, setName] = useState(""); // 이름 상태
-  const [phoneNumber, setPhoneNumber] = useState(""); // 전화번호 상태
-  const [detailAddress, setDetailAddress] = useState(""); // 상세주소 상태
-  const [receiverName, setReceiverName] = useState(""); // 받는 사람 이름 상태
-  const [receiverPhone, setReceiverPhone] = useState(""); // 받는 사람 전화번호 상태
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [detailAddress, setDetailAddress] = useState("");
+  const [addressNickname, setAddressNickname] = useState("우리집");
+  const [nickname, setNickname] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [receiverName, setReceiverName] = useState("");
+  const [receiverPhone, setReceiverPhone] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [receiverPhoneError, setReceiverPhoneError] = useState("");
+  const [isNicknameAvailable, setIsNicknameAvailable] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [originalNickname, setOriginalNickname] = useState(""); // 초기 닉네임 저장용
+  const { updateUser } = useUserStore();
 
-  // 계좌 정보 초기값
-  const [accountInfo, setAccountInfo] = useState({
-    accountHolder: "홍길동",
-    bankName: "국민은행",
-    accountNumber: "123-4567-8901",
-  });
-
-  // 이미지 업로드 핸들러
-  const handleImageUpload = useCallback((event) => {
+  const handleImageUpload = useCallback(async (event) => {
     const file = event.target.files[0];
     if (file) {
+      setProfileImageFile(file);
       const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl); // 업로드한 이미지를 상태에 저장
+      setUploadedImage(imageUrl);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await uploadProfileImage(formData);
+        console.log("이미지 업로드 성공:", response);
+      } catch (error) {
+        console.error("이미지 업로드 실패:", error);
+        alert("이미지 업로드에 실패했습니다.");
+      }
     }
   }, []);
 
-  // Daum 주소 검색 스크립트 로드
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const profileData = await fetchUserProfile();
+        setNickname(profileData.nickname || "");
+        setOriginalNickname(profileData.nickname || "");
+        setPhoneNumber(profileData.phoneNumber || "");
+        setReceiverName(profileData.receiverName || "");
+        setReceiverPhone(profileData.receiverPhone || "");
+        setSelectedAddress(profileData.address || "");
+        setSelectedZipCode(profileData.zipCode || "");
+        setDetailAddress(profileData.addressDetail || "");
+        setAddressNickname(profileData.addressNickname || "우리집");
+        if (profileData.profileImage) {
+          setUploadedImage(profileData.profileImage);
+        }
+      } catch (error) {
+        console.error("프로필 조회 실패:", error);
+      }
+    };
+
+    loadUserProfile();
+  }, []);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src =
@@ -52,16 +89,68 @@ export default function ProfilePage() {
     script.async = true;
     document.body.appendChild(script);
 
-    script.onload = () => {
-      setIsScriptLoaded(true); // 스크립트가 로드되면 상태 업데이트
-    };
+    script.onload = () => setIsScriptLoaded(true);
 
     return () => {
       document.body.removeChild(script);
     };
   }, []);
 
-  // 주소 검색 버튼 클릭 시 팝업 보이기
+  const formatPhoneNumber = (value) => {
+    value = value.replace(/\D/g, "");
+    if (value.length > 3 && value.length <= 7) {
+      return `${value.slice(0, 3)}-${value.slice(3)}`;
+    } else if (value.length > 7) {
+      return `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+    }
+    return value;
+  };
+
+  const handlePhoneNumberChange = (e) => {
+    const value = e.target.value;
+    if (/[^0-9-]/.test(value)) {
+      setPhoneError("숫자만 입력할 수 있습니다.");
+    } else {
+      setPhoneError("");
+    }
+    setPhoneNumber(formatPhoneNumber(value));
+  };
+
+  const handleReceiverPhoneChange = (e) => {
+    const value = e.target.value;
+    if (/[^0-9-]/.test(value)) {
+      setReceiverPhoneError("숫자만 입력할 수 있습니다.");
+    } else {
+      setReceiverPhoneError("");
+    }
+    setReceiverPhone(formatPhoneNumber(value));
+  };
+
+  const handleNicknameCheck = async () => {
+    if (!nickname.trim()) {
+      alert("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (nickname === originalNickname) {
+      setIsNicknameAvailable(true);
+      alert("현재 사용중인 닉네임입니다.");
+      return;
+    }
+
+    try {
+      const { available, message } = await checkNickname(nickname);
+      setIsNicknameAvailable(available);
+      alert(message);
+    } catch (error) {
+      console.error("닉네임 중복 확인 실패:", error);
+      setIsNicknameAvailable(false);
+      alert(
+        error.response?.data?.message || "닉네임 중복 확인에 실패했습니다."
+      );
+    }
+  };
+
   const handleAddressSearch = () => {
     if (isScriptLoaded && window.daum && window.daum.Postcode) {
       new window.daum.Postcode({
@@ -75,8 +164,8 @@ export default function ProfilePage() {
               fullAddress += " " + data.buildingName;
             }
           }
-          setSelectedZipCode(data.zonecode); // 우편번호 설정
-          setSelectedAddress(fullAddress); // 주소 설정
+          setSelectedZipCode(data.zonecode);
+          setSelectedAddress(fullAddress);
         },
       }).open();
     } else {
@@ -84,15 +173,40 @@ export default function ProfilePage() {
     }
   };
 
-  // 수정하기 버튼 클릭 핸들러
-  const handleEdit = () => {
-    // 수정하기 버튼을 눌렀을 때 실행할 로직 추가
-    alert("수정하기 버튼이 클릭되었습니다.");
+  const handleEdit = async () => {
+    if (nickname !== originalNickname && !isNicknameAvailable) {
+      alert("닉네임 중복 확인을 해주세요.");
+      return;
+    }
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      const profileData = {
+        nickname: nickname || null,
+        address: selectedAddress || null,
+        addressDetail: detailAddress || null,
+        addressNickname: addressNickname || "우리집",
+        phoneNumber: phoneNumber ? phoneNumber.replace(/-/g, "") : null,
+        userImagePath: uploadedImage || null,
+      };
+
+      const response = await updateUserProfile(profileData);
+      if (response.message === "수정 완료") {
+        setOriginalNickname(nickname);
+        alert("프로필이 성공적으로 수정되었습니다.");
+      }
+    } catch (error) {
+      console.error("프로필 수정 실패:", error);
+      alert("프로필 수정에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div>
-      {/* 내 정보 수정 타이틀 */}
       <h1 className="text-2xl font-bold">내 정보 수정</h1>
       <div className="flex mt-4 relative w-full">
         <div
@@ -106,11 +220,9 @@ export default function ProfilePage() {
         />
       </div>
 
-      {/* 중앙 정렬된 컨테이너 */}
       <div
         style={{ width: "46.072rem", margin: "2rem auto", textAlign: "left" }}
       >
-        {/* 프로필 이미지 수정 */}
         <div className="flex justify-center my-4">
           <label htmlFor="profile-upload" style={{ cursor: "pointer" }}>
             {uploadedImage ? (
@@ -123,8 +235,8 @@ export default function ProfilePage() {
               <Image
                 src={addProfileImg}
                 alt="Profile Image"
-                width={137}
-                height={137}
+                width={120}
+                height={120}
               />
             )}
           </label>
@@ -133,173 +245,108 @@ export default function ProfilePage() {
             type="file"
             accept="image/*"
             onChange={handleImageUpload}
-            style={{ display: "none" }} // 파일 업로드 input 숨김
+            style={{ display: "none" }}
           />
         </div>
 
-        {/* 회원 정보 */}
-        <h2 className="mt-8 text-[#2F3438] font-normal text-[1.25rem]">
+        <h2 className="mt-8 ml-[18%] text-[#2F3438] font-normal text-[1.25rem]">
           회원 정보 수정
         </h2>
-        <div className="flex flex-col space-y-4 mt-4">
-          <InputBox
-            type="text"
-            placeholder="이름"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            width="w-[46.072rem]"
-          />
+        <div className="flex flex-col items-center space-y-4 mt-4">
+          <div className="flex items-center space-x-2">
+            <InputBox
+              type="text"
+              placeholder="닉네임"
+              value={nickname}
+              onChange={(e) => {
+                setNickname(e.target.value);
+                if (e.target.value !== originalNickname) {
+                  setIsNicknameAvailable(false);
+                }
+              }}
+              width="w-[24rem]"
+              height="h-[2.2rem]"
+            />
+            <button
+              onClick={handleNicknameCheck}
+              className="bg-blue-500 text-white px-3 py-1.5 rounded-md hover:bg-blue-600 transition-colors"
+            >
+              중복 확인
+            </button>
+          </div>
           <InputBox
             type="text"
             placeholder="전화번호"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            width="w-[46.072rem]"
+            onChange={handlePhoneNumberChange}
+            width="w-[30rem]"
+            height="h-[2.2rem]"
           />
+          {phoneError && <p className="text-red-500 text-sm">{phoneError}</p>}
         </div>
 
-        {/* 기본 배송지 정보 */}
-        <h2 className="mt-8 text-[#2F3438] font-normal text-[1.25rem]">
+        <h2 className="mt-8 ml-[18%] text-[#2F3438] font-normal text-[1.25rem]">
           기본 배송지 정보
         </h2>
-        <div className="flex flex-col space-y-4 mt-4">
-          {/* 우편번호 입력 필드 */}
-          <input
+        <div className="flex flex-col items-center space-y-4 mt-4">
+          <InputBox
             type="text"
-            value={selectedZipCode} // 우편번호 상태값 적용
-            placeholder="우편번호"
-            style={{ width: "46.072rem", height: "2.8rem" }}
-            className={`border border--greyButtonText rounded-md 
-              px-3 py-2 focus:outline-none`}
-            readOnly // 사용자가 직접 수정하지 않도록 readOnly 설정
-            onClick={handleAddressSearch} // 우편번호 필드 클릭 시 팝업 열기
+            placeholder="배송지 별명 (예: 우리집)"
+            value={addressNickname}
+            onChange={(e) => setAddressNickname(e.target.value)}
+            width="w-[30rem]"
+            height="h-[2.2rem]"
           />
 
-          {/* 선택된 주소 출력 */}
           <input
             type="text"
-            value={selectedAddress} // 주소가 선택되면 여기에 표시됨
+            value={selectedAddress}
             placeholder="주소"
-            style={{
-              width: "46.072rem",
-              height: "2.8rem",
-            }}
-            className={`border border--greyButtonText rounded-md 
-        px-3 py-2 focus:outline-none`}
+            style={{ width: "30rem", height: "2.2rem" }}
+            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none"
             readOnly
+            onClick={handleAddressSearch}
           />
           <InputBox
             type="text"
             placeholder="상세주소"
             value={detailAddress}
             onChange={(e) => setDetailAddress(e.target.value)}
-            width="w-[46.072rem]"
+            width="w-[30rem]"
+            height="h-[2.2rem]"
           />
           <InputBox
             type="text"
             placeholder="받는 사람 이름"
             value={receiverName}
             onChange={(e) => setReceiverName(e.target.value)}
-            width="w-[46.072rem]"
+            width="w-[30rem]"
+            height="h-[2.2rem]"
           />
           <InputBox
             type="text"
             placeholder="받는 사람 전화번호"
             value={receiverPhone}
-            onChange={(e) => setReceiverPhone(e.target.value)}
-            width="w-[46.072rem]"
+            onChange={handleReceiverPhoneChange}
+            width="w-[30rem]"
+            height="h-[2.2rem]"
           />
+          {receiverPhoneError && (
+            <p className="text-red-500 text-sm">{receiverPhoneError}</p>
+          )}
         </div>
 
-        {/* 계좌 관리 섹션 */}
-        <h2 className="mt-8 text-[#2F3438] font-normal text-[1.25rem]">
-          계좌 관리
-        </h2>
-        <div
-          className="flex mt-4 relative"
-          style={{
-            width: "46rem",
-            height: "9.45394rem",
-            border: "1px solid var(--GreyButtonText, #C2C8CB)",
-            borderRadius: "0.625rem",
-          }}
-          ref={accountBoxRef}
-        >
-          <div className="p-7 flex w-full">
-            <div className="flex flex-col w-full">
-              <div className="flex justify-between items-center">
-                <span className="text-[#828C94] font-normal text-[1.0625rem]">
-                  예금주:
-                </span>
-                <span className="text-[#2F3438] font-normal text-[1.0625rem]">
-                  {accountInfo.accountHolder}
-                </span>
-              </div>
-              <div className="flex justify-between mt-2">
-                <span className="text-[#828C94] font-normal text-[1.0625rem]">
-                  은행명:
-                </span>
-                <span className="text-[#2F3438] font-normal text-[1.0625rem]">
-                  {accountInfo.bankName}
-                </span>
-              </div>
-              <div className="flex justify-between mt-2">
-                <span className="text-[#828C94] font-normal text-[1.0625rem]">
-                  계좌번호:
-                </span>
-                <span className="text-[#2F3438] font-normal text-[1.0625rem]">
-                  {accountInfo.accountNumber}
-                </span>
-              </div>
-            </div>
-
-            {/* 정보 아이콘 */}
-            <Image
-              src={infoIcon}
-              alt="Info Icon"
-              width={5}
-              height={5}
-              onClick={() => setShowAccountDelete(!showAccountDelete)}
-              style={{
-                cursor: "pointer",
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-              }}
-            />
-
-            {/* 계좌 삭제 버튼 */}
-            {showAccountDelete && (
-              <div
-                className="absolute top-10 right-[-12rem] w-[11rem] h-[2.5rem] flex justify-center items-center cursor-pointer"
-                style={{
-                  backgroundColor: "#FFF",
-                  border: "1px solid #C2C8CB",
-                  borderRadius: "0.625rem",
-                }}
-                onClick={() => {
-                  setAccountInfo(null); // 계좌 정보 초기화
-                  setShowAccountDelete(false); // 삭제 후 토글 숨기기
-                }}
-              >
-                계좌 삭제
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 수정하기 버튼 */}
         <div className="flex justify-center mt-8">
           <BlueButton
             onClick={handleEdit}
             width="w-[18rem]"
             height="h-[3.5rem]"
+            disabled={isSubmitting}
           >
-            수정하기
+            {isSubmitting ? "수정 중..." : "수정하기"}
           </BlueButton>
         </div>
 
-        {/* Register 모달 창 */}
         {showRegisterModal && (
           <Register onClose={() => setShowRegisterModal(false)} />
         )}
