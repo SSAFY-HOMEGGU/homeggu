@@ -1,6 +1,5 @@
 package com.homeggu.domain.user.service;
 
-import com.homeggu.domain.user.dto.response.BalanceResponse;
 import com.homeggu.domain.user.dto.response.UpdateProfileResponse;
 import com.homeggu.domain.user.entity.UserProfile;
 import com.homeggu.domain.user.repository.UserProfileRepository;
@@ -64,7 +63,6 @@ public class UserService {
 
     // 닉네임 중복 검사
     public boolean checkNicknameDuplication(String nickname) {
-        System.out.println(nickname);
         return userProfileRepository.existsByNickname(nickname);
     }
 }
