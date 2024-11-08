@@ -1,16 +1,24 @@
 import Image from "next/image";
 import profileDefault from "/public/icons/profile.svg";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { fetchUserProfile } from "@/app/api/userApi";
 
 export default function Profile({ user }) {
-  const {
-    nickname,
-    name,
-    profileImage,
-    orderCount,
-    salesCount,
-    wishlistCount,
-  } = user;
+  const [profileData, setProfileData] = useState(null);
+  const { name, profileImage, orderCount, salesCount, wishlistCount } = user;
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const data = await fetchUserProfile();
+        setProfileData(data);
+      } catch (error) {
+        console.error("프로필 정보 로딩 실패:", error);
+      }
+    };
+
+    loadUserProfile();
+  }, []);
 
   return (
     <div>
@@ -24,7 +32,7 @@ export default function Profile({ user }) {
           className="rounded-full"
         />
         <h1 className="text-2xl font-bold ml-4">
-          {nickname ? nickname : name}님
+          {profileData?.nickname || name}님
         </h1>
       </div>
 

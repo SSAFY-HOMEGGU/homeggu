@@ -39,7 +39,7 @@ const BANK_NAME_MAPPING = {
   우리: "우리은행",
 };
 
-const TransactionCard = ({ type, title, date, amount, status }) => {
+const TransactionCard = ({ type, title, date, amount, status, balance }) => {
   const getBankLogo = () => {
     // 간단 표기된 은행명 찾기
     const simpleBankName = Object.keys(BANK_NAME_MAPPING).find((key) =>
@@ -74,13 +74,20 @@ const TransactionCard = ({ type, title, date, amount, status }) => {
           </div>
         </div>
       </div>
-      <div
-        className={`font-medium ${
-          amount < 0 ? "text-[#2F3438]" : "text-[#35C5F0]"
-        }`}
-      >
-        {type === "충전" ? "+" : ""}
-        {amount.toLocaleString()}원
+      <div className="text-right">
+        <div
+          className={`font-medium ${
+            amount < 0 ? "text-[#2F3438]" : "text-[#35C5F0]"
+          }`}
+        >
+          {type === "충전" ? "+" : ""}
+          {amount.toLocaleString()}원
+        </div>
+        {balance !== null && (
+          <div className="text-sm text-gray-400">
+            {balance.toLocaleString()}원
+          </div>
+        )}
       </div>
     </div>
   );

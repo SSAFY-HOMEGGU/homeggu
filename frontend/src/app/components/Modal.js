@@ -2,7 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
-import closeIcon from "/public/icons/close.svg"; // 종료 아이콘
+import { motion } from "framer-motion"; // Framer Motion import
+import closeIcon from "/public/icons/close.svg";
 
 export default function Modal({
   show,
@@ -53,11 +54,21 @@ export default function Modal({
           onClick={onClose}
         />
 
-        {/* 아이콘 */}
+        {/* 애니메이션 아이콘 */}
         {icon && (
-          <div style={{ marginBottom: "1.5rem" }}>
+          <motion.div
+            animate={{
+              x: [0, -10, 10, -8, 8, 0], // 좌우로 진동하는 애니메이션
+            }}
+            transition={{
+              duration: 0.6, // 애니메이션 지속 시간
+              ease: "easeInOut", // 부드러운 움직임
+              repeat: 1, // 무한 반복
+            }}
+            style={{ marginBottom: "1.5rem" }}
+          >
             <Image src={icon} alt="Alert Icon" width={100} height={100} />
-          </div>
+          </motion.div>
         )}
 
         {/* 제목 */}
@@ -95,7 +106,7 @@ export default function Modal({
             justifyContent:
               showConfirmButton && showCancelButton ? "center" : "space-evenly",
             marginTop: "2.5rem",
-            width: showConfirmButton && !showCancelButton ? "12rem" : "auto", // 가운데 정렬
+            width: showConfirmButton && !showCancelButton ? "12rem" : "auto",
           }}
         >
           {showCancelButton && (
