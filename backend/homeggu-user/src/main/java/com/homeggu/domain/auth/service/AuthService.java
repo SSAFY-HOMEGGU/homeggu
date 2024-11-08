@@ -2,6 +2,7 @@ package com.homeggu.domain.auth.service;
 
 import com.google.gson.Gson;
 import com.homeggu.domain.auth.dto.response.KakaoLoginResponse;
+import com.homeggu.domain.auth.dto.response.KakaoUserResponse;
 import com.homeggu.domain.auth.entity.User;
 import com.homeggu.domain.auth.repository.UserRepository;
 import com.homeggu.domain.user.entity.UserProfile;
@@ -50,12 +51,12 @@ public class AuthService {
     private String[] lastNicknames;
 
     // 카카오 로그인 메서드
-    public String kakaoLogin(String code) {
+    public KakaoLoginResponse kakaoLogin(String code) {
         // 1. 카카오 서버로 kakao access token 발급 요청
         String kakaoAccessToken = getKakaoToken(code);
 
         // 2. kakao access token으로 로그인을 시도한 유저 정보 확인
-        KakaoLoginResponse kaKaoUserResponse = getKaKaoUser(kakaoAccessToken);
+        KakaoUserResponse kaKaoUserResponse = getKaKaoUser(kakaoAccessToken);
         String email = kaKaoUserResponse.getEmail();
         String username = kaKaoUserResponse.getUsername();
 
@@ -64,9 +65,12 @@ public class AuthService {
         if (existedUser != null) {
             // 유저가 존재하는 userId jwt에 담아 전송
             JwtResponse jwtResponse = jwtProvider.generateToken(existedUser.getUserId());
-            return jwtResponse.getAccessToken();
+            return KakaoLoginResponse.builder()
+                    .accessToken(jwtResponse.getAccessToken())
+                    .isFirstLogin(existedUser.isFirstLogin())
+                    .build();
         } else {
-            User newUser = User.builder().email(email).username(username).build();
+            User newUser = User.builder().email(email).username(username).isFirstLogin(true).build();
             userRepository.save(newUser);
 
             // 랜덤 닉네임 생성 및 저장
@@ -79,7 +83,10 @@ public class AuthService {
 
             // 회원가입 후 userId jwt에 담아 전송
             JwtResponse jwtResponse = jwtProvider.generateToken(newUser.getUserId());
-            return jwtResponse.getAccessToken();
+            return KakaoLoginResponse.builder()
+                    .accessToken(jwtResponse.getAccessToken())
+                    .isFirstLogin(newUser.isFirstLogin())
+                    .build();
         }
     }
 
@@ -121,7 +128,7 @@ public class AuthService {
     }
 
     // 카카오 유저 확인 메서드
-    public KakaoLoginResponse getKaKaoUser(String kakaoAccessToken) {
+    public KakaoUserResponse getKaKaoUser(String kakaoAccessToken) {
         // 1. HttpHeader 생성
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Authorization", "Bearer " + kakaoAccessToken);
@@ -148,7 +155,7 @@ public class AuthService {
         String email = extractEmail(data);
         String nickname = extractNickname(data);
 
-        return new KakaoLoginResponse(email, nickname);
+        return new KakaoUserResponse(email, nickname);
     }
 
     // 이메일 추출 메서드
@@ -207,6 +214,19 @@ public class AuthService {
             return true;
         } catch (Exception e) {
             // 로그아웃 실패
+            return false;
+        }
+    }
+
+    // 최초 로그인 시, 사용자 취향 반영 완료
+    public boolean firstLogin(String accessToken) {
+        try {
+            Claims claims = jwtProvider.parseToken(accessToken);
+            int userId = claims.get("userId", Integer.class);
+
+            userRepository.updateIsFirstLogin(userId);
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }

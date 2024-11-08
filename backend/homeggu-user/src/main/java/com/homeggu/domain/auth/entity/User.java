@@ -23,4 +23,7 @@ public class User extends CreateTimeEntity {
 
     @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
+    private boolean isFirstLogin;
 }
