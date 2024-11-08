@@ -41,7 +41,7 @@ public class UserProfile extends UpdateTimeEntity {
     private int balance;
 
     @OneToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_id", referencedColumnName = "userId")
+    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     private User user;
 
     public void updateNickname(String nickname) {
