@@ -1,5 +1,6 @@
 package com.homeggu.domain.user.controller;
 
+import com.homeggu.domain.user.dto.request.PreferenceRequest;
 import com.homeggu.domain.user.service.PreferenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,24 @@ public class PreferenceController {
     public ResponseEntity<String> initPreference(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.substring(7);
         preferenceService.saveInitPreference(accessToken);
-        return ResponseEntity.ok("OK");
+        return ResponseEntity.ok().build();
     }
+
+    // 사용자 선호도 업데이트
+    @PostMapping("/update")
+    public ResponseEntity<String> updatePreference(@RequestHeader("Authorization") String authorizationHeader, @RequestBody PreferenceRequest preferenceRequest) {
+        String accessToken = authorizationHeader.substring(7);
+        preferenceService.updatePreference(accessToken, preferenceRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    // 구매확정 시 선호도 변경
+    @PostMapping("/buy")
+    public ResponseEntity<String> buyPreference(@RequestHeader("Authorization") String authorizationHeader, @RequestBody PreferenceRequest preferenceRequest) {
+        String accessToken = authorizationHeader.substring(7);
+        preferenceService.buyPreference(accessToken, preferenceRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    // api 호출 10번 했는데 카테고리 호명 안된거 선호도 다운
 }
