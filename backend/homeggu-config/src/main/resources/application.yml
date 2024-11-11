@@ -1,19 +1,5 @@
-spring:
-  application:
-    name: homeggu-config
-
-  cloud:
-    config:
-      server:
-        git:
-          uri: https://lab.ssafy.com/s11-final/S11P31B206.git
-          username: s11-final
-          password: '{cipher}df80353d7302f811133d4eef44ab545f67432397a42bfbfed67eb87ce828874942e5c7926180a2150d26a7f11441c877'
-          default-label: be_feat_msa  # master가 아닌 다른 브랜치를 참조하려는 경우
-          search-paths: backend/homeggu-config/src/main/resources
-
-  # 아래는 모든 서비스에 공통된 설정
-
+# 모든 서비스에 공통된 설정을 저장하는 파일
+spring: 
   servlet:
     multipart:
       max-file-size: 25MB
