@@ -33,23 +33,48 @@ const useProductActionStore = create(
     },
 
     // 상품 상태 변경 (예약중, 판매중, 판매완료 등)
-    updateStatus: async (productId, newStatus) => {
+    updateStatus: async (product, newStatus) => {
       const productStore = useProductListStore.getState();
-      const product = productStore.products.find(p => p.sales_board_id === productId);
-      const prevStatus = product?.status;
-
+      const productId = product.salesBoardId
+      // const product = productStore.products.find(p => p.sales_board_id === productId);
+      const prevStatus = product?.isSell;
+      console.log(product)
       try {
-        // Optimistic Update
         productStore.updateProduct(productId, { status: newStatus });
-
-        // API 호출
-        await updateSalesBoard(productId, { status: newStatus });
         
-        toast.success('상품 상태가 변경되었습니다');
+        const updatedData = {
+          salesBoardDTO: {
+            title: product.title,
+            content: product.content,
+            category: product.category,
+            // status: product.status,
+            status: newStatus,
+            mood: product.mood,
+            tradeMethod: product.tradeMethod,
+            isSafe: product.isSafe,
+            hopeLocation: product.hopeLocation,
+            price: product.price,
+            deliveryPrice: product.deliveryPrice,
+            // isSell: newStatus  // isSell 필드 업데이트
+          },
+          goodsImagePaths: product.goodsImagePaths,
+          threeDimensionsGoodsImagePaths: product.threeDimensionsGoodsImagePaths
+        };
+
+        // Optimistic Update
+        // productStore.updateProduct(productId, { isSell: newStatus });
+        
+        // API 호출
+        await updateSalesBoard(productId, updatedData);
+
+        
+        
+        console.log('상품 상태가 변경되었습니다');
       } catch (error) {
         // 실패시 롤백
         productStore.updateProduct(productId, { status: prevStatus });
-        toast.error('상태 변경 실패');
+        set({ product });
+        console.error('업데이트 실패:', error);
       }
     },
 

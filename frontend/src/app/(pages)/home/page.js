@@ -1,13 +1,17 @@
 'use client'
 
 // import ImageSwiper from "./components/ImageSwiper"
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from 'next/navigation';
 import ImageSwiper from "@/app/components/ImageSwiper";
 import Product from "@/app/components/Product";
 import useProductListStore from '@/app/store/useProductListStore';
+import JoinModal from "./components/JoinModal";
 
 export default function Page() {
   const { products, fetchProducts } = useProductListStore();
+  const [showSurvey, setShowSurvey] = useState(false);
+  const searchParams = useSearchParams();
 
   const images = [
     { src: "/images/home_banner1.png", alt: "Slide 1" },
@@ -18,11 +22,19 @@ export default function Page() {
 
   // 컴포넌트 마운트 시 전체 상품 데이터 가져오기
   useEffect(() => {
-    fetchProducts({
-      page: 0,
-      size: 10
-    });
+    fetchProducts();
   }, [fetchProducts]);
+
+  useEffect(() => {
+    // firstLogin 파라미터가 있고 값이 'true'일 때만 모달 표시
+    const isFirstLogin = searchParams.get('firstLogin') === 'true';
+    setShowSurvey(isFirstLogin);
+  }, [searchParams]);
+
+  const handleCloseModal = () => {
+    setShowSurvey(false);
+  };
+
 
   const recommendedProducts = [
     {
@@ -74,14 +86,14 @@ export default function Page() {
         />
       </div>
 
-      <div className="mt-[1rem]">
+      {/* <div className="mt-[1rem]">
         <h2 className="font-bold font-tmoney mb-[0.5rem]">추천 상품</h2>
           <div className="grid grid-cols-4 gap-4 md:grid-cols-4 sm:grid-cols-2 grid-cols-1">
             {recommendedProducts.map((product) => (
               <Product key={product.sales_board_id} product={product} />
             ))}
           </div>
-      </div>
+      </div> */}
 
       <div className="mt-[1rem]">
         <h2 className="font-bold font-tmoney mb-[0.5rem]">인기 상품</h2>
@@ -91,6 +103,11 @@ export default function Page() {
             ))}
           </div>
       </div>
+
+      <JoinModal 
+        isOpen={showSurvey} 
+        onClose={handleCloseModal}
+      />
     </div>
   )
 }
