@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/preference")
 @RequiredArgsConstructor
@@ -37,5 +39,11 @@ public class PreferenceController {
         return ResponseEntity.ok().build();
     }
 
-    // api 호출 10번 했는데 카테고리 호명 안된거 선호도 다운
+    // 추천 상품 리스트
+    @PostMapping("/list")
+    public ResponseEntity<?> recommendList(@RequestHeader("Authorization") String authorizationHeader, @RequestBody Map<String, Object> preferences) {
+        String accessToken = authorizationHeader.substring(7);
+        Map<String, Object> recommendations = preferenceService.getRecommendations(preferences);
+        return ResponseEntity.ok(recommendations);
+    }
 }
