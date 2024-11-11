@@ -251,13 +251,15 @@ const OrderPage = () => {
               className="flex items-center cursor-pointer"
               onClick={() => handleMethodChange("택배거래")}
             >
-              <img
+              <Image
                 src={
                   selectedMethod === "택배거래"
                     ? "/icons/activeCheck.svg"
                     : "/icons/unactiveCheck.svg"
                 }
                 alt="택배거래 선택 아이콘"
+                width={22}
+                height={22}
                 className="w-6 h-6 mr-2"
                 style={{ width: "26px", height: "26px" }}
               />
@@ -267,13 +269,15 @@ const OrderPage = () => {
               className="flex items-center cursor-pointer"
               onClick={() => handleMethodChange("직거래")}
             >
-              <img
+              <Image
                 src={
                   selectedMethod === "직거래"
                     ? "/icons/activeCheck.svg"
                     : "/icons/unactiveCheck.svg"
                 }
                 alt="직거래 선택 아이콘"
+                width={22}
+                height={22}
                 className="w-6 h-6 mr-2"
                 style={{ width: "26px", height: "26px" }}
               />

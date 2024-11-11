@@ -7,7 +7,7 @@ export default function OperationPolicy() {
         <section>
           <h2 className="text-xl font-semibold mb-2">1. 운영의 목적</h2>
           <p className="text-base">
-            본 운영정책은 (주)홈꾸(이하 "회사")의 서비스 제공 과정에서 발생할 수
+            본 운영정책은 (주)홈꾸(이하  &quot;회사 &quot;)의 서비스 제공 과정에서 발생할 수
             있는 문제를 공정하고 일관되게 처리하기 위한 지침을 명시합니다.
           </p>
         </section>

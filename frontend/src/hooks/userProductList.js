@@ -6,6 +6,7 @@ export function useProductList() {
   const fetchProducts = useProductListStore(state => state.fetchProducts);
 
   // 컴포넌트 마운트시 상품 목록 조회
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchProducts();
   }, []);
