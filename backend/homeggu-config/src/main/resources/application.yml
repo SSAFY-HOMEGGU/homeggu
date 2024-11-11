@@ -49,3 +49,14 @@ jwt:
     expiretime: 3600000
   refresh-token:
     expiretime: 2592000000
+
+# JPA에서 쿼리가 어떻게 나가는지 확인
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
