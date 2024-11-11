@@ -17,11 +17,24 @@ import { categoryMapping,statusMapping,moodMapping,tradeMethodMapping, sellStatu
 export default function ProductInfo() {
   const params = useParams();
   const [productId, setProductId] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  // const [selectedProduct, setSelectedProduct] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [loading, setLoading] = useState(false); 
+  // const [loading, setLoading] = useState(false); 
   
+  const { 
+    selectedProduct, 
+    loading, 
+    fetchProductDetail,
+    updateSelectedProduct 
+  } = useProductListStore();
+
+  useEffect(() => {
+    if (params.productId) {
+      fetchProductDetail(params.productId);
+    }
+  }, [params.productId]);
+
   
   console.log('params',params)
   console.log('판매상품id', params.productId, 
@@ -80,7 +93,7 @@ const sellStatusMapping = {
       } catch (error) {
         console.error('상세 데이터 조회 실패:', error);
       } finally {
-        setLoading(false); // 로딩 상태 해제
+        // setLoading(false); // 로딩 상태 해제
       }
     };
 

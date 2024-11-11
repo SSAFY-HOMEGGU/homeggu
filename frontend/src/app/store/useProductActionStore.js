@@ -41,21 +41,30 @@ const useProductActionStore = create(
       console.log(product)
       try {
         productStore.updateProduct(productId, { status: newStatus });
-        
+        productStore.updateSelectedProduct({ status: newStatus });
+
+        // const updatedData = {
+        //   salesBoardDTO: {
+        //     title: product.title,
+        //     content: product.content,
+        //     category: product.category,
+        //     // status: product.status,
+        //     status: newStatus,
+        //     mood: product.mood,
+        //     tradeMethod: product.tradeMethod,
+        //     isSafe: product.isSafe,
+        //     hopeLocation: product.hopeLocation,
+        //     price: product.price,
+        //     deliveryPrice: product.deliveryPrice,
+        //     // isSell: newStatus  // isSell 필드 업데이트
+        //   },
+        //   goodsImagePaths: product.goodsImagePaths,
+        //   threeDimensionsGoodsImagePaths: product.threeDimensionsGoodsImagePaths
+        // };
         const updatedData = {
           salesBoardDTO: {
-            title: product.title,
-            content: product.content,
-            category: product.category,
-            // status: product.status,
+            ...product,
             status: newStatus,
-            mood: product.mood,
-            tradeMethod: product.tradeMethod,
-            isSafe: product.isSafe,
-            hopeLocation: product.hopeLocation,
-            price: product.price,
-            deliveryPrice: product.deliveryPrice,
-            // isSell: newStatus  // isSell 필드 업데이트
           },
           goodsImagePaths: product.goodsImagePaths,
           threeDimensionsGoodsImagePaths: product.threeDimensionsGoodsImagePaths
@@ -73,7 +82,8 @@ const useProductActionStore = create(
       } catch (error) {
         // 실패시 롤백
         productStore.updateProduct(productId, { status: prevStatus });
-        set({ product });
+        productStore.updateSelectedProduct({ status: prevStatus });
+        // set({ product });
         console.error('업데이트 실패:', error);
       }
     },
