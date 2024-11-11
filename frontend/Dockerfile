@@ -5,7 +5,8 @@ RUN npm ci
 COPY . ./
 RUN npm run build
 
-FROM nginx
+FROM node:20.15.0 as runtime
+WORKDIR /app
+COPY --from=build /app /app
 EXPOSE 3000
-COPY --from=build /app/out /usr/share/nginx/html
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]  # Next.js 서버 실행
