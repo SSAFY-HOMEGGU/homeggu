@@ -2,6 +2,7 @@ package com.homeggu.domain.user.entity;
 
 import com.homeggu.domain.auth.entity.User;
 import com.homeggu.domain.user.dto.JsonConverter;
+import com.homeggu.global.baseTimeEntity.UpdateTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Preference {
+public class Preference extends UpdateTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int preferenceId;
