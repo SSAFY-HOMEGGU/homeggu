@@ -1,8 +1,5 @@
 # 모든 서비스에 공통된 설정을 저장하는 파일
-server:
-  port: 0  # 랜덤 포트
-
-spring: 
+spring:
   servlet:
     multipart:
       max-file-size: 25MB
