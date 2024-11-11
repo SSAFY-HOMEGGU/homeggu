@@ -9,22 +9,11 @@ export const salesBoard = (formData) => {
       throw error;
     });
 };
-// requestBody
-// {
-//   "title": "중고 가구 판매합니다",
-//   "content": "상태 좋고 거의 새것입니다.",
-//   "category": "SOFA",
-//   "status": "UNUSED",
-//   "tradeMethod": "IN_PERSON",
-//   "isSafe": true,
-//   "hope_location": "유성온천역",
-//   "price": 100000,
-//   "delivery_price": 0
-// }
 
-// 물건 등록
+
+// 물건 수정
 export const updateSalesBoard = (boardId,formData) => {
-  return productInstance.post(`/board/${boardId}`,formData)
+  return productInstance.put(`/board/${boardId}`,formData)
     .then(response => response.data)
     .catch(error => {
       console.error('상세 에러 정보:', error);
@@ -59,23 +48,28 @@ export const salesBoardList = ({
   max_price,
   isSell,
   title,
-  page = 0,
-  size = 10
+  page,
+  size
+  // page = 0,
+  // size = 10
 }) => {
   const params = new URLSearchParams();
 
   if (category) params.append('category', category);
-  if (min_price) params.append('min_price', min_price);
+  if (min_price !== undefined) params.append('min_price', min_price);
   if (max_price) params.append('max_price', max_price);
   if (isSell) params.append('isSell', isSell);
   if (title) params.append('title', title);
-  params.append('page', page);
-  params.append('size', size);
+  if (page) params.append('page', page);
+  if (size) params.append('size', size);
 
-  return productInstance.get(`/board/?${params.toString()}`)
+  return productInstance.get(`/board`)
     .then(response => response.data)
     .catch(error => {
+      // 서버에서 보내는 에러 메시지 확인
+      console.error('에러 응답:', error.response?.data);
+      console.error('에러 상태:', error.response?.status);
       console.error('상세 에러 정보:', error);
       throw error;
-    });
+})
 };

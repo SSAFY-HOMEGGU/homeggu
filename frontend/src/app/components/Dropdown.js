@@ -9,12 +9,17 @@
   /> 
 */}
 
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { IoCaretDown } from "react-icons/io5";
 
-export default function Dropdown({ options = [], onSelect, width = "w-[14rem]", selectedFont = "text-normalText"}) {
+export default function Dropdown({ options = [], onSelect, width = "w-[14rem]", selectedFont = "text-normalText", defaultValue = null}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
+
+  useEffect(() => {
+    setSelectedOption(defaultValue || options[0]);
+  }, [defaultValue, options]);
+
 
   const handleSelect = (option) => {
     setSelectedOption(option);
@@ -23,7 +28,7 @@ export default function Dropdown({ options = [], onSelect, width = "w-[14rem]", 
   };
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left ">
       <button 
         onClick={() => setIsOpen(!isOpen)} 
         className={`${width} ${selectedFont} h-[2.8rem] px-4 py-2 border-[0.03rem] border-greyButtonText rounded-[0.5rem] flex items-center justify-between`}>
@@ -32,7 +37,7 @@ export default function Dropdown({ options = [], onSelect, width = "w-[14rem]", 
       </button>
 
       {isOpen && (
-        <div className="absolute mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+        <div className="absolute mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
           <ul className="py-1">
             {options.map((option, index) => (
               <li key={index} 

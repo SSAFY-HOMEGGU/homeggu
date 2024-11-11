@@ -1,5 +1,5 @@
 "use client";
-import { fetchLogin } from '@/app/api/userApi';
+import { fetchLogin, preferenceInit } from '@/app/api/userApi';
 import { useEffect,useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
@@ -31,12 +31,13 @@ export default function KakaoCallback() {
 
         const response = await fetchLogin(code);
         console.log('서버 응답:', response);
+        console.log('response.accessToken:',response.accessToken);
 
         if (response) {
-          localStorage.setItem('accessToken', response);
+          localStorage.setItem('accessToken', response.accessToken);
+
           try {
-          
-            const decodedToken = jwtDecode(response);
+            const decodedToken = jwtDecode(response.accessToken);
             const userId = decodedToken.userId; // 또는 decodedToken.sub 등 토큰에 담긴 키값
             
             console.log('userId:', userId);
@@ -44,8 +45,21 @@ export default function KakaoCallback() {
           } catch (error) {
             console.error('토큰 디코딩 에러:', error);
           }
+          
+          // 설문 초기화 하기
+          try {
+            const preferenceResponse = await preferenceInit();
+            console.log('초기 선호도 설정 응답:', preferenceResponse);
+          } catch (error) {
+            console.error('선호도 초기화 에러:', error);
+          }
 
-          router.push('/');
+          // router.push('/');
+          if (response.firstLogin) {
+            router.push('/?firstLogin=true');
+          } else {
+            router.push('/');
+          }
 
         }
       } catch (error) {

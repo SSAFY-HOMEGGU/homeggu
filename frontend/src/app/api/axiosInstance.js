@@ -31,7 +31,7 @@ export const chatInstance = axios.create({
 
 // 4. 상품 API용 axios instance (8082 포트, 토큰 필요)
 export const productInstance = axios.create({
-  baseURL: "http://localhost:8082",
+  baseURL: "http://localhost:8080",
   timeout: 5000,
   withCredentials: true,
   headers: {

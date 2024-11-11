@@ -8,73 +8,110 @@ import { ActiveButton, UnactiveButton } from '@/app/components/OptionButton';
 
 export default function SellMethod({
   onTradeMethodChange,
-  onShippingOptionChange,
+  onSafeOption,
   onShippingCostChange,
   onAreaSelectChange,
 }) {
-  const [options, setOptions] = useState({
-    택배거래: false,
-    직거래: false,
+  const [tradeMethods, setTradeMethods] = useState({
+    SHIPPING: false,    // 택배거래
+    IN_PERSON: false   // 직거래
   });
+  const [safeOption, setSafeOption] = useState('');
   const [shippingOption, setShippingOption] = useState('');
-  const [price, setPrice] = useState('');
+  const [shippingPrice, setShippingPrice] = useState('');
 
-  const handleOptionClick = (option) => {
-    const updatedOptions = {
-      ...options,
-      [option]: !options[option],
-    };
-    setOptions(updatedOptions);
-    onTradeMethodChange(updatedOptions);
-
-    // 택배거래 비활성화 시 배송비 초기화
-    if (option === '택배거래' && !updatedOptions[option]) {
-      setShippingOption('');
-      setPrice('');
-      onShippingOptionChange('');
-      onShippingCostChange('');
-    }
+  // 안전거래 옵션 처리
+  const handleSafeOptionClick = (option) => {
+    const isSelected = safeOption === option;
+    const newValue = isSelected ? '' : option;
+    setSafeOption(newValue);
+    onSafeOption(newValue === '사용');
   };
 
+  // 거래 방법 처리
+  const handleMethodClick = (method) => {
+    const updatedMethods = {
+      ...tradeMethods,
+      [method]: !tradeMethods[method]
+    };
+    setTradeMethods(updatedMethods);
+
+    // 체크 해제 시 관련 데이터 초기화
+    if (!updatedMethods[method]) {
+      if (method === 'SHIPPING') {
+        // 택배거래 해제 시 모든 배송 관련 데이터 초기화
+        setShippingOption('');
+        setShippingPrice('');
+        // onShippingOptionChange('');
+        onShippingCostChange(0);
+      }
+      if (method === 'IN_PERSON') {
+        // 직거래 해제 시 지역 초기화
+        onAreaSelectChange({ area: '', subArea: '' });
+      }
+    }
+
+    // 선택된 모든 거래 방법을 배열로 만들어서 전달
+    // const selectedMethods = Object.entries(updatedMethods)
+    //   .filter(([_, isSelected]) => isSelected)
+    //   .map(([method]) => method);
+    
+    // onTradeMethodChange(selectedMethods);
+
+    let selectedMethod = '';
+    if (updatedMethods.IN_PERSON) {
+      selectedMethod = 'IN_PERSON';
+    } else if (updatedMethods.SHIPPING) {
+      selectedMethod = 'SHIPPING';
+    }
+
+    onTradeMethodChange(selectedMethod);
+
+  };
+
+  // 배송비 옵션 처리
   const handleShippingOptionClick = (option) => {
     setShippingOption(option);
-    onShippingOptionChange(option);
+    // onShippingOptionChange(option);
 
-    // 배송비 별도에서 배송비 포함으로 변경 시 가격 초기화
+    // 배송비 포함으로 변경 시 배송비 초기화
     if (option === '배송비 포함') {
-      setPrice('');
-      onShippingCostChange('');
+      setShippingPrice('');
+      onShippingCostChange(0);
     }
   };
 
-  const handlePriceChange = (e) => {
-    let value = e.target.value.replace(/[^0-9]/g, ''); // 숫자가 아닌 문자를 제거
+  // 배송비 입력 처리
+  const handleShippingPriceChange = (e) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
     if (value.trim() !== '') {
-      const formattedValue = Number(value).toLocaleString(); // 천단위로 , 찍기
-      setPrice(formattedValue); // 상태 업데이트
-      onShippingCostChange(value); // 원래 숫자값을 전달
+      const formattedValue = Number(value).toLocaleString();
+      setShippingPrice(formattedValue);
+      onShippingCostChange(Number(value));
     } else {
-      setPrice(''); // 값이 없으면 빈 문자열로 설정
-      onShippingCostChange(''); // 빈 값 전달
+      setShippingPrice('');
+      onShippingCostChange(0);
     }
   };
 
-  const handleAreaSelectChange = (area, subArea) => {
-    onAreaSelectChange({ area, subArea });
+  const handleAreaSelectChange = ({ area, subArea }) => {
+    if (area && subArea) {
+      onAreaSelectChange({ area, subArea });
+    }
   };
 
   return (
     <div className='mb-4'>
-      <h1 className='mt-[1rem] mb-[0.5rem]'>거래 방법</h1>
-      <div className="flex space-x-4 items-center">
-        {['택배거래', '직거래'].map((option) => (
+      <h1 className='mt-[1rem] mb-[0.5rem]'>안전 거래</h1>
+      <div className="flex space-x-10 items-center">
+        {['사용', '미사용'].map((option) => (
           <div
             key={option}
             className="flex items-center cursor-pointer"
-            onClick={() => handleOptionClick(option)}
+            onClick={() => handleSafeOptionClick(option)}
           >
             <Image
-              src={options[option] ? '/icons/activeCheck.svg' : '/icons/unactiveCheck.svg'}
+              src={safeOption === option ? '/icons/activeCheck.svg' : '/icons/unactiveCheck.svg'}
               alt={`${option} 체크`}
               width={20}
               height={20}
@@ -84,7 +121,35 @@ export default function SellMethod({
         ))}
       </div>
 
-      {options['택배거래'] && (
+      <h1 className='mt-[1rem] mb-[0.5rem]'>거래 방법</h1>
+      <div className="flex space-x-4 items-center">
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => handleMethodClick('SHIPPING')}
+        >
+          <Image
+            src={tradeMethods.SHIPPING ? '/icons/activeCheck.svg' : '/icons/unactiveCheck.svg'}
+            alt="택배거래 체크"
+            width={20}
+            height={20}
+          />
+          <span className="ml-2">택배거래</span>
+        </div>
+        <div
+          className="flex items-center cursor-pointer"
+          onClick={() => handleMethodClick('IN_PERSON')}
+        >
+          <Image
+            src={tradeMethods.IN_PERSON ? '/icons/activeCheck.svg' : '/icons/unactiveCheck.svg'}
+            alt="직거래 체크"
+            width={20}
+            height={20}
+          />
+          <span className="ml-2">직거래</span>
+        </div>
+      </div>
+
+      {tradeMethods.SHIPPING && (
         <div className="mt-4">
           <h2 className='mt-[1rem] mb-[0.5rem]'>택배거래 옵션</h2>
           <div className="flex gap-4 mt-2">
@@ -117,8 +182,8 @@ export default function SellMethod({
               <InputBox
                 type="text"
                 placeholder="₩ 배송비"
-                value={price}
-                onChange={handlePriceChange}
+                value={shippingPrice}
+                onChange={handleShippingPriceChange}
                 width="w-1/2"
               />
             </div>
@@ -126,7 +191,7 @@ export default function SellMethod({
         </div>
       )}
 
-      {options['직거래'] && (
+      {tradeMethods.IN_PERSON && (
         <div className="mt-[1rem] mb-[0.5rem]">
           <h2>직거래 지역 선택</h2>
           <AreaSelect onChange={handleAreaSelectChange} />

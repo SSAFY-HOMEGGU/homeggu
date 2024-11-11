@@ -26,28 +26,32 @@ export default function ProductDivision3({ onInputPrice, onInputDetail }) {
   };
 
   return (
-    <div>
-      <h1 className='mt-[1rem] mb-[0.5rem]'>판매 가격</h1>
-      <InputBox
-        type="text"
-        placeholder="₩ 판매가격"
-        value={price}
-        onChange={handlePriceChange}
-        width="w-1/2"
-      />
-      <h1 className='mt-[1rem] mb-[0.5rem]'>상품 설명</h1>
-      <textarea
-        type="text"
-        placeholder={`
-          - 상품명(브랜드)\n
-          - 구매 시기\n
-          - 사용 기간\n
-          - 하자 여부\n
-          * 실제 촬영한 사진과 함께 상세 정보를 입력해주세요
-        `}
-        onChange={handleDetailChange}
-        className='w-full h-[18rem] border border-greyButtonText rounded-md focus:outline-none resize-none p-3 leading-tight'
-      ></textarea>
+    <div className='flex flex-col gap-4'>
+      <div>
+        <h1 className='mt-[1rem] mb-[0.5rem]'>판매 가격</h1>
+        <InputBox
+          type="text"
+          placeholder="₩ 판매가격"
+          value={price}
+          onChange={handlePriceChange}
+          width="w-1/2"
+        />
+      </div>
+      <div>
+        <h1 className='mt-[1rem] mb-[0.5rem]'>상품 설명</h1>
+        <textarea
+          type="text"
+          placeholder={`
+            - 상품명(브랜드)\n
+            - 구매 시기\n
+            - 사용 기간\n
+            - 하자 여부\n
+            * 실제 촬영한 사진과 함께 상세 정보를 입력해주세요
+          `}
+          onChange={handleDetailChange}
+          className='w-full h-[18rem] border border-greyButtonText rounded-md focus:outline-none resize-none p-3 leading-tight'
+        ></textarea>
+      </div>
     </div>
   )
 }
