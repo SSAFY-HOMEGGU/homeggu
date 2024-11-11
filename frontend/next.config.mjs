@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   reactStrictMode: false,
   images: {
     remotePatterns: [
@@ -9,7 +10,6 @@ const nextConfig = {
         // 또는 실제 이미지 서버의 hostname 패턴을 지정
         // hostname: '*.your-domain.com',
         // pathname: '/images/**', // 특정 경로만 허용하고 싶다면
-        output: 'export',
       },
     ],
   },
