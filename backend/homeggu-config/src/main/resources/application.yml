@@ -1,4 +1,7 @@
 # 모든 서비스에 공통된 설정을 저장하는 파일
+server:
+  port: 0  # 랜덤 포트
+
 spring: 
   servlet:
     multipart:
@@ -43,3 +46,12 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
