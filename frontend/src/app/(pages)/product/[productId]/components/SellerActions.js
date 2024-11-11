@@ -3,10 +3,11 @@
 import React from 'react'
 import Dropdown from '@/app/components/Dropdown'
 import useProductActionStore from '@/app/store/useProductActionStore';
-
+import useProductListStore from '@/app/store/useProductListStore';
 
 function SellerActions({ product  }) {
   const updateStatus = useProductActionStore(state => state.updateStatus);
+  const updateSelectedProduct = useProductListStore(state => state.updateSelectedProduct); 
   const productId = product.salesBoardId
 
   console.log(product)
@@ -39,6 +40,7 @@ function SellerActions({ product  }) {
     if (newStatus) {
       try {
         await updateStatus(product, newStatus);
+        updateSelectedProduct({ status: newStatus });
         console.log('업데이트 성공')
         // 상태 업데이트 성공 후 product 객체도 업데이트
         product.status = newStatus;

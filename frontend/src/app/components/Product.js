@@ -21,15 +21,11 @@ export default function Product({ product }) {
     ? JSON.parse(product.goodsImagePaths)
     : product.goodsImagePaths;
 
-    console.log('타입:', typeof product.goodsImagePaths);
-    console.log('값:', product.goodsImagePaths);
-    console.log('배열 맞나?:', Array.isArray(product.goodsImagePaths));
-
-  console.log('파싱된 이미지 경로:', imagePaths); 
   console.log('첫 번째 이미지:', imagePaths?.[0]);
 
   const { toggleLike } = useProductActionStore();
-  const updateProduct = useProductListStore(state => state.updateProduct);
+  // const updateProduct = useProductListStore(state => state.updateProduct);
+  const { updateProduct, updateSelectedProduct } = useProductListStore();
 
   const handleLikeClick = async (e) => {
     e.preventDefault();
@@ -43,6 +39,8 @@ export default function Product({ product }) {
       ...product,
       viewCnt: (product.viewCnt || 0) + 1
     });
+    // updateSelectedProduct(product);
+    setSelectedProduct(product);
   };
   
   // 이미지 URL이 없는 경우 기본 이미지 사용

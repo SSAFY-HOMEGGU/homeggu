@@ -24,10 +24,17 @@ const useProductListStore = create(
       }
     },
 
-    // 선택된 상품 업데이트 액션 추가
+    // 전체 상품 설정 (상품 선택 시)
+    setSelectedProduct: (product) => {
+      set({ selectedProduct: product });
+    },
+
+    // 부분 업데이트 (상태 변경 등)
     updateSelectedProduct: (updates) => {
       set(state => ({
-        selectedProduct: state.selectedProduct ? { ...state.selectedProduct, ...updates } : null
+        selectedProduct: state.selectedProduct 
+          ? { ...state.selectedProduct, ...updates } 
+          : null
       }));
     },
     
