@@ -9,4 +9,4 @@ FROM node:20.15.0 as runtime
 WORKDIR /app
 COPY --from=build /app /app
 EXPOSE 3000
-CMD ["npm", "start"]  # Next.js 서버 실행
+CMD npm start
