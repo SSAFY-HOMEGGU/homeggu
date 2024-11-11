@@ -6,6 +6,8 @@ export default function Login() {
   const KAKAO_APP_KEY = '5bf7a75e57aaf59c9780c6373a06ff4d';
   const REDIRECT_URI = 'http://localhost:3000/kakaoCallback';
 
+  
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Kakao SDK 초기화
     const loadKakaoSDK = () => {

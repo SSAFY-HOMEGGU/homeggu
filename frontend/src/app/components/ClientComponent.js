@@ -12,7 +12,6 @@ export default function ClientComponent({ children }) {
     <>
       {isVisible && (
         <div className="relative">
-          {/* <img src="/images/banner.png" alt="최상단 배너" /> */}
           <div className="relative w-full h-[2.5rem]">
             <Image 
               src="/images/banner.png" 

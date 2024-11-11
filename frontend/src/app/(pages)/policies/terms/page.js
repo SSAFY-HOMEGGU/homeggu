@@ -13,8 +13,8 @@ export default function Terms() {
         <section>
           <h2 className="text-2xl font-semibold mb-2">제 1 조 (목적)</h2>
           <p className="text-base">
-            이 약관은 (주)홈꾸(이하 "회사")가 제공하는
-            종합중고거래가구쇼핑플랫폼 서비스(이하 "서비스")를 이용함에 있어
+            이 약관은 (주)홈꾸(이하  &quot;회사 &quot;)가 제공하는
+            종합중고거래가구쇼핑플랫폼 서비스(이하  &quot;서비스 &quot;)를 이용함에 있어
             회사와 이용자의 권리, 의무, 책임 사항 및 이용 조건 등을 규정함을
             목적으로 합니다.
           </p>
@@ -23,12 +23,12 @@ export default function Terms() {
         <section>
           <h2 className="text-2xl font-semibold mb-2">제 2 조 (정의)</h2>
           <p className="text-base">
-            1. "서비스"라 함은 회사가 제공하는 모든 온라인 플랫폼을 말합니다.
+            1.  &quot;서비스 &quot;라 함은 회사가 제공하는 모든 온라인 플랫폼을 말합니다.
             <br />
-            2. "이용자"라 함은 회사의 서비스를 이용하는 모든 개인 또는 법인을
+            2.  &quot;이용자 &quot;라 함은 회사의 서비스를 이용하는 모든 개인 또는 법인을
             말합니다.
             <br />
-            3. "계정"이라 함은 이용자가 서비스에 접속하기 위해 사용하는 고유의
+            3.  &quot;계정 &quot;이라 함은 이용자가 서비스에 접속하기 위해 사용하는 고유의
             아이디와 비밀번호를 말합니다.
           </p>
         </section>

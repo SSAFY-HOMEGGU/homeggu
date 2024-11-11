@@ -33,7 +33,7 @@ export default function ProductInfo() {
     if (params.productId) {
       fetchProductDetail(params.productId);
     }
-  }, [params.productId]);
+  }, [params.productId,fetchProductDetail]);
 
   
   console.log('params',params)

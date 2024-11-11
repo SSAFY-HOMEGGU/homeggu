@@ -8,7 +8,7 @@ export default function YouthPolicy() {
         <section>
           <h2 className="text-xl font-semibold mb-2">1. 청소년 보호의 목적</h2>
           <p className="text-base">
-            (주)홈꾸(이하 "회사")는 청소년이 유해한 정보로부터 보호받으며,
+            (주)홈꾸(이하  &quot;회사 &quot;)는 청소년이 유해한 정보로부터 보호받으며,
             안전하고 건전한 인터넷 환경을 제공받을 수 있도록 청소년 보호정책을
             시행합니다.
           </p>

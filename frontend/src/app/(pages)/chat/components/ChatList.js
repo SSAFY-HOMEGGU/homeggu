@@ -5,9 +5,10 @@ import { getChatList } from '@/app/api/chatApi'
 
 export default function ChatList({ onSelectRoom }) {
   const [chatRooms, setChatRooms] = useState([]);
-  const userId = localStorage.getItem('userId');
+  
 
   useEffect(() => {
+    const userId = localStorage.getItem('userId');
     const fetchChatRooms = async () => {
       try {
         const data = await getChatList(userId);

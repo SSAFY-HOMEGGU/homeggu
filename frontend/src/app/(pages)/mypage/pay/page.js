@@ -12,9 +12,7 @@ import { CirclePlus } from "lucide-react";
 import { fetchPayInfo, fetchPayHistory, chargeMoney } from "@/app/api/payApi";
 import ChargeModal from "@/app/components/ChargeModal";
 
-const Register = dynamic(() => import("../../../components/RegisterModal"), {
-  ssr: false,
-});
+
 
 export default function PayPage() {
   const [showAccountDelete, setShowAccountDelete] = useState(false);
@@ -33,10 +31,12 @@ export default function PayPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadPayInfo();
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadTransactions();
   }, [selectedTab, currentPage]);
@@ -262,9 +262,7 @@ export default function PayPage() {
         )}
       </div>
 
-      {showRegisterModal && (
-        <Register onClose={() => setShowRegisterModal(false)} />
-      )}
+      
       {showChargeModal && (
         <ChargeModal
           onClose={() => setShowChargeModal(false)}

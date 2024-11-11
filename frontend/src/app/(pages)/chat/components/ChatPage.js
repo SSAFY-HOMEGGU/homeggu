@@ -6,9 +6,14 @@ import ChatMessage from './ChatMessage'
 import { getChatHistory } from '@/app/api/chatApi';
 
 export default function ChatPage({ roomId }) {
-  const userId = localStorage.getItem('userId');
+  const [userId, setUserId] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId');
+    setUserId(storedUserId);
+  }, []);
 
   useEffect(() => {
     const fetchChatHistory = async () => {

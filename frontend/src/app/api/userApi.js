@@ -127,22 +127,22 @@ export const updateUserProfile = (profileData) => {
 };
 
 // // 프로필 이미지 업로드 수정
-// export const uploadProfileImage = async (file) => {
-//   const formData = new FormData();
-//   formData.append("file", file);
+export const uploadProfileImage = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
 
-//   try {
-//     const response = await userInstance.post("/upload/user-image", formData, {
-//       headers: {
-//         "Content-Type": "multipart/form-data",
-//       },
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error("이미지 업로드 에러:", error.response || error);
-//     if (error.response?.status === 403) {
-//       throw new Error("권한이 없습니다. 다시 로그인해주세요.");
-//     }
-//     throw error;
-//   }
-// };
+  try {
+    const response = await userInstance.post("/upload/user-image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("이미지 업로드 에러:", error.response || error);
+    if (error.response?.status === 403) {
+      throw new Error("권한이 없습니다. 다시 로그인해주세요.");
+    }
+    throw error;
+  }
+};

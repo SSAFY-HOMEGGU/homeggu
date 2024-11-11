@@ -30,6 +30,7 @@ export default function ChatContainer({ chatRoomId, userId }) {
   };
 
   // 웹소켓 연결 및 채팅 내역 로드
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const connectWebSocket = () => {
       const socket = new SockJS("http://localhost:8083/ws");
@@ -42,10 +43,7 @@ export default function ChatContainer({ chatRoomId, userId }) {
           setStompClient(client);
           setConnected(true);
           
-          // 연결 성공 후 채팅 내역 불러오기
-          // await fetchChatHistory();
-          
-          // 새 메시지 구독
+
           client.subscribe(`/exchange/chat.exchange/room.${chatRoomId}`, (message) => {
             const receivedMessage = JSON.parse(message.body);
             setMessages(prev => [...prev, receivedMessage]);
@@ -67,7 +65,6 @@ export default function ChatContainer({ chatRoomId, userId }) {
 
     const client = connectWebSocket();
     
-    // 컴포넌트 언마운트 시 연결 해제
     return () => {
       if (client) {
         client.deactivate();

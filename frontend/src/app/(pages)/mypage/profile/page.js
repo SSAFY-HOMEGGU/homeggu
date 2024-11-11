@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
-import dynamic from "next/dynamic";
 import addProfileImg from "/public/icons/addprofileimg.svg";
 import { BlueButton } from "../../../components/Button";
 import InputBox from "../../../components/InputBox";
@@ -13,10 +12,6 @@ import {
   checkNickname,
 } from "@/app/api/userApi";
 import useUserStore from "@/app/store/userStore";
-
-const Register = dynamic(() => import("../../../components/RegisterModal"), {
-  ssr: false,
-});
 
 export default function ProfilePage() {
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -226,9 +221,11 @@ export default function ProfilePage() {
         <div className="flex justify-center my-4">
           <label htmlFor="profile-upload" style={{ cursor: "pointer" }}>
             {uploadedImage ? (
-              <img
+              <Image
                 src={uploadedImage}
                 alt="Profile Image"
+                width={120}
+                height={120}
                 style={{ width: "137px", height: "137px", borderRadius: "50%" }}
               />
             ) : (
@@ -347,9 +344,6 @@ export default function ProfilePage() {
           </BlueButton>
         </div>
 
-        {showRegisterModal && (
-          <Register onClose={() => setShowRegisterModal(false)} />
-        )}
       </div>
     </div>
   );
