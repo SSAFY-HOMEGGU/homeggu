@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . ./
-RUN npm run build && npm run export
+RUN npm run build
 
 FROM nginx
 EXPOSE 3000
