@@ -1,6 +1,7 @@
 package com.homeggu.domain.like.controller;
 
 import com.homeggu.domain.like.dto.request.LikeRequest;
+import com.homeggu.domain.like.dto.response.LikeListResponse;
 import com.homeggu.domain.like.entity.Like;
 import com.homeggu.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class LikeController {
 
     // 사용자가 등록한 찜 목록 조회
     @GetMapping("/list")
-    public ResponseEntity<List<Like>> getUserLikes(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<LikeListResponse> getUserLikes(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.substring(7);
         return ResponseEntity.ok().body(likeService.getLikes(accessToken));
     }
