@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Dict, Any
 import pickle
-from app.models.recommender import ContentBasedRecommender
 
 router = APIRouter()
 
@@ -8,10 +9,24 @@ router = APIRouter()
 with open("app/models/trained_model.pkl", "rb") as f:
     recommender = pickle.load(f)
 
+# 요청 데이터 스키마 정의
+class Preferences(BaseModel):
+    category_preferences: Dict[str, float]
+    mood_preferences: Dict[str, float]
+    top_n: int = 10  # 기본값 10개 추천
+
 @router.post("/recommend")
-def recommend_items(category_preferences: dict, mood_preferences: dict, top_n: int = 10):
+def recommend_items(preferences: Preferences):
+    """
+    FastAPI 엔드포인트: 추천 리스트 반환
+    """
     try:
-        recommendations = recommender.recommend(category_preferences, mood_preferences, top_n)
+        # 추천 수행
+        recommendations = recommender.recommend(
+            category_preferences=preferences.category_preferences,
+            mood_preferences=preferences.mood_preferences,
+            top_n=preferences.top_n
+        )
         return {"recommendations": recommendations}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Recommendation error: {str(e)}")
