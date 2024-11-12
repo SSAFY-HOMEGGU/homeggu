@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: homeggu-chat
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/homeggu_chat
+    username: '{cipher}1f7755a99abab90253ffc12d5c7415f5222008cab23dade9b5e72ef134016822'
+    password: '{cipher}1b5fc4f4277bb492909c96d334720af4069a9f159e47a71b5c3048eece4a80ee'
+
+  data:
+    mongodb:
+      uri: mongodb://mongodb:27017/chat_message
+
+  stomp:
+    port: 61613
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: '{cipher}d1e1cff53a7b0adb7973fc3c63bfbf25a235b9e121c26501a3522220fd28996a'
+    password: '{cipher}1b5fc4f4277bb492909c96d334720af4069a9f159e47a71b5c3048eece4a80ee'
+
+

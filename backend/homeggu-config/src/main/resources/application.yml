@@ -1,0 +1,54 @@
+# 모든 서비스에 공통된 설정을 저장하는 파일
+spring:
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
+        show_sql: true
+        format_sql: true
+    dialect: org.hibernate.dialect.MySQL8Dialect
+    jdbc:
+      time_zone: Asia/Seoul
+
+  sql:
+    init:
+      mode: always
+
+  data:
+    web:
+      pageable:
+        max-page-size: 2000
+        default-page-size: 10
+
+jwt:
+  salt: '{cipher}8c3cc6d57c4c406a21351aa9b6fe1235a8e947cf2b783a511d2103afb4d7c0aaf43030e3a8e4abbaa2ceef278c39fd497514fd4885657e488414e3cdb20af2c4'
+  access-token:
+    expiretime: 3600000
+  refresh-token:
+    expiretime: 2592000000
+
+# JPA에서 쿼리가 어떻게 나가는지 확인
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

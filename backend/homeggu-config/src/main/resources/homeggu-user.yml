@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: homeggu-user
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/homeggu_user
+    username: '{cipher}1f7755a99abab90253ffc12d5c7415f5222008cab23dade9b5e72ef134016822'
+    password: '{cipher}1b5fc4f4277bb492909c96d334720af4069a9f159e47a71b5c3048eece4a80ee'
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-name: kakao
+            authorization-grant-type: authorization_code
+            redirect-uri: https://frontend/kakaoCallback;
+            client-id: '{cipher}09ed047839389384edd3b03effbe9b65c4912222023f2680e60fbb39a02104f1ead3fa19b2faddb7546e9f63fb88e7184ab8e384642e8465ca60c62c89688884'
+            client-secret: '{cipher}c329cdc3546f0c2200a719723c97a58f0216b890d92ac64a6bf640ebbc90ba7505d02734f53743cd1f22539b7125499894dc05e847b57217670801489b80487c'
+            client-authentication-method: client_secret_post
+            scope:
+              - profile_nickname
+              - account_email
+
+  jwt:
+    secret: '{cipher}97ac8a3f1e83ca888555d06994e86256d2ac72af7f84c419e8ed1507d8f6bfa5abda63e612ced0e463f3ff72489ed1a15ffd121141f023c097f91e1bda15969b104679835f2e3fd81c3bf8709e0786b50fa33b9d387bd114f05f84cf07ef7878160ec61b2a3a9b6fc3b1a9dd6dd525a3090b165fb49110f102176184c48d49049f291a6a8761cbaef3e4e358fc9e70bdc85a599586bbe84c97cd748b0c7321f1'
+
+random-nickname:
+  first-names: "수상한,사랑스러운,비련의,애처로운,멋있는,천진난만한,소심한"
+  last-names: "돌멩이,여주인공,길고양이,억만장자,나뭇잎,행인1,주인공,화분,강아지,비둘기,히어로,먼지,버스,마법사,댄서,모범생,알바생,할아버지,할머니,외국인"
