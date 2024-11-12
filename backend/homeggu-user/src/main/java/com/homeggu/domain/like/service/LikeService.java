@@ -1,5 +1,6 @@
 package com.homeggu.domain.like.service;
 
+import com.homeggu.domain.like.dto.response.LikeListResponse;
 import com.homeggu.domain.like.entity.Like;
 import com.homeggu.domain.like.repository.LikeRepository;
 import com.homeggu.domain.user.entity.User;
@@ -48,12 +49,11 @@ public class LikeService {
     }
 
     // 사용자가 등록한 찜 목록 조회
-    public List<Like> getLikes(String accessToken) {
+    public LikeListResponse getLikes(String accessToken) {
         Claims claims = jwtProvider.parseToken(accessToken);
         int userId = Integer.parseInt(claims.getSubject());
 
         User user = userRepository.findById(userId).orElse(null);
-
         return likeRepository.findByUser(user);
     }
 
