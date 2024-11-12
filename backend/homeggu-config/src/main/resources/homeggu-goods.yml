@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: homeggu-goods
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/homeggu
+    username: '{cipher}1f7755a99abab90253ffc12d5c7415f5222008cab23dade9b5e72ef134016822'
+    password: '{cipher}22b09b13387e1ce5e84e6b747b547d5785ce4d27d6496dff2d54e29fef96f961'
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+cloud:
+  aws:
+    s3:
+      bucket: homeggu-s3
+    stack.auto: false
+    region.static: ap-northeast-2
+    credentials:
+      accessKey: '{cipher}350cba80256ce9303ce9ac38316f1cba805fffd5b00760004a0b92229e82d2f805b9dd27bc23a83f0d8c7210ba71de9f'
+      secretKey: '{cipher}4df46abdafba938e3d618faad28ab411652dd49d230dba8258d7f839ce1436588584659258d241ccd93197d550a711933eec23a437e4c9e6709632b2ac4c786e'
