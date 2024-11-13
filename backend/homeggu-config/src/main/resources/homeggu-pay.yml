@@ -4,6 +4,6 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/homeggu_pay
+    url: jdbc:mysql://mysql:3306/homeggu_pay
     username: '{cipher}e05b57681e666833481be42f73df1fe3cc2efadf53cc030954e278d54cd8eb35'
     password: '{cipher}dcb4023036cae52597e9d40744b1f3fe654c57f6c57bf1acde5dcb9671c185f6'
