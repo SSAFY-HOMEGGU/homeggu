@@ -83,6 +83,7 @@ public class PreferenceService {
 
         // action에 따른 가중치 비율 설정 (퍼센트 증가)
         double weightPercentage = switch (action) {
+            case "firstCheck" -> 0.05;
             case "click" -> 0.03;
             case "like" -> 0.05;
             case "search" -> 0.1;
@@ -95,8 +96,15 @@ public class PreferenceService {
             Map<String, Double> categoryPreferences = preference.getCategoryPreferences();
             Map<String, Double> moodPreferences = preference.getMoodPreferences();
 
-            // 카테고리 업데이트
-            if (categoryPreferences.containsKey(category)) {
+            // 최초 로그인 시 mood만 선호도에 반영
+            if (preferenceRequest.getAction().equals("firstCheck")) {
+                double currentPreference = moodPreferences.get(mood);
+                double updatedPreference = currentPreference * (1 + weightPercentage);
+                moodPreferences.put(mood, Math.min(1.0, Math.max(0.0, (double) Math.round(updatedPreference * 1000) / 1000)));
+            }
+
+            // 카테고리와 분위기 업데이트
+            else {
                 double currentPreference = categoryPreferences.get(category);
                 double updatedPreference = currentPreference * (1 + weightPercentage);
                 categoryPreferences.put(category, Math.min(1.0, Math.max(0.0, (double) Math.round(updatedPreference * 1000) / 1000)));

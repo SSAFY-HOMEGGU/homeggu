@@ -1,15 +1,17 @@
-package com.homeggu.domain.like.service;
+package com.homeggu.domain.saledBoardLike.service;
 
-import com.homeggu.domain.like.dto.response.LikeListResponse;
-import com.homeggu.domain.like.dto.response.LikeResponse;
-import com.homeggu.domain.like.entity.Like;
-import com.homeggu.domain.like.repository.LikeRepository;
+import com.homeggu.domain.saledBoardLike.dto.response.LikeListResponse;
+import com.homeggu.domain.saledBoardLike.dto.response.LikeResponse;
+import com.homeggu.domain.saledBoardLike.entity.SalesBoardLike;
+import com.homeggu.domain.saledBoardLike.repository.LikeRepository;
 import com.homeggu.domain.user.entity.User;
 import com.homeggu.domain.user.repository.UserRepository;
 import com.homeggu.global.util.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,15 +28,15 @@ public class LikeService {
 
         User user = userRepository.findById(userId).orElse(null);
 
-        Like like = Like.builder()
+        SalesBoardLike salesBoardLike = SalesBoardLike.builder()
                 .user(user)
                 .salesBoardId(salesBoardId)
                 .build();
 
-        likeRepository.save(like);
+        likeRepository.save(salesBoardLike);
 
         return LikeResponse.builder()
-                .like(like)
+                .salesBoardLike(salesBoardLike)
                 .isLiked(true)
                 .build();
     }
@@ -46,11 +48,11 @@ public class LikeService {
 
         User user = userRepository.findById(userId).orElse(null);
 
-        Like like = likeRepository.findByUserAndSalesBoardId(user, salesBoardId).orElse(null);
-        if (like != null) {
-            likeRepository.delete(like);
+        SalesBoardLike salesBoardLike = likeRepository.findByUserAndSalesBoardId(user, salesBoardId).orElse(null);
+        if (salesBoardLike != null) {
+            likeRepository.delete(salesBoardLike);
             return LikeResponse.builder()
-                    .like(like)
+                    .salesBoardLike(salesBoardLike)
                     .isLiked(false)
                     .build();
         }
@@ -65,7 +67,11 @@ public class LikeService {
         int userId = Integer.parseInt(claims.getSubject());
 
         User user = userRepository.findById(userId).orElse(null);
-        return likeRepository.findByUser(user);
+
+        List<SalesBoardLike> salesBoardLikeList = likeRepository.findByUser(user);
+        return LikeListResponse.builder()
+                .salesBoardLikeList(salesBoardLikeList)
+                .build();
     }
 
     // 찜 여부 확인

@@ -1,4 +1,4 @@
-package com.homeggu.domain.like.dto.request;
+package com.homeggu.domain.saledBoardLike.dto.request;
 
 import lombok.Getter;
 

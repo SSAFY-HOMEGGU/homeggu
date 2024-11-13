@@ -1,15 +1,13 @@
-package com.homeggu.domain.like.controller;
+package com.homeggu.domain.saledBoardLike.controller;
 
-import com.homeggu.domain.like.dto.request.LikeRequest;
-import com.homeggu.domain.like.dto.response.LikeListResponse;
-import com.homeggu.domain.like.dto.response.LikeResponse;
-import com.homeggu.domain.like.entity.Like;
-import com.homeggu.domain.like.service.LikeService;
+import com.homeggu.domain.saledBoardLike.dto.request.LikeRequest;
+import com.homeggu.domain.saledBoardLike.dto.response.LikeListResponse;
+import com.homeggu.domain.saledBoardLike.dto.response.LikeResponse;
+import com.homeggu.domain.saledBoardLike.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/like")
