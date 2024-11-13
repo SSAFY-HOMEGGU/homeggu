@@ -1,4 +1,4 @@
-package com.homeggu.goods;
+package com.homeggu;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
