@@ -1,5 +1,6 @@
 package com.homeggu.domain.salesBoard;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.homeggu.domain.salesBoard.enums.Category;
 import com.homeggu.domain.salesBoard.enums.IsSell;
 import com.homeggu.domain.salesBoard.enums.Mood;
@@ -23,13 +24,15 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/board")
+@RequestMapping("/goods/board")
 @RequiredArgsConstructor
 public class SalesBoardController {
     private final SalesBoardService salesBoardService;
     private final S3Service s3Service;
+    private final AmazonS3 amazonS3Client;
 
-    // 2D 이미지들 등록
+
+    // 2D 이미지 등록
     @PostMapping("/image")
     public List<String> uploadImages(@RequestParam("files") MultipartFile[] files) throws IOException {
         try{
@@ -45,6 +48,25 @@ public class SalesBoardController {
         }
     }
 
+    // 3D 이미지 등록
+    @PostMapping("/3dimage")
+    public List<String> upload3DImages(@RequestParam("files") MultipartFile[] files) throws IOException {
+        try {
+            List<String> uploadedFileUrls = new ArrayList<>();
+            String fileUrl;
+
+            for (MultipartFile file : files) {
+                // 파일 확장자 검증
+                String filename = file.getOriginalFilename();
+                    fileUrl = s3Service.uploadFile(file); // S3에 업로드
+                    uploadedFileUrls.add(fileUrl);
+            }
+            return uploadedFileUrls;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // 물건 등록
     @PostMapping
     public ResponseEntity<?> registGoods(
@@ -55,7 +77,6 @@ public class SalesBoardController {
             dto.getSalesBoardDTO().setUserId(userId);
 
             salesBoardService.registerGoods(dto);
-
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "성공적으로 등록되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "입력한 데이터 형식이 올바르지 않습니다."));
@@ -89,8 +110,6 @@ public class SalesBoardController {
         }
     }
 
-
-
     // 물건 삭제
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteGoods(@PathVariable Integer boardId) {
@@ -122,18 +141,6 @@ public class SalesBoardController {
         Page<SalesBoardDTO> goods = salesBoardService.getFilteredGoods(category, min_price, max_price, isSell, title, pageable);
         return ResponseEntity.ok(goods);
     }
-    //테스트 용임 안씀
-    @GetMapping("/all")
-    public ResponseEntity<Page<SalesBoardDTO>> getAllGoods(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<SalesBoardDTO> goodsPage = salesBoardService.getAllGoods(pageable);
-        return ResponseEntity.ok(goodsPage);
-    }
-
-
 
     //물건 상세
     @GetMapping("/{boardId}")
@@ -146,7 +153,6 @@ public class SalesBoardController {
         }
     }
 
-    // 로그인
     private String getAuth() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
@@ -154,8 +160,4 @@ public class SalesBoardController {
         }
         throw new RuntimeException("인가되지 않은 접근");
     }
-
-
-
-
 }
