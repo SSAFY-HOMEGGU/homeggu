@@ -22,9 +22,10 @@ public class ChargeController {
 
     @PostMapping
     @Operation(summary = "머니 충전", description = "계좌의 현금을 홈꾸머니로 변환합니다.")
-    public ResponseEntity<Void> createCharge(/*@AuthPrincipal @Parameter(hidden = true) Long userId,*/
-                                            @RequestBody ChargeRequest chargeRequest) {
-        Long userId = 1L; // 테스트를 위해 임의로 설정 -> MSA 설정 이후 수정하기
+    public ResponseEntity<Void> createCharge(@RequestHeader("userId") Long userId, @RequestBody ChargeRequest chargeRequest) {
+        if (userId == null) {
+            throw new IllegalArgumentException("userId header is missing");
+        }
         chargeService.createCharge(userId, chargeRequest);
         return ResponseEntity.status(CREATED).build();
     }
