@@ -14,9 +14,6 @@ public class Account {
     private Long accountId;
 
     private Long userId;
-//    @OneToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
 
     private String accountNumber;
 

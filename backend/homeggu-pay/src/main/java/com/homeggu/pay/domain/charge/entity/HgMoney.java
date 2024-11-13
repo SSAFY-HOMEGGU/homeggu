@@ -17,9 +17,6 @@ public class HgMoney { // 홈꾸머니
     private Long hgMoneyId;
 
     private Long userId;
-//    @OneToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
 
     private Long hgMoneyBalance;
     
