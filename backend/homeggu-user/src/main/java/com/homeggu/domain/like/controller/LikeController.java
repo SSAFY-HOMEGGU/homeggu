@@ -2,6 +2,7 @@ package com.homeggu.domain.like.controller;
 
 import com.homeggu.domain.like.dto.request.LikeRequest;
 import com.homeggu.domain.like.dto.response.LikeListResponse;
+import com.homeggu.domain.like.dto.response.LikeResponse;
 import com.homeggu.domain.like.entity.Like;
 import com.homeggu.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
@@ -19,18 +20,18 @@ public class LikeController {
 
     // 찜 등록
     @PostMapping("")
-    public ResponseEntity<?> addLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
+    public ResponseEntity<LikeResponse> addLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
         String accessToken = authorizationHeader.substring(7);
-        likeService.addLike(accessToken, likeRequest.getSalesBoardId());
-        return ResponseEntity.ok().build();
+        LikeResponse likeResponse = likeService.addLike(accessToken, likeRequest.getSalesBoardId());
+        return ResponseEntity.ok().body(likeResponse);
     }
 
     // 찜 해제
     @DeleteMapping("")
-    public ResponseEntity<?> deleteLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
+    public ResponseEntity<LikeResponse> deleteLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
         String accessToken = authorizationHeader.substring(7);
-        likeService.deleteLike(accessToken, likeRequest.getSalesBoardId());
-        return ResponseEntity.ok().build();
+        LikeResponse likeResponse = likeService.deleteLike(accessToken, likeRequest.getSalesBoardId());
+        return ResponseEntity.ok().body(likeResponse);
     }
 
     // 사용자가 등록한 찜 목록 조회
