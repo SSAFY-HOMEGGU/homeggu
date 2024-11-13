@@ -5,6 +5,7 @@ import com.homeggu.pay.domain.charge.repository.HgMoneyRepository;
 import com.homeggu.pay.domain.transfer.dto.request.CancelRequest;
 import com.homeggu.pay.domain.transfer.dto.request.ConfirmRequest;
 import com.homeggu.pay.domain.transfer.dto.request.TransferRequest;
+import com.homeggu.pay.domain.transfer.dto.response.TransferResponse;
 import com.homeggu.pay.domain.transfer.entity.StateCategory;
 import com.homeggu.pay.domain.transfer.entity.Transfer;
 import com.homeggu.pay.domain.transfer.repository.TransferRepository;
@@ -34,7 +35,7 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    public void createTransfer(Long senderId, TransferRequest transferRequest) {
+    public TransferResponse createTransfer(Long senderId, TransferRequest transferRequest) {
         Long transferAmount = transferRequest.getTransferAmount();
         HgMoney senderHgMoney = hgMoneyRepository.findByUserId(senderId).orElseThrow();
         HgMoney receiverHgMoney = hgMoneyRepository.findByUserId(transferRequest.getReceiverId()).orElseThrow();
@@ -59,6 +60,8 @@ public class TransferServiceImpl implements TransferService {
                 .build();
 
         transferRepository.save(transfer);
+
+        return new TransferResponse(transfer.getTransferId());
     }
 
     @Override
