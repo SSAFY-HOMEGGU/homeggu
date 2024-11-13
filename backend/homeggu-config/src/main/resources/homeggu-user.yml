@@ -4,9 +4,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql:3306/homeggu_user
-    username: '{cipher}1f7755a99abab90253ffc12d5c7415f5222008cab23dade9b5e72ef134016822'
-    password: '{cipher}1b5fc4f4277bb492909c96d334720af4069a9f159e47a71b5c3048eece4a80ee'
+    url: jdbc:mysql://localhost:3306/homeggu_user
+    username: '{cipher}e05b57681e666833481be42f73df1fe3cc2efadf53cc030954e278d54cd8eb35' # 임시
+    password: '{cipher}dcb4023036cae52597e9d40744b1f3fe654c57f6c57bf1acde5dcb9671c185f6' # 임시
 
   data:
     redis:
