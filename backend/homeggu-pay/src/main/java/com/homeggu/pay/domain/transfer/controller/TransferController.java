@@ -20,9 +20,10 @@ public class TransferController {
 
     @PostMapping
     @Operation(summary = "머니 송금", description = "충전된 홈꾸머니를 다른 사람에게 송금합니다.")
-    public ResponseEntity<Void> createTransfer(/*@AuthPrincipal @Parameter(hidden = true) Long senderId,*/
-                                                @RequestBody TransferRequest transferRequest) {
-        Long senderId = 1L; // 테스트를 위해 임의로 설정 -> MSA 설정 이후 수정하기
+    public ResponseEntity<Void> createTransfer(@RequestHeader("userId") Long senderId, @RequestBody TransferRequest transferRequest) {
+        if (senderId == null) {
+            throw new IllegalArgumentException("userId header is missing");
+        }
         transferService.createTransfer(senderId, transferRequest);
         return ResponseEntity.status(CREATED).build();
     }
