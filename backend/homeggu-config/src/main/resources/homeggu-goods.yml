@@ -4,13 +4,13 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/homeggu
+    url: jdbc:mysql://mysql:3306/homeggu
     username: '{cipher}1f7755a99abab90253ffc12d5c7415f5222008cab23dade9b5e72ef134016822'
     password: '{cipher}22b09b13387e1ce5e84e6b747b547d5785ce4d27d6496dff2d54e29fef96f961'
 
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
 
 cloud:
