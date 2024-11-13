@@ -17,7 +17,7 @@ public class LikeController {
     private final LikeService likeService;
 
     // 찜 등록
-    @PostMapping("")
+    @PostMapping("/regist")
     public ResponseEntity<LikeResponse> addLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
         String accessToken = authorizationHeader.substring(7);
         LikeResponse likeResponse = likeService.addLike(accessToken, likeRequest.getSalesBoardId());
@@ -25,7 +25,7 @@ public class LikeController {
     }
 
     // 찜 해제
-    @DeleteMapping("")
+    @DeleteMapping("/cancel")
     public ResponseEntity<LikeResponse> deleteLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
         String accessToken = authorizationHeader.substring(7);
         LikeResponse likeResponse = likeService.deleteLike(accessToken, likeRequest.getSalesBoardId());

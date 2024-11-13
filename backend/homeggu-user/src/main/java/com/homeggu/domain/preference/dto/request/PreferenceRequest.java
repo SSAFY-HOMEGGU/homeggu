@@ -7,4 +7,5 @@ public class PreferenceRequest {
     private String category;
     private String mood;
     private String action;
+    private int clickedSalesBoardId;
 }
