@@ -1,4 +1,4 @@
-package com.homeggu.domain.like.entity;
+package com.homeggu.domain.saledBoardLike.entity;
 
 import com.homeggu.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Like {
+public class SalesBoardLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int likeId;
+    private int salesBoardLikeId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
