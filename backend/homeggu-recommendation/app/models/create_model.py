@@ -20,51 +20,40 @@ with open("app/models/trained_model.pkl", "wb") as f:
 print("Model saved as trained_model.pkl")
 
 # 아래는 우리 프로젝트 db의 상품과 연결할 때 참고
+# import requests
 # import pandas as pd
-# import numpy as np
 # import pickle
-# import mysql.connector
 # from app.models.recommender import ContentBasedRecommender
 
-# # MySQL 데이터베이스 연결 설정
-# db_config = {
-#     'user': 'your_username',         # MySQL 사용자 이름
-#     'password': 'your_password',     # MySQL 비밀번호
-#     'host': 'localhost',             # MySQL 호스트
-#     'database': 'your_database',     # 사용할 데이터베이스 이름
-# }
+# # Goods 서버의 API 호출
+# GOODS_SERVER_URL = "http://goods-server-url/api/goods"
 
-# # MySQL에서 데이터 가져오기
-# try:
-#     # MySQL 연결
-#     connection = mysql.connector.connect(**db_config)
+# def fetch_goods_from_server():
+#     try:
+#         response = requests.get(GOODS_SERVER_URL)
+#         response.raise_for_status()  # HTTP 에러 확인
+#         goods_data = response.json()
+#         return goods_data
+#     except requests.exceptions.RequestException as e:
+#         print(f"Error fetching goods data: {e}")
+#         return []
 
-#     # SQL 쿼리 작성
-#     query = """
-#         SELECT 
-#             item_id,
-#             category,
-#             mood
-#         FROM
-#             your_items_table;
-#     """
+# # Goods 서버에서 상품 데이터 가져오기
+# goods_data = fetch_goods_from_server()
 
-#     # 데이터 읽기
-#     items_db = pd.read_sql(query, connection)
+# # 데이터 변환
+# if goods_data:
+#     items_db = pd.DataFrame(goods_data)  # JSON 데이터를 Pandas DataFrame으로 변환
+#     print("Data successfully loaded from Goods server.")
 
-#     print("Data successfully loaded from MySQL.")
+#     # 추천 시스템 생성
+#     recommender = ContentBasedRecommender(items_db)
 
-# except mysql.connector.Error as err:
-#     print(f"Error: {err}")
-# finally:
-#     if connection.is_connected():
-#         connection.close()
+#     # 모델 저장
+#     with open("app/models/trained_model.pkl", "wb") as f:
+#         pickle.dump(recommender, f)
 
-# # 추천 시스템 생성
-# recommender = ContentBasedRecommender(items_db)
+#     print("Model saved as trained_model.pkl")
+# else:
+#     print("No data received from Goods server.")
 
-# # 모델 저장
-# with open("app/models/trained_model.pkl", "wb") as f:
-#     pickle.dump(recommender, f)
-
-# print("Model saved as trained_model.pkl")
