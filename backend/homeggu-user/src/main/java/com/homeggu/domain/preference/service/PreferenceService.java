@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class PreferenceService {
@@ -105,10 +103,12 @@ public class PreferenceService {
 
             // 카테고리와 분위기 업데이트
             else {
-                double currentPreference = categoryPreferences.get(category);
-                double updatedPreference = currentPreference * (1 + weightPercentage);
-                categoryPreferences.put(category, Math.min(1.0, Math.max(0.0, (double) Math.round(updatedPreference * 1000) / 1000)));
-                moodPreferences.put(mood, Math.min(1.0, Math.max(0.0, (double) Math.round(updatedPreference * 1000) / 1000)));
+                double currentCategoryPreference = categoryPreferences.get(category);
+                double currentMoodPreference = moodPreferences.get(mood);
+                double updatedCategoryPreference = currentCategoryPreference * (1 + weightPercentage);
+                double updatedMoodPreference = currentMoodPreference * (1 + weightPercentage);
+                categoryPreferences.put(category, Math.min(1.0, Math.max(0.0, (double) Math.round(updatedCategoryPreference * 1000) / 1000)));
+                moodPreferences.put(mood, Math.min(1.0, Math.max(0.0, (double) Math.round(updatedMoodPreference * 1000) / 1000)));
 
                 // 최근에 업데이트 된 카테고리, 분위기
                 updateRecentlyItems(userId, category, mood);
@@ -133,6 +133,11 @@ public class PreferenceService {
                     // 호출 횟수 초기화 (문자열로 저장)
                     redisTemplate.opsForValue().set(callCountKey, "0", Duration.ofDays(1));
                 }
+            }
+
+            // clikc action일 때 Redis에 최근에 본 게시물로 등록
+            if (action.equals("click")) {
+                manageRecentlyClickedItems(userId, preferenceRequest.getClickedSalesBoardId());
             }
         }
     }
@@ -199,6 +204,37 @@ public class PreferenceService {
     private Set<String> getUpdatedMoods(int userId) {
         String moodKey = "recentlyUpdated:moods:" + userId;
         return redisTemplate.opsForSet().members(moodKey);
+    }
+
+    // Redis에 최근 본 게시물 저장하기
+    private void manageRecentlyClickedItems(int userId, int clickedSalesBoardId) {
+        String recentClickedKey = "recentClicked:" + userId;
+
+        // Redis에서 최근 본 게시물 리스트 가져오기
+        List<String> recentClickedList = redisTemplate.opsForList().range(recentClickedKey, 0, -1);
+        if (recentClickedList == null) {
+            recentClickedList = new ArrayList<>();
+        }
+
+        // 기존 리스트에서 클릭한 게시물 ID 제거 -> 중복 제거
+        recentClickedList.remove(String.valueOf(clickedSalesBoardId));
+
+        // 새로운 게시물을 리스트의 맨 앞에 추가
+        recentClickedList.add(0, String.valueOf(clickedSalesBoardId));
+
+        // 10개를 초과하면 마지막 게시물 제거
+        if (recentClickedList.size() > 10) {
+            recentClickedList = recentClickedList.subList(0, 10);
+        }
+
+        // Redis에서 기존 리스트는 삭제(값이 누적되지 않게)
+        redisTemplate.delete(recentClickedKey);
+
+        // Redis에 업데이트된 최근 본 게시물 저장
+        redisTemplate.opsForList().rightPushAll(recentClickedKey, recentClickedList);
+
+        // TTL 설정 (옵션: 최근 본 게시물 7일간 유지)
+        redisTemplate.expire(recentClickedKey, Duration.ofDays(7));
     }
 
     // 구매확정 시 선호도 변경

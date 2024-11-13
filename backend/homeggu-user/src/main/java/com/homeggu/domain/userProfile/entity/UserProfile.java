@@ -37,9 +37,6 @@ public class UserProfile extends UpdateTimeEntity {
     @Column
     private String phoneNumber;
 
-    @Column
-    private int balance;
-
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     private User user;
