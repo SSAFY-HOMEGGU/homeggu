@@ -22,10 +22,8 @@ public class ChargeController {
 
     @PostMapping
     @Operation(summary = "머니 충전", description = "계좌의 현금을 홈꾸머니로 변환합니다.")
-    public ResponseEntity<Void> createCharge(@RequestHeader("userId") Long userId, @RequestBody ChargeRequest chargeRequest) {
-        if (userId == null) {
-            throw new IllegalArgumentException("userId header is missing");
-        }
+    public ResponseEntity<Void> createCharge(@RequestHeader(value = "userId", required = true) Long userId,
+                                             @RequestBody ChargeRequest chargeRequest) {
         chargeService.createCharge(userId, chargeRequest);
         return ResponseEntity.status(CREATED).build();
     }

@@ -3,6 +3,7 @@ package com.homeggu.pay.domain.transfer.controller;
 import com.homeggu.pay.domain.transfer.dto.request.CancelRequest;
 import com.homeggu.pay.domain.transfer.dto.request.ConfirmRequest;
 import com.homeggu.pay.domain.transfer.dto.request.TransferRequest;
+import com.homeggu.pay.domain.transfer.dto.response.TransferResponse;
 import com.homeggu.pay.domain.transfer.service.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +21,10 @@ public class TransferController {
 
     @PostMapping
     @Operation(summary = "머니 송금", description = "충전된 홈꾸머니를 다른 사람에게 송금합니다.")
-    public ResponseEntity<Void> createTransfer(@RequestHeader("userId") Long senderId, @RequestBody TransferRequest transferRequest) {
-        if (senderId == null) {
-            throw new IllegalArgumentException("userId header is missing");
-        }
-        transferService.createTransfer(senderId, transferRequest);
-        return ResponseEntity.status(CREATED).build();
+    public ResponseEntity<TransferResponse> createTransfer(@RequestHeader(value = "userId", required = true) Long senderId,
+                                                           @RequestBody TransferRequest transferRequest) {
+        TransferResponse transferResponse = transferService.createTransfer(senderId, transferRequest);
+        return ResponseEntity.status(CREATED).body(transferResponse);
     }
 
     @PatchMapping("/confirm")

@@ -1,6 +1,7 @@
 package com.homeggu.domain.salesBoard;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.homeggu.domain.salesBoard.enums.Category;
 import com.homeggu.domain.salesBoard.enums.IsSell;
 import com.homeggu.domain.salesBoard.enums.Mood;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +68,11 @@ public class SalesBoardController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    private String extractFileNameFromUrl(String fileUrl) {
+        return fileUrl.substring(fileUrl.lastIndexOf('/') + 1).split("\\?")[0]; // URL에서 파일 이름과 확장자 추출
     }
 
     // 물건 등록
