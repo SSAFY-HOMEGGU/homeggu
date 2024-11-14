@@ -15,12 +15,12 @@ import lombok.NoArgsConstructor;
 public class SalesBoardLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int salesBoardLikeId;
+    private Long salesBoardLikeId;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
     private User user;
 
     @Column(nullable = false)
-    private int salesBoardId;
+    private Long salesBoardId;
 }

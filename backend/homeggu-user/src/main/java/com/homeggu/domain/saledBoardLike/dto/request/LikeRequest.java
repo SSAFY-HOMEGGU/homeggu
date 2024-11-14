@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class LikeRequest {
-    private int salesBoardId;
+    private Long salesBoardId;
 }

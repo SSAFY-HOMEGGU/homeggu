@@ -18,14 +18,10 @@ import java.util.List;
 public class LikeService {
 
     private final LikeRepository likeRepository;
-    private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
 
     // 찜 등록
-    public LikeResponse addLike(String accessToken, int salesBoardId) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public LikeResponse addLike(Long userId, Long salesBoardId) {
         User user = userRepository.findById(userId).orElse(null);
 
         SalesBoardLike salesBoardLike = SalesBoardLike.builder()
@@ -42,10 +38,7 @@ public class LikeService {
     }
 
     // 찜 해제
-    public LikeResponse deleteLike(String accessToken, int salesBoardId) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public LikeResponse deleteLike(Long userId, Long salesBoardId) {
         User user = userRepository.findById(userId).orElse(null);
 
         SalesBoardLike salesBoardLike = likeRepository.findByUserAndSalesBoardId(user, salesBoardId).orElse(null);
@@ -62,10 +55,7 @@ public class LikeService {
     }
 
     // 사용자가 등록한 찜 목록 조회
-    public LikeListResponse getLikes(String accessToken) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public LikeListResponse getLikes(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
 
         List<SalesBoardLike> salesBoardLikeList = likeRepository.findByUser(user);
@@ -75,12 +65,8 @@ public class LikeService {
     }
 
     // 찜 여부 확인
-    public boolean checkIsLiked(String accessToken, int salesBoardId) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public boolean checkIsLiked(Long userId, Long salesBoardId) {
         User user = userRepository.findById(userId).orElse(null);
-
         return likeRepository.existsByUserAndSalesBoardId(user, salesBoardId);
     }
 }

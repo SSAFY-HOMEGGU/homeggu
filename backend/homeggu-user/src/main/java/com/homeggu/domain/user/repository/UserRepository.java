@@ -8,11 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     @Transactional
     @Modifying
     @Query("UPDATE User SET isFirstLogin = false WHERE userId = :userId")
-    void updateIsFirstLogin(int userId);
+    void updateIsFirstLogin(Long userId);
 }

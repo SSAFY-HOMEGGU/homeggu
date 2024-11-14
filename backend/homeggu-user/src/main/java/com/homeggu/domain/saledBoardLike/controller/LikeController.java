@@ -10,39 +10,35 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/like")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class LikeController {
 
     private final LikeService likeService;
 
     // 찜 등록
-    @PostMapping("/regist")
-    public ResponseEntity<LikeResponse> addLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
-        String accessToken = authorizationHeader.substring(7);
-        LikeResponse likeResponse = likeService.addLike(accessToken, likeRequest.getSalesBoardId());
+    @PostMapping("/like")
+    public ResponseEntity<LikeResponse> addLike(@RequestHeader("userId") Long userId, @RequestBody LikeRequest likeRequest) {
+        LikeResponse likeResponse = likeService.addLike(userId, likeRequest.getSalesBoardId());
         return ResponseEntity.ok().body(likeResponse);
     }
 
     // 찜 해제
-    @DeleteMapping("/cancel")
-    public ResponseEntity<LikeResponse> deleteLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
-        String accessToken = authorizationHeader.substring(7);
-        LikeResponse likeResponse = likeService.deleteLike(accessToken, likeRequest.getSalesBoardId());
+    @DeleteMapping("/like")
+    public ResponseEntity<LikeResponse> deleteLike(@RequestHeader("userId") Long userId, @RequestBody LikeRequest likeRequest) {
+        LikeResponse likeResponse = likeService.deleteLike(userId, likeRequest.getSalesBoardId());
         return ResponseEntity.ok().body(likeResponse);
     }
 
     // 사용자가 등록한 찜 목록 조회
-    @GetMapping("/list")
-    public ResponseEntity<LikeListResponse> getUserLikes(@RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.substring(7);
-        return ResponseEntity.ok().body(likeService.getLikes(accessToken));
+    @GetMapping("/like/list")
+    public ResponseEntity<LikeListResponse> getUserLikes(@RequestHeader("userId") Long userId) {
+        return ResponseEntity.ok().body(likeService.getLikes(userId));
     }
 
     // 찜 여부 확인
-    @GetMapping("/isLike")
-    public ResponseEntity<Boolean> isLike(@RequestHeader("Authorization") String authorizationHeader, @RequestBody LikeRequest likeRequest) {
-        String accessToken = authorizationHeader.substring(7);
-        return ResponseEntity.ok().body(likeService.checkIsLiked(accessToken, likeRequest.getSalesBoardId()));
+    @GetMapping("/like/isLike")
+    public ResponseEntity<Boolean> isLike(@RequestHeader("userId") Long userId, @RequestBody LikeRequest likeRequest) {
+        return ResponseEntity.ok().body(likeService.checkIsLiked(userId, likeRequest.getSalesBoardId()));
     }
 }

@@ -17,7 +17,7 @@ public class UserProfile extends UpdateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int userProfileId;
+    private Long userProfileId;
 
     @Column(nullable = false)
     private String nickname;
