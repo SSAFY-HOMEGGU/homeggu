@@ -12,7 +12,9 @@ export default function ChatList({ onSelectRoom }) {
     const fetchChatRooms = async () => {
       try {
         const data = await getChatList(userId);
-        setChatRooms(data);
+        const reversedRooms = [...data].reverse();
+        setChatRooms(reversedRooms);
+        // setChatRooms(data);
       } catch (error) {
         console.error('채팅방 목록을 불러오는 중 에러 발생:', error);
       }
@@ -21,7 +23,7 @@ export default function ChatList({ onSelectRoom }) {
     if (userId) {
       fetchChatRooms();
     }
-  }, [userId]);
+  }, []);
 
 
   return (
@@ -33,7 +35,7 @@ export default function ChatList({ onSelectRoom }) {
           <div 
             key={room.chatRoomId} 
             className='border rounded-lg h-[3.5rem] p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50'
-            onClick={() => onSelectRoom(room.chatRoomId)}
+            onClick={() => onSelectRoom(room.chatRoomId, room.salesBoardId)}
           >
             <div className='flex items-center space-x-3'>
               <div className='w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center'>

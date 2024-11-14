@@ -1,48 +1,121 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-// import { processPayment } from '@/api/payment'  // 결제 API
 import useProductListStore from './useProductListStore'
 
 const usePurchaseStore = create(
   devtools((set, get) => ({
     loading: false,
     error: null,
+    selectedProduct: null,
+    orderInfo: null,
+    userData: null,
+    
+    // 구매할 상품 정보 설정
+    setSelectedProduct: (product) => {
+      set({ selectedProduct: product });
+    },
 
-    // 상품 구매
-    purchaseProduct: async (productId) => {
+    // 주문자 정보 설정
+    setUserData: (response) => {
+      set({ 
+        userData: response,
+        orderInfo: {
+          name: response.user.username,
+          phone: response.phoneNumber,
+          address: response.address,
+          detailAddress: response.addressDetail,
+        }
+      });
+    },
+
+    // 주소 정보 업데이트
+    updateAddress: (address) => {
+      set(state => ({
+        userData: {
+          ...state.userData,
+          address: address
+        },
+        orderInfo: {
+          ...state.orderInfo,
+          address: address
+        }
+      }));
+    },
+
+    // 상세 주소 업데이트
+    updateAddressDetail: (addressDetail) => {
+      set(state => ({
+        userData: {
+          ...state.userData,
+          addressDetail: addressDetail
+        },
+        orderInfo: {
+          ...state.orderInfo,
+          detailAddress: addressDetail
+        }
+      }));
+    },
+
+    // 주문 정보 필드 업데이트
+    updateOrderInfo: (field, value) => {
+      set(state => ({
+        orderInfo: {
+          ...state.orderInfo,
+          [field]: value
+        }
+      }));
+    },
+
+    // 구매할 상품 정보 초기화
+    clearSelectedProduct: () => {
+      set({ 
+        selectedProduct: null,
+        loading: false,
+        error: null 
+      });
+    },
+
+    // 모든 정보 초기화
+    clearAll: () => {
+      set({
+        selectedProduct: null,
+        orderInfo: null,
+        userData: null,
+        loading: false,
+        error: null
+      });
+    },
+
+    // 구매 처리 로직
+    processPurchase: async () => {
+      const { selectedProduct } = get();
       const productStore = useProductListStore.getState();
-      const product = productStore.products.find(p => p.sales_board_id === productId);
 
-      if (!product) {
-        toast.error('상품을 찾을 수 없습니다');
+      if (!selectedProduct) {
+        set({ error: '구매할 상품 정보가 없습니다' });
         return;
       }
 
       try {
         set({ loading: true });
-
-        // 결제 API 호출 (Server First - 결제는 Optimistic Update 사용하지 않음)
-        const paymentResult = await processPayment(productId, product.price);
-
+        // TODO: 결제 API 호출
+        
         // 결제 성공 시 상품 상태 업데이트
-        productStore.updateProduct(productId, {
-          status: 'SOLD_OUT',
-          buyerId: paymentResult.buyerId
+        productStore.updateProduct(selectedProduct.sales_board_id, {
+          isSell: 'SOLD'
         });
 
-        toast.success('구매가 완료되었습니다');
+        set({ 
+          selectedProduct: null,
+          loading: false 
+        });
+
       } catch (error) {
-        if (error.code === 'INSUFFICIENT_BALANCE') {
-          toast.error('잔액이 부족합니다');
-        } else if (error.code === 'ALREADY_SOLD') {
-          toast.error('이미 판매된 상품입니다');
-          // 전체 상품 목록 새로고침
-          productStore.fetchProducts();
-        } else {
-          toast.error('구매 처리 중 오류가 발생했습니다');
-        }
-      } finally {
-        set({ loading: false });
+        set({ 
+          error: error.message, 
+          loading: false 
+        });
+        throw error;
       }
     }
   }), 

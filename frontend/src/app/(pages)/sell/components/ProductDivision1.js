@@ -9,7 +9,10 @@ import React, { useState } from 'react';
 import InputBox from '@/app/components/InputBox';
 import Dropdown from '@/app/components/Dropdown';
 
-export default function ProductDivision1({ onInputChange, onCategorySelect, onMoodSelect }) {
+export default function ProductDivision1({ onInputChange, onCategorySelect }) {
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedMood, setSelectedMood] = useState('');
+
  // 카테고리 매핑
  const categoryMap = {
    "침대": "BED",
@@ -33,12 +36,20 @@ export default function ProductDivision1({ onInputChange, onCategorySelect, onMo
  };
 
  const handleCategorySelect = (value) => {
+  setSelectedCategory(value);
    onCategorySelect(categoryMap[value]);
  };
 
- const handleMoodSelect = (value) => {
-   onMoodSelect(moodMap[value]);
- };
+//  const handleMoodSelect = (value) => {
+//    onMoodSelect(moodMap[value]);
+//  };
+const handleMoodSelect = (value) => {
+  setSelectedMood(value);
+  // mood 선택 핸들러가 전달되지 않은 경우를 대비한 안전 처리
+  if (typeof onMoodSelect === 'function') {
+    onMoodSelect(moodMap[value]);
+  }
+};
 
  return (
    <div className='flex flex-col gap-4'>
@@ -56,6 +67,7 @@ export default function ProductDivision1({ onInputChange, onCategorySelect, onMo
        <Dropdown 
          options={Object.keys(categoryMap)}
          onSelect={handleCategorySelect}
+         defaultValue={selectedCategory || categoryMap?.[0]}
        />
      </div>
      <div>
@@ -63,6 +75,7 @@ export default function ProductDivision1({ onInputChange, onCategorySelect, onMo
        <Dropdown 
          options={Object.keys(moodMap)}
          onSelect={handleMoodSelect}
+         defaultValue={selectedMood || moodMap?.[0]}
        />
      </div>
    </div> 

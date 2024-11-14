@@ -15,22 +15,30 @@ import Link from 'next/link';
 import { useState } from 'react';
 import useProductActionStore from '@/app/store/useProductActionStore';
 import useProductListStore from '@/app/store/useProductListStore';
+import { preferenceUpdate } from '../api/userApi';
 
 export default function Product({ product }) {
-  const imagePaths = typeof product.goodsImagePaths === 'string' 
-    ? JSON.parse(product.goodsImagePaths)
-    : product.goodsImagePaths;
-
-  console.log('첫 번째 이미지:', imagePaths?.[0]);
 
   const { toggleLike } = useProductActionStore();
-  // const updateProduct = useProductListStore(state => state.updateProduct);
   const { updateProduct, updateSelectedProduct } = useProductListStore();
 
+  const MOOD_KOREAN = {
+    'WOOD_VINTAGE': '우드 & 빈티지',
+    'BLACK_METALLIC': '블랙 & 메탈릭',
+    'WHITE_MINIMAL': '화이트 & 미니멀',
+    'MODERN_CLASSIC': '모던 & 클래식'
+  };
+
+
   const handleLikeClick = async (e) => {
-    e.preventDefault();
-    console.log('좋아요 클릭:', product.salesBoardId);
-    await toggleLike(product.salesBoardId);
+    e.preventDefault(); // 링크 이동 방지
+    e.stopPropagation(); // 이벤트 버블링 방지
+    
+    try {
+      await toggleLike(product.salesBoardId);
+    } catch (error) {
+      console.error('좋아요 처리 실패:', error);
+    }
   };
 
   const handleProductClick = () => {
@@ -39,13 +47,22 @@ export default function Product({ product }) {
       ...product,
       viewCnt: (product.viewCnt || 0) + 1
     });
-    // updateSelectedProduct(product);
-    setSelectedProduct(product);
+    updateSelectedProduct(product);
+
+    // 선호도 업데이트
+    preferenceUpdate({
+      category: product.category,
+      mood: MOOD_KOREAN[product.mood],
+      action: "click",
+      clickedSalesBoardId: product.salesBoardId
+    });
+
   };
   
   // 이미지 URL이 없는 경우 기본 이미지 사용
   const defaultImage = '/images/bed2.png'; // 기본 이미지 경로를 지정하세요
   const imageUrl = product.goodsImagePaths?.[0] || defaultImage;
+  console.log('imageUrl',imageUrl)
   // const imageUrl = product.goodsImagePaths[0];
   
   return (
@@ -53,10 +70,24 @@ export default function Product({ product }) {
       href={`/product/${product.salesBoardId}`} 
       onClick={handleProductClick}
     >
-      <div 
+      {/* <div 
         className="relative w-[14rem] h-[14rem] flex-shrink-0 border rounded-[0.8rem] bg-lightgray bg-cover bg-center" 
         style={{ backgroundImage: `url(${imageUrl})` }}
-      >
+      > */}
+      <div className="relative w-[14rem] h-[14rem]">
+        <Image
+          src={imageUrl || defaultImage}
+          alt={product.title || '상품 이미지'}
+          fill
+          sizes="14rem"
+          className="rounded-[0.8rem] object-cover"
+          priority={false}
+          quality={75}
+          // onError={(e) => {
+          //   console.error('이미지 로드 실패:', imageUrl);
+          //   e.currentTarget.src = defaultImage;
+          // }}
+        />
         <div onClick={handleLikeClick} className="absolute bottom-2 right-2 cursor-pointer">
           <Image
             src={product.isLiked ? '/icons/activeHeart.svg' : '/icons/unactiveHeart.svg'}

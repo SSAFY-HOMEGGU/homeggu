@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState } from 'react'
@@ -8,55 +7,95 @@ import { BlueButton, WhiteButton } from '@/app/components/Button'
 import useProductActionStore from '@/app/store/useProductActionStore'
 import usePurchaseStore from '@/app/store/usePurchaseStore'
 import ChatModal from '@/app/(pages)/chat/components/ChatModal'
-import { createChatRoom } from '@/app/api/chatApi'
+import { createChatRoom, getChatList } from '@/app/api/chatApi'
+import { preferenceUpdate } from '@/app/api/userApi'
 
-function BuyerActions({ product }) {
-  console.log('buyer페이지')
+
+function BuyerActions({ product,onLikeChange, onChatCreate }) {
   const router = useRouter();
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [chatRoomId, setChatRoomId] = useState();
   
   const { toggleLike } = useProductActionStore();
-  const { purchaseProduct, loading: purchaseLoading } = usePurchaseStore();
+  const { setSelectedProduct, loading: purchaseLoading } = usePurchaseStore();
   const userId = localStorage.getItem('userId')
+  const productId = product.salesBoardId
+  
+  const MOOD_KOREAN = {
+    'WOOD_VINTAGE': '우드 & 빈티지',
+    'BLACK_METALLIC': '블랙 & 메탈릭',
+    'WHITE_MINIMAL': '화이트 & 미니멀',
+    'MODERN_CLASSIC': '모던 & 클래식'
+  };
 
-  // 채팅하기 버튼 클릭 시 호출될 함수
+  // 채팅방 존재 여부 확인 및 생성
   const handleChatClick = async (e) => {
-        e.preventDefault();
-        console.log('판매아이디:',Number(product.user_id))
+    e.preventDefault();
+    const sellerId = Number(product.userId);
+    const buyerId = Number(userId);
+    
+    try {
+      // 1. 먼저 기존 채팅방 목록을 가져옴
+      const chatList = await getChatList(buyerId);
+      
+      // 2. 현재 상품과 판매자에 대한 채팅방이 있는지 확인
+      const existingChatRoom = chatList.find(chat => 
+        chat.userId === sellerId && chat.salesBoardId === productId
+      );
+
+      if (existingChatRoom) {
+        // 기존 채팅방이 있으면 그 채팅방 사용
+        console.log('기존 채팅방 사용:', existingChatRoom.chatRoomId);
+        setChatRoomId(existingChatRoom.chatRoomId);
+      } else {
+        // 없으면 새로 생성
         const data = {
-          "sellerUserId": Number(product.user_id), 
-          "buyerUserId": Number(userId) 
-      };
-      console.log(data)
-        try {
-          // createChatRoom API 호출하여 채팅방 생성
-          const response = await createChatRoom(product.sales_board_id, data);
-          
-          console.log('채팅방 생성 성공:', response);
-          
-          // 채팅방 생성 후 이동할 경로로 리다이렉트
-          // 예를 들어 /chat/{roomId}와 같은 경로로 이동 가능
-          // window.location.href = `/chat/${response.roomId}`;
-          setChatRoomId(response.chatRoomId)
-          setIsChatModalOpen(true);
-          // await router.push(`/chat/${response.chatRoomId}`);
-        } catch (error) {
-          console.error('채팅방 생성 중 에러 발생:', error);
-        }
-      };
+          sellerUserId: sellerId,
+          buyerUserId: buyerId
+        };
+        
+        const response = await createChatRoom(productId, data);
+        console.log('새 채팅방 생성:', response.chatRoomId);
+        setChatRoomId(response.chatRoomId);
+        onChatCreate();
+      }
+      
+      await preferenceUpdate({
+        category: product.category,
+        mood: MOOD_KOREAN[product.mood],
+        action: "chat",
+        clickedSalesBoardId: ""
+      });
+
+      // 채팅 모달 열기
+      setIsChatModalOpen(true);
+    } catch (error) {
+      console.error('채팅방 처리 중 에러 발생:', error);
+    }
+  };
 
   const handleLikeClick = async (e) => {
     e.preventDefault();
-    console.log('좋아요 클릭:', product.sales_board_id);
-    await toggleLike(product.sales_board_id);
+    // console.log('좋아요 클릭:', productId);
+    // await toggleLike(productId);
+    try {
+      await toggleLike(productId);
+      if (!product.isLiked) {
+        onLikeChange();
+      }
+    } catch (error) {
+      console.error('좋아요 처리 실패:', error);
+    }
   };
 
   const handlePurchase = async () => {
     try {
-      await purchaseProduct(product.sales_board_id);
+      // await purchaseProduct(productId);
+      setSelectedProduct(product)
+      router.push('/order')
     } catch (error) {
       console.error('구매 실패:', error);
+      setSelectedProduct(null)
     }
   };
 
@@ -74,7 +113,7 @@ function BuyerActions({ product }) {
       <ChatModal 
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
-        productId={product.sales_board_id}
+        productId={productId}
         chatRoomId={chatRoomId}
         userId={userId}
       />

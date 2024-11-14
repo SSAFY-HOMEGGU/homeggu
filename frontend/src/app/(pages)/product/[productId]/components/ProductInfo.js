@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams,useRouter } from 'next/navigation';
 import useProductListStore from '@/app/store/useProductListStore';
 import ImageSwiper from "@/app/components/ImageSwiper";
 import MapComponent from './MapComponent';
@@ -12,10 +12,12 @@ import SellerActions from './SellerActions';
 import MapModal from './MapModal';
 import { detailSalesBoard } from '@/app/api/productApi';
 import Label from './Label';
+import { goodsIsLike } from '@/app/api/userApi';
 import { categoryMapping,statusMapping,moodMapping,tradeMethodMapping, sellStatusMapping } from './mapping';
 
 export default function ProductInfo() {
   const params = useParams();
+  const router = useRouter();
   const [productId, setProductId] = useState(null);
   // const [selectedProduct, setSelectedProduct] = useState(null);
   const [showMap, setShowMap] = useState(false);
@@ -29,16 +31,54 @@ export default function ProductInfo() {
     updateSelectedProduct 
   } = useProductListStore();
 
+  // useEffect(() => {
+  //   if (params.productId) {
+  //     fetchProductDetail(params.productId);
+  //   }
+  // }, [params.productId]);
   useEffect(() => {
-    if (params.productId) {
-      fetchProductDetail(params.productId);
-    }
-  }, [params.productId,fetchProductDetail]);
+    const fetchProductAndLikeStatus = async () => {
+      if (params.productId) {
+        console.time(`컴포넌트 렌더링 시간 (ID: ${params.productId})`);
+        try {
+          console.log('상품 상세 좋아요 확인',params.productId)
+          const productData = await fetchProductDetail(params.productId);
+          // 상품 정보 조회 후 좋아요 상태 확인
+          const isLiked = await goodsIsLike(params.productId);
+          updateSelectedProduct({ isLiked });
+        } catch (error) {
+          console.error('상품 정보 또는 좋아요 상태 조회 실패:', error);
+        } finally {
+          console.timeEnd(`컴포넌트 렌더링 시간 (ID: ${params.productId})`);
+        }
+      }
+    };
 
+    fetchProductAndLikeStatus();
+  }, [params.productId]);
+
+   // 좋아요, 채팅방 생성 시 카운트 업데이트
+   const updateCounts = (type) => {
+    if (selectedProduct) {
+      const updates = {};
+      if (type === 'like') {
+        updates.likeCnt = selectedProduct.likeCnt + 1;
+      } else if (type === 'chat') {
+        updates.chatCnt = selectedProduct.chatCnt + 1;
+      }
+      updateSelectedProduct(updates);
+    }
+  };
   
   console.log('params',params)
   console.log('판매상품id', params.productId, 
               'userId', userId)
+
+  const handleProductDelete = () => {
+    router.back(); // 또는 router.push('/products')
+    // 또는
+    // window.history.back();
+  }
 
 const categoryLinks = {
   'DESK': '/category/desk',
@@ -75,30 +115,6 @@ const sellStatusMapping = {
   'AVAILABLE': '판매중'
  };
 
-  useEffect(() => {
-    if (params.productId) {
-      setProductId(params.productId);
-    }
-  }, [params]);
-
-  useEffect(() => {
-    const fetchProductDetail = async () => {
-      if (!productId) return;
-
-      try {
-        setLoading(true); // 이제 정의된 setLoading 사용 가능
-        const data = await detailSalesBoard(productId);
-        console.log('상세 데이터 조회 성공:', data);
-        setSelectedProduct(data);
-      } catch (error) {
-        console.error('상세 데이터 조회 실패:', error);
-      } finally {
-        // setLoading(false); // 로딩 상태 해제
-      }
-    };
-
-    fetchProductDetail();
-  }, [productId]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -167,9 +183,9 @@ const sellStatusMapping = {
                 }`}>
                 {sellStatusMapping[selectedProduct.isSell] || selectedProduct.isSell}
               </p>
-              <p>
+              {/* <p>
                 {selectedProduct.status}
-              </p>
+              </p> */}
             </div>
             <p className="text-[1.2rem] text-normalText font-semibold mb-2">
               {selectedProduct.price.toLocaleString()}원
@@ -217,9 +233,17 @@ const sellStatusMapping = {
             {/* 구매자/판매자 액션 */}
             <div className='mt-4'>
               {selectedProduct.userId === Number(userId) ? (
-                <SellerActions product={selectedProduct} />
+                <SellerActions 
+                  product={selectedProduct} 
+                  onDeleteSuccess={handleProductDelete}
+                  fetchProductDetail={fetchProductDetail}
+                />
               ) : (
-                <BuyerActions product={selectedProduct} />
+                <BuyerActions 
+                  product={selectedProduct} 
+                  onLikeChange={() => updateCounts('like')}
+                  onChatCreate={() => updateCounts('chat')}
+                />
               )}
             </div>
           </div>
