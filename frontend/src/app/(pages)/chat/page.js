@@ -10,9 +10,11 @@ import Image from 'next/image';
 
 export default function ChatContainer() {
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedSalesBoardId, setSelectedSalesBoardId] = useState(null);
 
-  const handleRoomSelect = (roomId) => {
+  const handleRoomSelect = (roomId, salesBoardId) => {
     setSelectedRoom(roomId);
+    setSelectedSalesBoardId(salesBoardId);
   };
 
   return (
@@ -22,7 +24,10 @@ export default function ChatContainer() {
 
       {/* 실제 채팅을 담당하는 Chat 컴포넌트 */}
       {selectedRoom ? (
-        <ChatPage roomId={selectedRoom} />
+        <ChatPage 
+          roomId={selectedRoom} 
+          salesBoardId={selectedSalesBoardId}
+        />
       ) : (
         <div className='w-1/2 h-[86vh] border rounded-[20px] p-5 flex items-center justify-center'>
           <div className='flex flex-col items-center gap-3 text-gray-500'>

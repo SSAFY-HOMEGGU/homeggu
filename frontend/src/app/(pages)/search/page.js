@@ -39,6 +39,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
 import useProductListStore from '@/app/store/useProductListStore';
 import CategoryProducts from '../category/components/CategoryProducts';
+import { preferenceUpdate } from '@/app/api/userApi';
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -46,13 +47,29 @@ function SearchContent() {
   const { products, fetchProducts } = useProductListStore();
 
   useEffect(() => {
-    if (query) {
-      fetchProducts({
-        title: query,
-        page: 0,
-        size: 10,
-      });
-    }
+    const handleSearch = async () => {
+      if (query) {
+        // 상품 검색
+        await fetchProducts({
+          title: query,
+          page: 0,
+          size: 10,
+        });
+
+        try {
+          await preferenceUpdate({
+            category: "",
+            mood: "",
+            action: "search",
+            clickedSalesBoardId: ""
+          });
+        } catch (error) {
+          console.error('선호도 업데이트 실패:', error);
+        }
+      }
+    };
+
+    handleSearch();
   }, [query, fetchProducts]);
 
   return (

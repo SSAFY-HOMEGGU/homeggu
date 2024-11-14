@@ -10,13 +10,14 @@ export default function Chat({
   newMessage, 
   setNewMessage, 
   handleSendMessage,
-  connected = true
+  connected = true,
+  chatRoomId
 }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4">
         {messages.map((msg, index) => (
-          <ChatMessage key={index} msg={msg} />
+          <ChatMessage key={index} msg={msg} chatRoomId={chatRoomId} />
         ))}
       </div>
       <form onSubmit={handleSendMessage} className="border-t p-4">

@@ -12,42 +12,81 @@ export default function CategoryProducts({ categoryName }) {
   const [maxPrice, setMaxPrice] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
 
+  const STATUS_MAPPING = {
+    '판매중': 'AVAILABLE',
+    '예약중': 'RESERVING',
+    '판매완료': 'SOLD'
+  };
+
   const [options, setOptions] = useState({
     판매중: false,
     예약중: false,
     판매완료: false,
   });
 
-  // 초기 데이터 로딩
-  useEffect(() => {
-    fetchProducts({
-      category: categoryName === "전체" ? undefined : categoryName.toLowerCase()
-    });
-  }, [categoryName,fetchProducts]);
+  const CATEGORY_MAPPING = {
+    "전체":'',
+    "침대": "BED",
+    "식탁": "DINING_TABLE", 
+    "책상": "DESK",
+    "소파": "SOFA",
+    "의자": "CHAIR",
+    "서랍": "DRESSER",
+    "수납": "BOOKSHELF",
+    "조명": "LIGHTING",
+    "전등": "LIGHTING",   /// 수정하기
+    "가전": "WARDROBE"
+  };
 
-  // 필터링 로직
-  useEffect(() => {
-    let result = [...products];
-
-    // 가격 필터링
-    if (minPrice) {
-      result = result.filter(product => product.price >= parseInt(minPrice, 10));
-    }
-    if (maxPrice) {
-      result = result.filter(product => product.price <= parseInt(maxPrice, 10));
-    }
-
-    // 상태 필터링
-    const selectedStatuses = Object.entries(options)
+  // 선택된 상태에 따른 API 호출 함수
+  const fetchFilteredProducts = async (selectedOptions) => {
+    // 선택된 상태들을 배열로 변환
+    const selectedStatuses = Object.entries(selectedOptions)
       .filter(([_, isSelected]) => isSelected)
-      .map(([status]) => status);
+      .map(([status]) => STATUS_MAPPING[status]);
 
+    // API 호출을 위한 기본 파라미터
+    let baseParams = {
+      category: CATEGORY_MAPPING[categoryName] || '',
+      min_price: minPrice ? parseInt(minPrice, 10) : undefined,
+      max_price: maxPrice ? parseInt(maxPrice, 10) : undefined,
+      page: 0,
+      size: 10
+    };
+
+  // undefined 값을 가진 속성 제거
+  baseParams = Object.fromEntries(
+    Object.entries(baseParams).filter(([_, value]) => value !== undefined && value !== '')
+  );
+
+    // 선택된 상태가 있는 경우, 각 상태별로 API 호출
     if (selectedStatuses.length > 0) {
-      result = result.filter(product => selectedStatuses.includes(product.status));
-    }
+      // 각 상태별로 API 호출하고 결과 합치기
+      const allProducts = await Promise.all(
+        selectedStatuses.map(status =>
+          fetchProducts({
+            ...baseParams,
+            isSell: status
+          })
+        )
+      );
 
-    setFilteredProducts(result);
-  }, [products, minPrice, maxPrice, options]);
+      // products는 store에서 자동으로 업데이트됨
+    } else {
+      // 선택된 상태가 없으면 기본 파라미터로만 호출
+      await fetchProducts(baseParams);
+    }
+  };
+
+  // 초기 데이터 로딩 및 필터 적용
+  useEffect(() => {
+    fetchFilteredProducts(options);
+  }, [categoryName, minPrice, maxPrice, options]);
+
+  // 상품 목록 업데이트
+  useEffect(() => {
+    setFilteredProducts(products);
+  }, [products]);
 
   const handleOptionClick = (option) => {
     setOptions(prevOptions => ({
@@ -58,10 +97,10 @@ export default function CategoryProducts({ categoryName }) {
 
   const handlePriceKeyPress = (e) => {
     if (e.key === 'Enter') {
-      // 엔터 키 입력 시 필터링이 자동으로 적용됨 (useEffect를 통해)
-      e.target.blur(); // 포커스 제거
+      e.target.blur();
     }
   };
+
 
   return (
     <div className="mt-[1rem]">
@@ -125,13 +164,13 @@ export default function CategoryProducts({ categoryName }) {
         </div>
       </div>
 
-      <h2 className="font-bold text-[1.25rem] text-subText font-tmoney mb-[0.5rem]">
+      {/* <h2 className="font-bold text-[1.25rem] text-subText font-tmoney mb-[0.5rem]">
         {categoryName}
-      </h2>
+      </h2> */}
       <div className="grid grid-cols-4 gap-4 md:grid-cols-4 sm:grid-cols-2 grid-cols-1">
         {filteredProducts.map((product) => (
           <Product 
-            key={product.sales_board_id} 
+            key={product.salesBoardId} 
             product={product}
           />
         ))}

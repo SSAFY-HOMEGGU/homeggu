@@ -7,33 +7,17 @@ import Modal from "@/app/components/Modal";
 import alertIcon from "/public/icons/alert.svg";
 import toggleDownIcon from "/public/icons/toggledown.svg"; // 아이콘 import
 import { useRouter } from "next/navigation"; // useRouter 추가
+import { fetchUserProfile } from "@/app/api/userApi";
+import usePurchaseStore from "@/app/store/usePurchaseStore";
 
 const OrderPage = () => {
   const router = useRouter(); // 라우터 사용 설정
-
-  const dummyUserData = {
-    name: "김민수",
-    phone: "010-1234-5678",
-    address: "서울특별시 강남구 테헤란로 123",
-    detailAddress: "12층 1203호",
-  };
-
-  const product = {
-    name: "폭닥폭닥 침대",
-    price: 10000,
-    shipping: 30000,
-    image: "/public/images/bed2.png", // 더미 이미지 경로 수정
-    seller: {
-      name: "박상민",
-      phone: "010-8765-4321",
-      location: "서울특별시 마포구",
-    },
-  };
-
+  const [getUserData, setUserData] = useState(null);
+  const [orderInfo, setOrderInfo] = useState(null);
   const [isProductChecked, setIsProductChecked] = useState(true);
   const [showValidationMessage, setShowValidationMessage] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
-  const [orderInfo, setOrderInfo] = useState(dummyUserData);
+  // const [orderInfo, setOrderInfo] = useState(UserData);
   const [agreements, setAgreements] = useState({
     all: false,
     terms: false,
@@ -42,6 +26,8 @@ const OrderPage = () => {
     dataCollection: false,
     paymentService: false,
   });
+  
+  const { updateAddress, updateAddressDetail, updateOrderInfo } = usePurchaseStore();
 
   const [selectedMethod, setSelectedMethod] = useState("택배거래");
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
@@ -57,12 +43,54 @@ const OrderPage = () => {
     document.body.appendChild(script);
   }, []);
 
+  // 구매할 상품 정보 가져오기
+  const selectedProduct = usePurchaseStore(state => state.selectedProduct);
+
+  const product = selectedProduct ? {
+    name: selectedProduct.title,
+    price: selectedProduct.price,
+    shipping: selectedProduct.deliveryPrice,
+    image: selectedProduct.goodsImagePaths[0], 
+    seller: {
+      name: selectedProduct.userId.toString(), // userId를 문자열로 변환. 실제 판매자 이름이 필요하다면 API에서 가져와야 함
+    },
+  } : null;
+
+
+  // 유저 정보 가져오기
+  useEffect(() => {
+    const getUserProfile = async () => {
+      try {
+        const response = await fetchUserProfile();
+        setUserData(response);
+        // 응답이 있을 때 orderInfo 설정
+        setOrderInfo({
+          name: response.user.username,
+          phone: response.phoneNumber,
+          address: response.address,
+          detailAddress: response.addressDetail,
+        });
+      } catch (error) {
+        console.error("유저 프로필 조회 실패:", error);
+      }
+    };
+
+    getUserProfile();
+  }, []);
+  
+
+
+  if (!getUserData || !orderInfo) {
+    return <div>Loading...</div>;
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setOrderInfo((prev) => ({
       ...prev,
       [name]: value,
     }));
+    updateAddressDetail(value)
   };
 
   const handleAddressSearch = () => {
@@ -73,6 +101,7 @@ const OrderPage = () => {
             ...prev,
             address: data.address,
           }));
+          updateAddress(data.address);
         },
       }).open();
     } else {

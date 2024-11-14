@@ -9,17 +9,24 @@
   /> 
 */}
 
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { IoCaretDown } from "react-icons/io5";
 
-export default function Dropdown({ options = [], onSelect, width = "w-[14rem]", selectedFont = "text-normalText", defaultValue = null}) {
+export default function Dropdown({ 
+  options = [], 
+  onSelect, 
+  width = "w-[14rem]", 
+  selectedFont = "text-normalText", 
+  defaultValue = null,
+  borderColor = "border-greyButtonText",
+  iconColor = "text-greyButtonText"  // 아이콘 색상 props 추가
+  }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
   useEffect(() => {
     setSelectedOption(defaultValue || options[0]);
   }, [defaultValue, options]);
-
 
   const handleSelect = (option) => {
     setSelectedOption(option);
@@ -28,12 +35,12 @@ export default function Dropdown({ options = [], onSelect, width = "w-[14rem]", 
   };
 
   return (
-    <div className="relative inline-block text-left ">
+    <div className="relative inline-block text-left">
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className={`${width} ${selectedFont} h-[2.8rem] px-4 py-2 border-[0.03rem] border-greyButtonText rounded-[0.5rem] flex items-center justify-between`}>
+        className={`${width} ${selectedFont} h-[2.8rem] px-4 py-2 border-[0.03rem] ${borderColor} rounded-[0.5rem] flex items-center justify-between`}>
         {selectedOption || options[0]}
-        <IoCaretDown className="text-[1.2rem] ml-2 text-greyButtonText" />
+        <IoCaretDown className={`text-[1.2rem] ml-2 ${iconColor}`} />
       </button>
 
       {isOpen && (

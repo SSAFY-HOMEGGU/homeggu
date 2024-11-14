@@ -1,80 +1,131 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import Image from 'next/image';
+import { uploadGoodsImage } from '@/app/api/productApi';
+import useProductStore from '@/app/store/useProductStore';
 
 export default function ImageUpload({ onUpload }) {
   const [uploadedImages, setUploadedImages] = useState(0);
   const [imagePreviews, setImagePreviews] = useState([]); 
-  const [mainImageIndex, setMainImageIndex] = useState(0); // 대표 이미지 인덱스
+  const [mainImageIndex, setMainImageIndex] = useState(0);
   const [imageFiles, setImageFiles] = useState([]);
+  const [uploadedUrls, setUploadedUrls] = useState([]); // 추가: 실제 업로드된 URL 저장
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleImageUpload = (event) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
+
+  // Store에서 이미지 관련 상태와 액션 가져오기
+  const setProductImages = useProductStore((state) => state.setProductImages);
+
+  useEffect(() => {
+    console.log('============ 현재 이미지 목록 ============');
+    console.log('업로드된 이미지 URL 목록:', uploadedUrls);
+    console.log('미리보기 이미지 목록:', imagePreviews);
+    console.log('현재 이미지 총 개수:', uploadedImages);
+    console.log('대표 이미지 인덱스:', mainImageIndex);
+    console.log('========================================');
+  }, [uploadedUrls, imagePreviews, uploadedImages, mainImageIndex]);
+
+
+const handleImageUpload = async (event) => {
+  const files = event.target.files;
+  if (files && files.length > 0) {
+    setIsUploading(true);
+    try {
       const newFiles = Array.from(files).slice(0, 10 - imagePreviews.length);
-      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
       
-      setImagePreviews((prev) => [...prev, ...newPreviews]); 
-      setUploadedImages((prev) => prev + newFiles.length); 
-      setImageFiles((prev) => [...prev, ...newFiles]);
-  
-      // formData 형식에 맞게 데이터 구성
-      const imageData = {
-        goodsImagePaths: [...imagePreviews, ...newPreviews].map((preview, index) => 
-          `https://example.com/image${index + 1}.png`
-        ),
-        threeDimensionsGoodsImagePaths: [
-          `https://example.com/3dimage${mainImageIndex + 1}.png`
-        ]
-      };
-  
-      console.log('이미지 업로드:', imageData);
-      onUpload(imageData); // imageData 객체 전체를 전달
-    }
-  };
+      // 미리보기 생성
+      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+      
+      // 서버에 업로드
+      const uploadedData = await uploadGoodsImage(newFiles);
+      const newUrls = Array.isArray(uploadedData) ? uploadedData : [];
 
+      // base64 변환
+      const mainFile = newFiles[mainImageIndex];
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(mainFile);
+      });
+      
+      // 상태 업데이트
+      setUploadedUrls(prev => {
+        const updatedUrls = [...prev, ...newUrls];
+        console.log('최종 이미지 URL 목록:', updatedUrls);
+        
+        // 부모 컴포넌트에 전달 (formData 업데이트)
+        onUpload?.({
+          goodsImagePaths: updatedUrls,
+          mainImageUrl: updatedUrls[mainImageIndex]
+        });
+        
+        return updatedUrls;
+      });
+
+      setImagePreviews(prev => [...prev, ...newPreviews]);
+      setUploadedImages(prev => prev + newFiles.length);
+
+    } catch (error) {
+      console.error('Image upload failed:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+};
   const removeImage = (indexToRemove) => {
     const updatedPreviews = imagePreviews.filter((_, index) => index !== indexToRemove);
     const updatedFiles = imageFiles.filter((_, index) => index !== indexToRemove);
+    const updatedUrls = uploadedUrls.filter((_, index) => index !== indexToRemove); // 실제 업로드된 URL 배열 업데이트
   
     setImagePreviews(updatedPreviews);
     setImageFiles(updatedFiles);
+    setUploadedUrls(updatedUrls); // 실제 URL 상태 업데이트
     setUploadedImages((prev) => prev - 1);
-    
+  
+    // 대표 이미지 인덱스 조정
     if (indexToRemove === mainImageIndex) {
       setMainImageIndex(0);
     } else if (indexToRemove < mainImageIndex) {
       setMainImageIndex(mainImageIndex - 1);
     }
   
-    const imageData = {
-      goodsImagePaths: updatedPreviews.map((_, index) => 
-        `https://example.com/image${index + 1}.png`
-      ),
-      threeDimensionsGoodsImagePaths: [
-        `https://example.com/3dimage${mainImageIndex === indexToRemove ? 1 : mainImageIndex + 1}.png`
-      ]
-    };
-  
-    console.log('이미지 삭제:', imageData);
-    onUpload(imageData); // imageData 객체 전체를 전달
+    // Store 업데이트 - 실제 URL 사용
+    setProductImages({
+      goodsImagePaths: updatedUrls, // 실제 업로드된 URL 배열 사용
+      mainImageIndex: indexToRemove === mainImageIndex ? 0 : 
+        indexToRemove < mainImageIndex ? mainImageIndex - 1 : mainImageIndex
+    });
   };
   
+  // const selectMainImage = (index) => {
+  //   setMainImageIndex(index);
+    
+  //   // Store 업데이트 - 실제 URL 사용
+  //   setProductImages({
+  //     goodsImagePaths: uploadedUrls, // 실제 업로드된 URL 배열 사용
+  //     mainImageIndex: index
+  //   });
+  // };
+  // mainImage가 변경될 때도 base64 변환
+const selectMainImage = async (index) => {
+  setMainImageIndex(index);
+  
+  try {
+    const response = await fetch(imagePreviews[index]);
+    const blob = await response.blob();
+    const base64 = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
 
-  const selectMainImage = (index) => {
-    setMainImageIndex(index);
-  
-    const imageData = {
-      goodsImagePaths: imagePreviews.map((_, i) => 
-        `https://example.com/image${i + 1}.png`
-      ),
-      threeDimensionsGoodsImagePaths: [
-        `https://example.com/3dimage${index + 1}.png`
-      ]
-    };
-  
-    console.log('메인 이미지 변경:', imageData);
-    onUpload(imageData); // imageData 객체 전체를 전달
-  };
+    setProductImages({
+      goodsImagePaths: uploadedUrls,
+      mainImageUrl: base64
+    });
+  } catch (error) {
+    console.error('Failed to convert image to base64:', error);
+  }
+};
 
   return (
     <div>
@@ -109,7 +160,6 @@ export default function ImageUpload({ onUpload }) {
         />
       </div>
 
-      {/* 업로드된 이미지 미리보기 표시 */}
       <div className="flex flex-wrap gap-4 mt-4">
         {imagePreviews.map((src, index) => (
           <div 
@@ -129,7 +179,6 @@ export default function ImageUpload({ onUpload }) {
                 removeImage(index);
               }}
             />
-            {/* 대표 이미지 뱃지 */}
             {mainImageIndex === index && (
               <div className="absolute top-2 left-2 bg-point1 text-white px-2 py-1 rounded-md text-xs z-10">
                 대표
@@ -152,4 +201,4 @@ export default function ImageUpload({ onUpload }) {
       </div>
     </div>
   );
-}
+  }

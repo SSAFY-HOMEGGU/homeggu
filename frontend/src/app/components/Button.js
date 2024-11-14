@@ -43,6 +43,7 @@ export function WhiteButton({
   bgColor = "bg-white", 
   textColor = "text-point1", 
   border = "border-point1",
+  borderWidth = "border-2",  // 테두리 두께 props 추가
   text="text-[1.2rem]", 
   rounded="rounded-[1rem]" 
   }) {
@@ -55,11 +56,12 @@ export function WhiteButton({
         ${textColor} 
         ${text} 
         ${rounded} 
-        ${border} 
-        border-2 border-solid px-3 py-2 font-tmoney font-bold`}
+        ${border}
+        ${borderWidth}
+        border-solid px-3 py-2 font-tmoney font-bold`}
       onClick={onClick}
     >
       {children}
     </button>
   );
-}
+ }

@@ -20,8 +20,13 @@ export default function ChatContainer({ chatRoomId, userId }) {
       const data = await getChatHistory(chatRoomId, 50);
       console.log("채팅 내역 로드:", data);
 
+      const sortedData = [...data].reverse();
 
-      setMessages(formattedData);
+      setMessages(sortedData);
+      // setMessages(data);
+      setIsLoading(false);
+
+      // setMessages(formattedData);
       setIsLoading(false);
     } catch (error) {
       console.error("채팅 내역 로드 실패:", error);
@@ -47,8 +52,9 @@ export default function ChatContainer({ chatRoomId, userId }) {
           client.subscribe(`/exchange/chat.exchange/room.${chatRoomId}`, (message) => {
             const receivedMessage = JSON.parse(message.body);
             setMessages(prev => [...prev, receivedMessage]);
-            console.log('한번더')
-            fetchChatHistory();
+            // setMessages(prev => [receivedMessage, ...prev]);
+            // console.log('한번더')
+            // fetchChatHistory();
           });
           
         },
@@ -63,6 +69,9 @@ export default function ChatContainer({ chatRoomId, userId }) {
       return client;
     };
 
+    // 채팅방이 변경될 때마다 메시지 초기화 및 새로운 내역 로드
+    setMessages([]); // 메시지 초기화
+    fetchChatHistory(); // 새로운 채팅 내역 로드
     const client = connectWebSocket();
     
     return () => {
@@ -107,6 +116,7 @@ export default function ChatContainer({ chatRoomId, userId }) {
       handleSendMessage={handleSendMessage}
       connected={connected}
       isLoading={isLoading}
+      chatRoomId={chatRoomId}
     />
   );
 }

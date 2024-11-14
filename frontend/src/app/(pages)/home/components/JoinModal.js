@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Lottie from "lottie-react";
 import check from './check.json';
-import { fetchUserProfile } from '@/app/api/userApi';
+import { fetchUserProfile,preferenceUpdate, firstLogin } from '@/app/api/userApi';
 
 export default function JoinModal({ isOpen, onClose }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -34,38 +34,38 @@ export default function JoinModal({ isOpen, onClose }) {
     {
       image1: "/joinSurvey/wood1.jpg",
       image2: "/joinSurvey/black1.jpg",
-      label1: "우드",
-      label2: "블랙"
+      label1: "우드 & 빈티지",
+      label2: "블랙 & 메탈릭"
     },
     {
       image1: "/joinSurvey/white1.jpg",
       image2: "/joinSurvey/modern1.jpg",
-      label1: "화이트",
-      label2: "모던"
+      label1: "화이트 & 미니멀",
+      label2: "모던 & 클래식"
     },
     {
       image1: "/joinSurvey/wood2.jpg",
       image2: "/joinSurvey/white2.jpg",
-      label1: "우드",
-      label2: "화이트"
+      label1: "우드 & 빈티지",
+      label2: "화이트 & 미니멀"
     },
     {
       image1: "/joinSurvey/black2.jpg",
       image2: "/joinSurvey/modern2.jpg",
-      label1: "블랙",
-      label2: "모던"
+      label1: "블랙 & 메탈릭",
+      label2: "모던 & 클래식"
     },
     {
       image1: "/joinSurvey/modern3.jpg",
       image2: "/joinSurvey/wood3.jpg",
-      label1: "모던",
-      label2: "우드"
+      label1: "모던 & 클래식",
+      label2: "우드 & 빈티지"
     },
     {
       image1: "/joinSurvey/white3.jpg",
       image2: "/joinSurvey/black3.jpg",
-      label1: "화이트",
-      label2: "블랙"
+      label1: "화이트 & 미니멀",
+      label2: "블랙 & 메탈릭"
     },
   ];
 
@@ -74,19 +74,48 @@ export default function JoinModal({ isOpen, onClose }) {
     setShowSurvey(false);
   };
 
-  const handleSelection = (answer) => {
-    setSelectedAnswers([...selectedAnswers, answer]);
+  const handleSelection = async (option) => {
+    // 선택한 옵션에 따른 mood 값 결정
+    const selectedMood = option === 'option1' 
+      ? questions[currentStep].label1 
+      : questions[currentStep].label2;
+
+    // API 호출을 위한 데이터 준비
+    const preferenceData = {
+      category: "",
+      mood: selectedMood,
+      action: "firstCheck",
+      clickedSalesBoardId: ""
+    };
+
+    console.log('설문',preferenceData)
+
+    try {
+      // API 호출
+      await preferenceUpdate(preferenceData);
+    } catch (error) {
+      console.error('선호도 업데이트 실패:', error);
+    }
+
+    setSelectedAnswers([...selectedAnswers, option]);
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
-
   const isLastStep = currentStep === totalSteps - 1;
   const isSurveyComplete = selectedAnswers.length === totalSteps;
 
-  const handleClose = () => {
+  const handleClose = async () => {
+    console.log('회원가입 시도')
+    // onClose();
     if (isSurveyComplete) {
-      onClose();
+      try {
+        await firstLogin();
+        console.log('회원가입 성공');
+        onClose();
+      } catch (error) {
+        console.error('회원가입 실패:', error);
+      }
     }
   };
 
@@ -177,3 +206,4 @@ export default function JoinModal({ isOpen, onClose }) {
     </div>
   );
 }
+

@@ -66,7 +66,7 @@ const sizeFields = [
              <ActiveButton 
                key={condition} 
                onClick={() => handleConditionClick(condition)}
-               width="w-[10rem]"
+               width="w-[11rem]"
                height="h-[3rem]" 
                text="text-[1rem]"
              >

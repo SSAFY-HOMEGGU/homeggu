@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { motion } from "framer-motion"; // Framer Motion import
+import { motion } from "framer-motion";
 import closeIcon from "/public/icons/close.svg";
 
 export default function Modal({
@@ -16,31 +16,34 @@ export default function Modal({
   cancelText = "취소",
   showConfirmButton = true,
   showCancelButton = true,
+  width = "45.125rem",  // 기본 너비
+  height = "25.25rem",  // 기본 높이
 }) {
   if (!show) return null;
+
+  // 모달 스타일에서 크기 관련 속성을 분리
+  const modalStyle = {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: width,
+    height: height,
+    backgroundColor: "var(--ButtonText, #FFF)",
+    borderRadius: "2.5rem",
+    zIndex: 1000,
+    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "2rem",
+  };
 
   return (
     <>
       {/* 모달창 */}
-      <div
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "45.125rem",
-          height: "25.25rem",
-          backgroundColor: "var(--ButtonText, #FFF)",
-          borderRadius: "2.5rem",
-          zIndex: 1000,
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "2rem",
-        }}
-      >
+      <div style={modalStyle}>
         {/* 종료 아이콘 */}
         <Image
           src={closeIcon}
@@ -58,12 +61,12 @@ export default function Modal({
         {icon && (
           <motion.div
             animate={{
-              x: [0, -10, 10, -8, 8, 0], // 좌우로 진동하는 애니메이션
+              x: [0, -10, 10, -8, 8, 0],
             }}
             transition={{
-              duration: 0.6, // 애니메이션 지속 시간
-              ease: "easeInOut", // 부드러운 움직임
-              repeat: 1, // 무한 반복
+              duration: 0.6,
+              ease: "easeInOut",
+              repeat: 1,
             }}
             style={{ marginBottom: "1.5rem" }}
           >
