@@ -24,7 +24,8 @@ export const fetchLogout = (accessToken) => {
 
 // 회원가입 시 선호도 초기화
 export const preferenceInit = () => {
-  return userInstance.get("/preference/init")
+  return userInstance
+    .get("/preference/init")
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -145,4 +146,15 @@ export const uploadProfileImage = async (file) => {
     }
     throw error;
   }
+};
+
+// 최근 본 상품 조회
+export const fetchRecentViewedItems = () => {
+  return userInstance
+    .get(" /user/goods/latest")
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("최근 본 상품 조회 에러:", error);
+      throw error;
+    });
 };
