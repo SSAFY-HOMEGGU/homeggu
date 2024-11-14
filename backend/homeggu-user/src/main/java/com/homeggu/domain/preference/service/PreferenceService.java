@@ -5,8 +5,6 @@ import com.homeggu.domain.user.repository.UserRepository;
 import com.homeggu.domain.preference.dto.request.PreferenceRequest;
 import com.homeggu.domain.preference.entity.Preference;
 import com.homeggu.domain.preference.repository.PreferenceRepository;
-import com.homeggu.global.util.jwt.JwtProvider;
-import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;

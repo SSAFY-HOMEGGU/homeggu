@@ -3,8 +3,6 @@ package com.homeggu.domain.userProfile.service;
 import com.homeggu.domain.userProfile.dto.response.UpdateProfileResponse;
 import com.homeggu.domain.userProfile.entity.UserProfile;
 import com.homeggu.domain.userProfile.repository.UserProfileRepository;
-import com.homeggu.global.util.jwt.JwtProvider;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
