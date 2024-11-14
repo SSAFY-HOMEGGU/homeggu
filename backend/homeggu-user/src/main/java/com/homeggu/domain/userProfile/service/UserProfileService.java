@@ -15,25 +15,16 @@ import java.util.NoSuchElementException;
 public class UserProfileService {
 
     private final UserProfileRepository userProfileRepository;
-    private final JwtProvider jwtProvider;
 
     // 사용자 상세 정보 조회
-    public UserProfile getUserProfile(String accessToken) {
-        // access token에서 user id 추출
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public UserProfile getUserProfile(Long userId) {
         // Optional을 처리하여 UserProfile 반환, 값이 없으면 예외 처리
         return userProfileRepository.findByUserProfileId(userId)
                 .orElseThrow(() -> new NoSuchElementException("유저 프로필을 찾을 수 없습니다."));
     }
 
     // 사용자 정보 수정
-    public void updateUserProfile(String accessToken, UpdateProfileResponse updateProfileResponse) {
-        // access token에서 user id 추출
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public void updateUserProfile(Long userId, UpdateProfileResponse updateProfileResponse) {
         // 기존 정보 조회
         UserProfile newUserProfile = userProfileRepository.findByUserProfileId(userId)
                 .orElseThrow(() -> new NoSuchElementException("유저 프로필을 찾지 못했습니다."));

@@ -19,7 +19,7 @@ import java.util.Map;
 public class Preference extends UpdateTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int preferenceId;
+    private Long preferenceId;
 
     @OneToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)

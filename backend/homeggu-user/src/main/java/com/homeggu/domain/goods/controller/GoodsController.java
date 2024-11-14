@@ -11,17 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/goods")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class GoodsController {
 
     private final GoodsService goodsService;
 
     // 최근에 본 게시물 가져오기
-    @GetMapping("/latest")
-    public ResponseEntity<List<String>> getRecentItems(@RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.substring(7);
-        return ResponseEntity.ok().body(goodsService.getRecentItems(accessToken));
+    @GetMapping("/goods/latest")
+    public ResponseEntity<List<String>> getRecentItems(@RequestHeader("userId") Long userId) {
+        return ResponseEntity.ok().body(goodsService.getRecentItems(userId));
     }
 
 }
