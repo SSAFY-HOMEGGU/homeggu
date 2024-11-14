@@ -6,8 +6,11 @@ import pickle
 router = APIRouter()
 
 # 모델 로드
-with open("app/models/trained_model.pkl", "rb") as f:
-    recommender = pickle.load(f)
+try:
+    with open("app/models/trained_model.pkl", "rb") as f:
+        recommender = pickle.load(f)
+except FileNotFoundError:
+    raise RuntimeError("Trained model file not found. Run the model training script first.")
 
 # 요청 데이터 스키마 정의
 class Preferences(BaseModel):
