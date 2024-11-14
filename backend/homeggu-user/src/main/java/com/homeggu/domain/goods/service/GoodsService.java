@@ -1,7 +1,5 @@
 package com.homeggu.domain.goods.service;
 
-import com.homeggu.global.util.jwt.JwtProvider;
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

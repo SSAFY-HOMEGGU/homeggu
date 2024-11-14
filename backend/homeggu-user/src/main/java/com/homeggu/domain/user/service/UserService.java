@@ -9,7 +9,6 @@ import com.homeggu.domain.userProfile.entity.UserProfile;
 import com.homeggu.domain.userProfile.repository.UserProfileRepository;
 import com.homeggu.global.util.dto.JwtResponse;
 import com.homeggu.global.util.jwt.JwtProvider;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;

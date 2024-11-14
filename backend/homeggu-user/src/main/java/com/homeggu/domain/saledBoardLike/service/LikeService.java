@@ -6,8 +6,6 @@ import com.homeggu.domain.saledBoardLike.entity.SalesBoardLike;
 import com.homeggu.domain.saledBoardLike.repository.LikeRepository;
 import com.homeggu.domain.user.entity.User;
 import com.homeggu.domain.user.repository.UserRepository;
-import com.homeggu.global.util.jwt.JwtProvider;
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
