@@ -1,23 +1,48 @@
 import Image from "next/image";
 import profileDefault from "/public/icons/profile.svg";
 import React, { useEffect, useState } from "react";
-import { fetchUserProfile } from "@/app/api/userApi";
+import { fetchUserProfile, goodsLikeList } from "@/app/api/userApi";
+import { fetchPayHistory } from "@/app/api/payApi";
 
 export default function Profile({ user }) {
   const [profileData, setProfileData] = useState(null);
-  const { name, profileImage, orderCount, salesCount, wishlistCount } = user;
+  const [userCounts, setUserCounts] = useState({
+    orderCount: 0,
+    salesCount: 0,
+    wishlistCount: 0,
+  });
+  const { name, profileImage } = user;
 
   useEffect(() => {
-    const loadUserProfile = async () => {
+    const loadUserData = async () => {
       try {
-        const data = await fetchUserProfile();
-        setProfileData(data);
+        // 프로필 정보 가져오기
+        const profileInfo = await fetchUserProfile();
+        setProfileData(profileInfo);
+
+        // 찜한 상품 개수 가져오기
+        const wishlistData = await goodsLikeList();
+
+        // 구매/판매 내역 가져오기
+        const payHistory = await fetchPayHistory(0, 1000);
+        const purchaseCount = payHistory.content.filter(
+          (item) => item.type === "PURCHASE"
+        ).length;
+        const salesCount = payHistory.content.filter(
+          (item) => item.type === "SALE"
+        ).length;
+
+        setUserCounts({
+          orderCount: purchaseCount,
+          salesCount: salesCount,
+          wishlistCount: wishlistData.length || 0,
+        });
       } catch (error) {
-        console.error("프로필 정보 로딩 실패:", error);
+        console.error("사용자 데이터 로딩 실패:", error);
       }
     };
 
-    loadUserProfile();
+    loadUserData();
   }, []);
 
   return (
@@ -72,7 +97,7 @@ export default function Profile({ user }) {
               lineHeight: "normal",
             }}
           >
-            {orderCount}
+            {userCounts.orderCount}
           </span>
         </div>
 
@@ -100,7 +125,7 @@ export default function Profile({ user }) {
               lineHeight: "normal",
             }}
           >
-            {salesCount}
+            {userCounts.salesCount}
           </span>
         </div>
 
@@ -128,7 +153,7 @@ export default function Profile({ user }) {
               lineHeight: "normal",
             }}
           >
-            {wishlistCount}
+            {userCounts.wishlistCount}
           </span>
         </div>
       </div>
