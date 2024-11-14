@@ -5,8 +5,10 @@ import com.homeggu.pay.domain.charge.entity.QCharge;
 import com.homeggu.pay.domain.payinfo.dto.response.HistoryResponse;
 import com.homeggu.pay.domain.payinfo.entity.HistoryCategory;
 import com.homeggu.pay.domain.transfer.entity.*;
+import com.homeggu.pay.global.client.GoodsServiceClient;
 import com.homeggu.pay.global.client.UserServiceClient;
-import com.homeggu.pay.global.client.entity.UserResponse;
+import com.homeggu.pay.global.client.dto.response.SalesBoardResponse;
+import com.homeggu.pay.global.client.dto.response.UserResponse;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 public class PayInfoCustomRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final GoodsServiceClient goodsServiceClient;
     private final UserServiceClient userServiceClient;
 
     public Page<HistoryResponse> getHistory(Long userId, String filter, Pageable pageable) {
@@ -79,10 +82,11 @@ public class PayInfoCustomRepository {
     }
 
     private HistoryResponse convertTransfer(Transfer transfer, Long userId) {
+        SalesBoardResponse title = goodsServiceClient.getGoods(transfer.getSalesBoardId());
+
         Long counterpartyId = transfer.getSenderId() == userId ? // 조회하는 사람이 해당 송금내역의 "송금자"인가?
                             transfer.getReceiverId() :           // 맞으면 상대방은 "수취자"
                             transfer.getSenderId();              // 아니면 상대방은 "송금자"
-
         UserResponse counterparty = userServiceClient.getUserProfile(counterpartyId);
 
         return HistoryResponse.builder()
@@ -95,7 +99,7 @@ public class PayInfoCustomRepository {
                         transfer.getSenderBalance()       // 유저가 "송금자"인 경우, 내역에 송금 "보낸" 후의 잔액을 기록
                         : transfer.getReceiverBalance())  // 유저가 "수취자"인 경우, 내역에 송금 "받은" 후의 잔액을 기록
                 .salesBoardId(transfer.getSalesBoardId())
-//                .title()            // MSA 설정 후 salesBoardId를 활용해 참조
+                .title(title.getTitle())
                 .counterpartyName(counterparty.getNickname())
                 .stateCategory(transfer.getStateCategory() == null ? null : transfer.getStateCategory().toString())
                 .build();

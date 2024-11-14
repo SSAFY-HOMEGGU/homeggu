@@ -1,4 +1,4 @@
-package com.homeggu.pay.global.client.entity;
+package com.homeggu.pay.global.client.dto.response;
 
 import lombok.Getter;
 
