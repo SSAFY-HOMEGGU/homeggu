@@ -26,7 +26,7 @@ print("Model saved as trained_model.pkl")
 # from app.models.recommender import ContentBasedRecommender
 
 # # Goods 서버의 API 호출
-# GOODS_SERVER_URL = "http://goods-server-url/api/goods"
+# GOODS_SERVER_URL = "http://goods-server-url/goods/board"
 
 # def fetch_goods_from_server():
 #     try:
