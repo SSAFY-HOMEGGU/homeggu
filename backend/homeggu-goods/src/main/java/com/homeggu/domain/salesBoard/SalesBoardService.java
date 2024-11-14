@@ -98,7 +98,7 @@ public class SalesBoardService {
         }
     }
     // 삭제
-   public void deleteGoods (int goodsId,int userId){
+   public void deleteGoods (Long goodsId,Long userId){
       SalesBoard salesBoard = salesBoardRepository.findById(goodsId)
               .orElseThrow(() -> new RuntimeException("물건을 찾을 수 없습니다."));
 
@@ -137,7 +137,7 @@ public class SalesBoardService {
 
     // 물건 상세
     @Transactional
-    public SalesBoardDTO getSalesBoardById(int boardId) {
+    public SalesBoardDTO getSalesBoardById(Long boardId) {
         SalesBoard salesBoard = salesBoardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 물건입니다."));
 

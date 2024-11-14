@@ -16,7 +16,7 @@ public class GoodsImage {
     // 2d 이미지를 저장하는 테이블
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer goodsImageId;
+    private Long goodsImageId;
 
     @ManyToOne
     @JoinColumn(name = "sales_board_id", nullable = false)

@@ -81,7 +81,7 @@ public class SalesBoardController {
             @RequestBody RegisterGoodsRequest dto) {
         try {
             String userEmail = getAuth();
-            Integer userId = 1; // 실제 사용자 ID로 변경 필요
+            Long userId = 1L; // 실제 사용자 ID로 변경 필요
             dto.getSalesBoardDTO().setUserId(userId);
 
             salesBoardService.registerGoods(dto);
@@ -96,11 +96,11 @@ public class SalesBoardController {
     // 물건 수정
     @PutMapping("/{boardId}")
     public ResponseEntity<?> updateGoods(
-            @PathVariable Integer boardId, // boardId는 여전히 필요
+            @PathVariable Long boardId, // boardId는 여전히 필요
             @RequestBody RegisterGoodsRequest dto) { // RegisterGoodsRequest 사용
         try {
             String userEmail = getAuth();
-            Integer userId = 1; // 실제 사용자 ID로 변경 필요
+            Long userId = 1L; // 실제 사용자 ID로 변경 필요
             dto.getSalesBoardDTO().setUserId(userId);
             dto.getSalesBoardDTO().setSalesBoardId(boardId); // boardId를 DTO에 설정
 
@@ -120,10 +120,10 @@ public class SalesBoardController {
 
     // 물건 삭제
     @DeleteMapping("/{boardId}")
-    public ResponseEntity<?> deleteGoods(@PathVariable Integer boardId) {
+    public ResponseEntity<?> deleteGoods(@PathVariable Long boardId) {
         try{
             String userEmail = getAuth();
-            Integer userId = 1;
+            Long userId = 1L;
             salesBoardService.deleteGoods(boardId,userId);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","성공적으로 삭제되었습니다."));
         }catch (IllegalArgumentException e) {
@@ -152,7 +152,7 @@ public class SalesBoardController {
 
     //물건 상세
     @GetMapping("/{boardId}")
-    public ResponseEntity<?> getGoods(@PathVariable Integer boardId) {
+    public ResponseEntity<?> getGoods(@PathVariable Long boardId) {
         try {
             SalesBoardDTO salesBoardDTO = salesBoardService.getSalesBoardById(boardId);
             return ResponseEntity.ok(salesBoardDTO);
