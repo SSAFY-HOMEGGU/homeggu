@@ -16,8 +16,8 @@ import java.util.List;
 @Builder
 public class SalesBoardDTO {
 
-    private Integer salesBoardId;
-    private Integer userId;
+    private Long salesBoardId;
+    private Long userId;
     private String title;
     private String content;
     private Category category;

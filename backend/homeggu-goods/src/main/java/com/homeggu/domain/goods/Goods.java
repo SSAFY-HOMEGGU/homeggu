@@ -15,13 +15,12 @@ public class Goods {
     // 3D이미지가 저장되는 테이블
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer goodsId;
+    private Long goodsId;
 
     @Column
     private String threeDimensionsGoodsImagePath;
 
     @JoinColumn(name = "sales_board_id"  , nullable = false)
-    private Integer salesBoardId;
-
+    private Long salesBoardId;
 
 }

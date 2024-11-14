@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 
 
-public interface SalesBoardRepository extends JpaRepository<SalesBoard, Integer> {
+public interface SalesBoardRepository extends JpaRepository<SalesBoard, Long> {
 
     @Query("SELECT sb FROM SalesBoard sb WHERE " +
             "(:category IS NULL OR sb.category = :category) AND " +

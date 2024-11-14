@@ -19,10 +19,10 @@ public class SalesBoard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer salesBoardId;
+    private Long salesBoardId;
 
     @Column(nullable=false)
-    private Integer userId;
+    private Long userId;
 
     @Column(nullable=false, length = 100)
     private String title;
