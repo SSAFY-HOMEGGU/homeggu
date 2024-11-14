@@ -1,6 +1,6 @@
-package com.homeggu.global.util.jwt;
+package com.homeggu.gateway.jwt;
 
-import com.homeggu.global.util.dto.JwtResponse;
+import com.homeggu.gateway.jwt.dto.JwtResponse;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

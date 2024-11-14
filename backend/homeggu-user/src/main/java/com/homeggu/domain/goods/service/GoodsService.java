@@ -11,19 +11,14 @@ import java.util.List;
 @Service
 public class GoodsService {
 
-    private final JwtProvider jwtProvider;
     private final RedisTemplate redisTemplate;
 
-    public GoodsService(JwtProvider jwtProvider, @Qualifier("redisTemplate") RedisTemplate redisTemplate) {
-        this.jwtProvider = jwtProvider;
+    public GoodsService(@Qualifier("redisTemplate") RedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
     // 최근에 본 게시물 가져오기
-    public List<String> getRecentItems(String accessToken) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public List<String> getRecentItems(Long userId) {
         // Redis 키 설정
         String recentClickedKey = "recentClicked:" + userId;
 

@@ -10,31 +10,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user-profile")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
 
     // 사용자 정보 상세 조회
-    @GetMapping("/detail")
-    public ResponseEntity<UserProfile> getUserProfile(@RequestHeader("Authorization") String authorizationHeader) {
-        String accessToken = authorizationHeader.substring(7);
-        UserProfile userProfile = userProfileService.getUserProfile(accessToken);
-
+    @GetMapping("/profile/detail")
+    public ResponseEntity<UserProfile> getUserProfile(@RequestHeader("userId") Long userId) {
+        UserProfile userProfile = userProfileService.getUserProfile(userId);
         return ResponseEntity.ok(userProfile);
     }
 
     // 사용자 정보 수정
-    @PutMapping("/update")
-    public ResponseEntity<?> updateUserProfile(@RequestHeader("Authorization") String authorizationHeader, @RequestBody UpdateProfileResponse updateProfileResponse) {
-        String accessToken = authorizationHeader.substring(7);
-        userProfileService.updateUserProfile(accessToken, updateProfileResponse);
+    @PutMapping("/profile/update")
+    public ResponseEntity<?> updateUserProfile(@RequestHeader("userId") Long userId, @RequestBody UpdateProfileResponse updateProfileResponse) {
+        userProfileService.updateUserProfile(userId, updateProfileResponse);
         return ResponseEntity.ok("수정 완료");
     }
 
     // 닉네임 중복 검사
-    @PostMapping("/nickname")
+    @PostMapping("/profile/nickname")
     public ResponseEntity<?> duplicateNickname(@RequestBody NicknameRequest nicknameRequest) {
         String nickname = nicknameRequest.getNickname();
         boolean isDuplicate = userProfileService.checkNicknameDuplication(nickname);

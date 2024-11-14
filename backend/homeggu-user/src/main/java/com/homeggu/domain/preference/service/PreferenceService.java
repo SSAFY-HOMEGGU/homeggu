@@ -21,23 +21,18 @@ public class PreferenceService {
 
     private final UserRepository userRepository;
     private final PreferenceRepository preferenceRepository;
-    private final JwtProvider jwtProvider;
     private final RedisTemplate redisTemplate;
     private final WebClient webClient;
 
-    public PreferenceService(UserRepository userRepository, PreferenceRepository preferenceRepository, JwtProvider jwtProvider, @Qualifier("redisTemplate") RedisTemplate redisTemplate, WebClient.Builder webClientBuilder) {
+    public PreferenceService(UserRepository userRepository, PreferenceRepository preferenceRepository, @Qualifier("redisTemplate") RedisTemplate redisTemplate, WebClient.Builder webClientBuilder) {
         this.userRepository = userRepository;
         this.preferenceRepository = preferenceRepository;
-        this.jwtProvider = jwtProvider;
         this.redisTemplate = redisTemplate;
         this.webClient = webClientBuilder.baseUrl("http://127.0.0.1:8000").build();
     }
 
     // 회원가입 시 사용자의 카테고리, 분위기 초기화
-    public void saveInitPreference(String accessToken) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public void saveInitPreference(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
 
         // 초기 카테고리 선호도
@@ -71,10 +66,7 @@ public class PreferenceService {
 
     // 사용자 선호도 업데이트
     @Transactional
-    public void updatePreference(String accessToken, PreferenceRequest preferenceRequest) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public void updatePreference(Long userId, PreferenceRequest preferenceRequest) {
         String category = preferenceRequest.getCategory();
         String mood = preferenceRequest.getMood();
         String action = preferenceRequest.getAction();
@@ -128,7 +120,7 @@ public class PreferenceService {
 
                 // 10번 호출 시 decreasePreference 실행
                 if (callCount >= 10) {
-                    decreasePreference(accessToken);
+                    decreasePreference(userId);
 
                     // 호출 횟수 초기화 (문자열로 저장)
                     redisTemplate.opsForValue().set(callCountKey, "0", Duration.ofDays(1));
@@ -143,7 +135,7 @@ public class PreferenceService {
     }
 
     // Redis에 최근 업데이트된 항목 저장
-    private void updateRecentlyItems(int userId, String category, String mood) {
+    private void updateRecentlyItems(Long userId, String category, String mood) {
         String categoryKey = "recentlyUpdated:categories:" + userId;
         String moodKey = "recentlyUpdated:moods:" + userId;
 
@@ -158,10 +150,7 @@ public class PreferenceService {
 
     // 최근에 선호도가 오르지 않은 항목은 선호도 감소
     @Transactional
-    public void decreasePreference(String accessToken) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public void decreasePreference(Long userId) {
         Preference preference = preferenceRepository.findById(userId).orElse(null);
         if (preference != null) {
             Map<String, Double> categoryPreferences = preference.getCategoryPreferences();
@@ -195,19 +184,19 @@ public class PreferenceService {
     }
 
     // Redis에서 최근 업데이트된 카테고리 가져오기
-    private Set<String> getUpdatedCategories(int userId) {
+    private Set<String> getUpdatedCategories(Long userId) {
         String categoryKey = "recentlyUpdated:categories:" + userId;
         return redisTemplate.opsForSet().members(categoryKey);
     }
 
     // Redis에서 최근 업데이트된 분위기 가져오기
-    private Set<String> getUpdatedMoods(int userId) {
+    private Set<String> getUpdatedMoods(Long userId) {
         String moodKey = "recentlyUpdated:moods:" + userId;
         return redisTemplate.opsForSet().members(moodKey);
     }
 
     // Redis에 최근 본 게시물 저장하기
-    private void manageRecentlyClickedItems(int userId, int clickedSalesBoardId) {
+    private void manageRecentlyClickedItems(Long userId, Long clickedSalesBoardId) {
         String recentClickedKey = "recentClicked:" + userId;
 
         // Redis에서 최근 본 게시물 리스트 가져오기
@@ -239,10 +228,7 @@ public class PreferenceService {
 
     // 구매확정 시 선호도 변경
     @Transactional
-    public void buyPreference(String accessToken, PreferenceRequest preferenceRequest) {
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
+    public void buyPreference(Long userId, PreferenceRequest preferenceRequest) {
         String category = preferenceRequest.getCategory();
         String mood = preferenceRequest.getMood();
 
@@ -268,11 +254,8 @@ public class PreferenceService {
     }
 
     // 추천 상품 리스트
-    public Map<String, Object> getRecommendations(String accessToken) {
+    public Map<String, Object> getRecommendations(Long userId) {
         // 사용자 선호도 가져오기
-        Claims claims = jwtProvider.parseToken(accessToken);
-        int userId = claims.get("userId", Integer.class);
-
         Preference preference = preferenceRepository.findById(userId).orElse(null);
         Map<String, Double> categoryPreferences = preference.getCategoryPreferences();
         Map<String, Double> moodPreferences = preference.getMoodPreferences();

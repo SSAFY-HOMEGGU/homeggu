@@ -200,11 +200,8 @@ public class UserService {
     }
 
     // 카카오 로그아웃
-    public boolean kakaoLogout(String accessToken) {
+    public boolean kakaoLogout(Long userId) {
         try {
-            // accessToken에서 userId 추출
-            Claims claims = jwtProvider.parseToken(accessToken);
-            int userId = claims.get("userId", Integer.class);
             String redisKey = "refresh_token_" + userId;
 
             // Redis에서 해당 유저의 refresh token 삭제
@@ -219,11 +216,8 @@ public class UserService {
     }
 
     // 최초 로그인 시, 사용자 취향 반영 완료
-    public boolean firstLogin(String accessToken) {
+    public boolean firstLogin(Long userId) {
         try {
-            Claims claims = jwtProvider.parseToken(accessToken);
-            int userId = claims.get("userId", Integer.class);
-
             userRepository.updateIsFirstLogin(userId);
             return true;
         } catch (Exception e) {

@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface LikeRepository extends JpaRepository<SalesBoardLike, Integer> {
-    Optional<SalesBoardLike> findByUserAndSalesBoardId(User user, int salesBoardId);
+public interface LikeRepository extends JpaRepository<SalesBoardLike, Long> {
+    Optional<SalesBoardLike> findByUserAndSalesBoardId(User user, Long salesBoardId);
 
     List<SalesBoardLike> findByUser(User user);
 
-    boolean existsByUserAndSalesBoardId(User user, int salesBoardId);
+    boolean existsByUserAndSalesBoardId(User user, Long salesBoardId);
 }
