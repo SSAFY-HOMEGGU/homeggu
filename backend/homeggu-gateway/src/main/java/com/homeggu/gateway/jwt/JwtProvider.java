@@ -1,18 +1,14 @@
 package com.homeggu.gateway.jwt;
 
-import com.homeggu.gateway.jwt.dto.JwtResponse;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
