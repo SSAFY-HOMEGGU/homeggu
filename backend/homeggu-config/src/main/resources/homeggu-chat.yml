@@ -22,3 +22,9 @@ spring:
     password: '{cipher}1b5fc4f4277bb492909c96d334720af4069a9f159e47a71b5c3048eece4a80ee'
 
 
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://discovery-backend:8761/eureka
