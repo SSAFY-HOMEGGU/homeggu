@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +31,7 @@ public class SalesBoardController {
     private final SalesBoardService salesBoardService;
     private final S3Service s3Service;
     private final AmazonS3 amazonS3Client;
+
 
 
     // 2D 이미지 등록
@@ -71,17 +70,14 @@ public class SalesBoardController {
     }
 
 
-    private String extractFileNameFromUrl(String fileUrl) {
-        return fileUrl.substring(fileUrl.lastIndexOf('/') + 1).split("\\?")[0]; // URL에서 파일 이름과 확장자 추출
-    }
-
     // 물건 등록
     @PostMapping
     public ResponseEntity<?> registGoods(
-            @RequestBody RegisterGoodsRequest dto) {
+            @RequestBody RegisterGoodsRequest dto,@RequestHeader("userId") Long userId) {
         try {
-            String userEmail = getAuth();
-            Long userId = 1L; // 실제 사용자 ID로 변경 필요
+
+//            String userEmail = getAuth();
+//            Long userId = 1L; // 실제 사용자 ID로 변경 필요
             dto.getSalesBoardDTO().setUserId(userId);
 
             salesBoardService.registerGoods(dto);
@@ -95,12 +91,12 @@ public class SalesBoardController {
 
     // 물건 수정
     @PutMapping("/{boardId}")
-    public ResponseEntity<?> updateGoods(
+    public ResponseEntity<?> updateGoods(@RequestHeader("userId") Long userId,
             @PathVariable Long boardId, // boardId는 여전히 필요
             @RequestBody RegisterGoodsRequest dto) { // RegisterGoodsRequest 사용
         try {
-            String userEmail = getAuth();
-            Long userId = 1L; // 실제 사용자 ID로 변경 필요
+//            String userEmail = getAuth();
+//            Long userId = 1L; // 실제 사용자 ID로 변경 필요
             dto.getSalesBoardDTO().setUserId(userId);
             dto.getSalesBoardDTO().setSalesBoardId(boardId); // boardId를 DTO에 설정
 
@@ -120,10 +116,10 @@ public class SalesBoardController {
 
     // 물건 삭제
     @DeleteMapping("/{boardId}")
-    public ResponseEntity<?> deleteGoods(@PathVariable Long boardId) {
+    public ResponseEntity<?> deleteGoods(@RequestHeader("userId") Long userId,@PathVariable Long boardId) {
         try{
-            String userEmail = getAuth();
-            Long userId = 1L;
+//            String userEmail = getAuth();
+//            Long userId = 1L;
             salesBoardService.deleteGoods(boardId,userId);
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("message","성공적으로 삭제되었습니다."));
         }catch (IllegalArgumentException e) {
