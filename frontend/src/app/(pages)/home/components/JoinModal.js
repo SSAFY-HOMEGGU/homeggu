@@ -3,8 +3,10 @@ import Image from 'next/image';
 import Lottie from "lottie-react";
 import check from './check.json';
 import { fetchUserProfile,preferenceUpdate, firstLogin } from '@/app/api/userApi';
+import { useRouter } from 'next/navigation';
 
 export default function JoinModal({ isOpen, onClose }) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [userName, setUserName] = useState(null);
@@ -112,6 +114,7 @@ export default function JoinModal({ isOpen, onClose }) {
       try {
         await firstLogin();
         console.log('회원가입 성공');
+        router.push('/');
         onClose();
       } catch (error) {
         console.error('회원가입 실패:', error);
