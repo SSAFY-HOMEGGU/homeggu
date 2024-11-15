@@ -2,9 +2,7 @@ package com.homeggu.pay.domain.charge.controller;
 
 import com.homeggu.pay.domain.charge.dto.request.ChargeRequest;
 import com.homeggu.pay.domain.charge.service.ChargeService;
-import com.homeggu.pay.global.auth.AuthPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
