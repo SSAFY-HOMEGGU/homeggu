@@ -1,4 +1,4 @@
-// page.js
+//interior/page.js
 "use client";
 import React, { useState } from "react";
 import Canvas from "./components/Canvas/Canvas";
@@ -9,7 +9,7 @@ const InteriorPage = () => {
   const [view, setView] = useState("2d");
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden mb-10">
       <div className="flex-1 flex flex-col">
         <div className="flex justify-between items-center p-2 border-b bg-white">
           <h1 className="text-xl font-semibold">Floor Planner</h1>
