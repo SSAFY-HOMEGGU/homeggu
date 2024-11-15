@@ -5,6 +5,8 @@ import Profile from "./components/Profile";
 import React from "react";
 import { fetchRecentViewedItems } from "../../api/userApi";
 import { salesBoardList } from "../../api/productApi";
+import Product from "@/app/components/Product";
+import Image from "next/image";
 
 export default function Dashboard() {
   const user = {
@@ -155,14 +157,22 @@ export default function Dashboard() {
                     className="flex-shrink-0 w-[200px]"
                   >
                     <div className="relative w-[200px] h-[200px] mb-2">
-                      <img
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={item.goodsImagePaths?.[0] || "/api/placeholder/200/200"}
+                        alt={item.title}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
+                      {/* <img
                         src={
                           item.goodsImagePaths?.[0] ||
                           "/api/placeholder/200/200"
                         }
                         alt={item.title}
                         className="w-full h-full object-cover rounded-lg"
-                      />
+                      /> */}
                     </div>
                     <div className="flex flex-col gap-1">
                       <h3 className="font-medium text-gray-900 line-clamp-2">
