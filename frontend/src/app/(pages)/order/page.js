@@ -229,7 +229,7 @@ const OrderPage = () => {
               />
 
               <Image
-                src="/images/bed2.png"
+                src={product.image}
                 alt={product.name || "기본 이미지"}
                 width={120}
                 height={120}

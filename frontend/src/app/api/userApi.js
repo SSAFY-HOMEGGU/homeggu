@@ -1,5 +1,5 @@
-import { authInstance, userInstance } from "./axiosInstance";
-// import { authInstance,userInstance } from "./axiosInstanceLocal";
+// import { authInstance, userInstance } from "./axiosInstance";
+import { authInstance,userInstance } from "./axiosInstanceLocal";
 
 // 로그인
 export const fetchLogin = (code) => {
@@ -199,3 +199,17 @@ export const fetchRecentViewedItems = () => {
       throw error;
     });
 };
+
+
+// 추천 상품
+export const preferenceList = () => {
+  return userInstance.get("/preference/list")
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("최근 본 상품 조회 에러:", error);
+      throw error;
+    });
+}
+
+
+

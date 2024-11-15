@@ -35,7 +35,7 @@ export default function ChatList({ onSelectRoom }) {
           <div 
             key={room.chatRoomId} 
             className='border rounded-lg h-[3.5rem] p-3 flex items-center justify-between cursor-pointer hover:bg-gray-50'
-            onClick={() => onSelectRoom(room.chatRoomId, room.salesBoardId)}
+            onClick={() => onSelectRoom(room.chatRoomId, room.salesBoardId, room.userId)}
           >
             <div className='flex items-center space-x-3'>
               <div className='w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center'>

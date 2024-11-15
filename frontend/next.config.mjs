@@ -19,7 +19,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['homeggu-s3.s3.ap-northeast-2.amazonaws.com'],
+    // domains: ['homeggu-s3.s3.ap-northeast-2.amazonaws.com'],
     remotePatterns: [
       {
         protocol: 'https',
