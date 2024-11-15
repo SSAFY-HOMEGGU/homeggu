@@ -189,19 +189,19 @@ export const salesBoardList = ({
   params.append('page', page);  // 항상 포함
   params.append('size', size);  // 항상 포함
 
-  const url = `/board?${params}`;
+  // const url = `/board?${params}`;
   console.log('🚀 API 호출 URL:', url);
   console.log('🚀 요청 파라미터:', {
     category,
     min_price,
     max_price,
-    isSell,
+    isSell,  
     title,
     page,
     size
   });
 
-  return productInstance.get(`/board?${params}`,{
+  return productInstance.get(`/board?${params.toString()}`,{
       timeout: 100000  // 10초
     })
     .then(response => response.data)
