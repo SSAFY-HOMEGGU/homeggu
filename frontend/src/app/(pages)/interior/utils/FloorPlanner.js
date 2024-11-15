@@ -1,3 +1,5 @@
+// interior/utils/FloorPlanner.js
+
 import { fabric } from "fabric";
 
 class Wall {
@@ -189,6 +191,22 @@ class FloorPlanner {
     this.canvas.add(this.drawingObject);
     this.canvas.add(this.lengthText);
     this.canvas.renderAll();
+  }
+
+  handleMouseWheel(opt) {
+    const delta = opt.e.deltaY;
+    let zoom = this.canvas.getZoom();
+    zoom *= 0.999 ** delta;
+    zoom = Math.min(20, Math.max(0.5, zoom));
+
+    // 마우스 포인터 위치를 기준으로 줌
+    this.canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+
+    // 줌 레벨이 변경될 때마다 그리드 업데이트
+    this.createGrid();
+
+    opt.e.preventDefault();
+    opt.e.stopPropagation();
   }
 
   handleMouseMove(e) {
@@ -929,28 +947,36 @@ class FloorPlanner {
     const existingGrid = this.canvas.getObjects().filter((obj) => obj.isGrid);
     existingGrid.forEach((obj) => this.canvas.remove(obj));
 
-    const width = this.canvas.width;
-    const height = this.canvas.height;
+    // 현재 zoom level 가져오기
+    const zoom = this.canvas.getZoom();
 
-    for (let i = 0; i < width / this.gridSize; i++) {
-      const isBoldLine = i % 5 === 0;
-      const verticalLine = new fabric.Line(
-        [i * this.gridSize, 0, i * this.gridSize, height],
-        {
-          stroke: "#ddd",
-          strokeWidth: isBoldLine ? 1.5 : 0.5,
-          selectable: false,
-          evented: false,
-          isGrid: true,
-        }
-      );
-      this.canvas.add(verticalLine);
-    }
+    // viewport의 실제 크기 계산
+    const vpt = this.canvas.viewportTransform;
+    const viewportWidth = this.canvas.width / zoom;
+    const viewportHeight = this.canvas.height / zoom;
 
-    for (let i = 0; i < height / this.gridSize; i++) {
-      const isBoldLine = i % 5 === 0;
+    // 보이는 영역의 좌상단 좌표
+    const startX = -vpt[4] / zoom;
+    const startY = -vpt[5] / zoom;
+
+    // 그리드 확장 영역 계산 (여유 공간 추가)
+    const extraSpace = 1000; // 픽셀 단위
+    const totalWidth = viewportWidth + extraSpace;
+    const totalHeight = viewportHeight + extraSpace;
+
+    // 그리드 시작점 조정 (음수 영역 포함)
+    const gridStartX =
+      Math.floor(startX / this.gridSize) * this.gridSize - extraSpace / 2;
+    const gridStartY =
+      Math.floor(startY / this.gridSize) * this.gridSize - extraSpace / 2;
+
+    // 수평선 그리기
+    for (let i = 0; i <= totalHeight / this.gridSize; i++) {
+      const y = gridStartY + i * this.gridSize;
+      const isBoldLine = Math.abs(Math.round(y / this.gridSize)) % 5 === 0;
+
       const horizontalLine = new fabric.Line(
-        [0, i * this.gridSize, width, i * this.gridSize],
+        [gridStartX, y, gridStartX + totalWidth, y],
         {
           stroke: "#ddd",
           strokeWidth: isBoldLine ? 1.5 : 0.5,
@@ -962,6 +988,25 @@ class FloorPlanner {
       this.canvas.add(horizontalLine);
     }
 
+    // 수직선 그리기
+    for (let i = 0; i <= totalWidth / this.gridSize; i++) {
+      const x = gridStartX + i * this.gridSize;
+      const isBoldLine = Math.abs(Math.round(x / this.gridSize)) % 5 === 0;
+
+      const verticalLine = new fabric.Line(
+        [x, gridStartY, x, gridStartY + totalHeight],
+        {
+          stroke: "#ddd",
+          strokeWidth: isBoldLine ? 1.5 : 0.5,
+          selectable: false,
+          evented: false,
+          isGrid: true,
+        }
+      );
+      this.canvas.add(verticalLine);
+    }
+
+    // 모든 그리드 선을 캔버스의 맨 뒤로 보내기
     this.canvas
       .getObjects()
       .filter((obj) => obj.isGrid)
@@ -974,6 +1019,38 @@ class FloorPlanner {
     this.canvas.on("mouse:down", (e) => this.handleMouseDown(e));
     this.canvas.on("mouse:move", (e) => this.handleMouseMove(e));
     this.canvas.on("mouse:up", () => this.handleMouseUp());
+    this.canvas.on("mouse:wheel", (opt) => this.handleMouseWheel(opt));
+
+    let isDragging = false;
+    let lastPosX;
+    let lastPosY;
+
+    this.canvas.on("mouse:down", (opt) => {
+      if (opt.e.button === 2 || (opt.e.spaceBar && opt.e.which === 1)) {
+        isDragging = true;
+        lastPosX = opt.e.clientX;
+        lastPosY = opt.e.clientY;
+        this.canvas.selection = false;
+      }
+    });
+
+    this.canvas.on("mouse:move", (opt) => {
+      if (isDragging) {
+        const e = opt.e;
+        const vpt = this.canvas.viewportTransform;
+        vpt[4] += e.clientX - lastPosX;
+        vpt[5] += e.clientY - lastPosY;
+        this.canvas.requestRenderAll();
+        this.createGrid(); // 패닝 중에도 그리드 업데이트
+        lastPosX = e.clientX;
+        lastPosY = e.clientY;
+      }
+    });
+
+    this.canvas.on("mouse:up", () => {
+      isDragging = false;
+      this.canvas.selection = true;
+    });
 
     this.canvas.on("selection:created", (e) => {
       // select 모드에서 방을 클릭했을 때만 면적 표시
@@ -995,6 +1072,19 @@ class FloorPlanner {
   setDimensions(width, height) {
     this.canvas.setDimensions({ width, height });
     this.createGrid();
+  }
+
+  // 추가된 addToHistory 메서드
+  addToHistory() {
+    if (typeof this.onHistoryAdd === "function") {
+      const json = this.canvas.toJSON();
+      this.onHistoryAdd(json);
+    }
+  }
+
+  // addToHistory 호출을 위한 콜백 등록
+  setOnHistoryAdd(callback) {
+    this.onHistoryAdd = callback;
   }
 
   clear() {

@@ -1,3 +1,5 @@
+//interior/components/Toolbar/Toolbar.js
+
 "use client";
 import React, { useState } from "react";
 import useCanvasStore from "../../store/canvasStore";
@@ -24,17 +26,24 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
-import { Separator } from "@/app/components/ui/separator";
 
 const Toolbar = () => {
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-  const { canvas, mode, setMode } = useCanvasStore();
+  const {
+    canvas,
+    mode,
+    setMode,
+    gridVisible,
+    toggleGrid,
+    toggleSnapToGrid,
+    snapToGrid,
+    selectedObject,
+  } = useCanvasStore(); // selectedObject 가져오기
 
   const handleCatalogItemSelect = (item) => {
     if (!canvas || !item) return;
 
     if (item.type === "wall") {
-      // FloorPlanner의 setWallType 호출
       const wallType = {
         thickness: item.thickness,
         height: item.height,
@@ -43,6 +52,12 @@ const Toolbar = () => {
       setMode("wall");
     }
     setIsCatalogOpen(false);
+  };
+
+  const handleModeChange = (newMode) => {
+    if (newMode === "select" || mode !== "select") {
+      setMode(newMode);
+    }
   };
 
   const tools = [
@@ -99,14 +114,6 @@ const Toolbar = () => {
     canvas?.deleteSelected?.();
   };
 
-  const toggleGrid = () => {
-    canvas?.toggleGrid?.();
-  };
-
-  const toggleSnap = () => {
-    canvas?.toggleSnapToGrid?.();
-  };
-
   const handleZoomToFit = () => {
     canvas?.zoomToFit?.();
   };
@@ -157,6 +164,7 @@ const Toolbar = () => {
 
     input.click();
   };
+
   return (
     <div className="p-2 flex flex-col gap-2 w-1/10">
       {/* Catalog Button */}
@@ -171,14 +179,17 @@ const Toolbar = () => {
       </Button>
 
       {/* Tools */}
+      {/* Tools */}
       <TooltipProvider>
         <div className="grid grid-cols-2 gap-1">
+          {/* Select Tool */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant={mode === "select" ? "secondary" : "ghost"}
+                variant={mode === "select" ? "primary" : "ghost"} // primary variant for active state
                 size="sm"
-                onClick={() => setMode("select")}
+                className={mode === "select" ? "border-2 border-blue-500" : ""} // Add border when active
+                onClick={() => handleModeChange("select")}
               >
                 <MousePointer className="h-4 w-4" />
                 <span className="ml-2 text-xs">Select</span>
@@ -187,12 +198,14 @@ const Toolbar = () => {
             <TooltipContent>Select Tool</TooltipContent>
           </Tooltip>
 
+          {/* Wall Tool */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant={mode === "wall" ? "secondary" : "ghost"}
+                variant={mode === "wall" ? "primary" : "ghost"}
                 size="sm"
-                onClick={() => setMode("wall")}
+                className={mode === "wall" ? "border-2 border-blue-500" : ""}
+                onClick={() => handleModeChange("wall")}
               >
                 <MinusSquare className="h-4 w-4" />
                 <span className="ml-2 text-xs">Wall</span>
@@ -201,14 +214,16 @@ const Toolbar = () => {
             <TooltipContent>Draw Wall</TooltipContent>
           </Tooltip>
 
+          {/* Door Tool */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={mode === "door" ? "primary" : "ghost"}
                 size="sm"
+                className={mode === "door" ? "border-2 border-blue-500" : ""}
                 onClick={() => {
                   canvas?.createDoor?.();
-                  setMode("select");
+                  handleModeChange("select");
                 }}
               >
                 <DoorOpen className="h-4 w-4" />
@@ -218,14 +233,16 @@ const Toolbar = () => {
             <TooltipContent>Add Door</TooltipContent>
           </Tooltip>
 
+          {/* Window Tool */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={mode === "window" ? "primary" : "ghost"}
                 size="sm"
+                className={mode === "window" ? "border-2 border-blue-500" : ""}
                 onClick={() => {
                   canvas?.createWindow?.();
-                  setMode("select");
+                  handleModeChange("select");
                 }}
               >
                 <Square className="h-4 w-4" />
@@ -290,10 +307,10 @@ const Toolbar = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={gridVisible ? "primary" : "ghost"}
                 size="icon"
                 className="h-8 w-8"
-                onClick={toggleGrid}
+                onClick={toggleGrid} // actions.toggleGrid 대신
               >
                 <Grid className="h-4 w-4" />
               </Button>
@@ -304,10 +321,10 @@ const Toolbar = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant={snapToGrid ? "primary" : "ghost"}
                 size="icon"
                 className="h-8 w-8"
-                onClick={toggleSnap}
+                onClick={toggleSnapToGrid} // actions.toggleSnap 대신
               >
                 <Magnet className="h-4 w-4" />
               </Button>
@@ -363,6 +380,55 @@ const Toolbar = () => {
           </Tooltip>
         </TooltipProvider>
       </div>
+
+      {/* Object Properties Panel */}
+      {selectedObject && (
+        <div className="border-t mt-2 pt-2 space-y-1">
+          <h3 className="font-bold">속성</h3>
+          <div className="space-y-1">
+            <div>
+              <label className="block text-xs font-semibold">이름</label>
+              <input type="text" value={selectedObject.name} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">X1 좌표</label>
+              <input type="number" value={selectedObject.x1} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">Y1 좌표</label>
+              <input type="number" value={selectedObject.y1} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">X2 좌표</label>
+              <input type="number" value={selectedObject.x2} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">Y2 좌표</label>
+              <input type="number" value={selectedObject.y2} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">길이</label>
+              <input type="number" value={selectedObject.length} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">높이</label>
+              <input type="number" value={selectedObject.height} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">두께</label>
+              <input type="number" value={selectedObject.thickness} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">텍스처 A</label>
+              <input type="text" value={selectedObject.textureA} readOnly />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold">텍스처 B</label>
+              <input type="text" value={selectedObject.textureB} readOnly />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Catalog Dialog */}
       <Catalog

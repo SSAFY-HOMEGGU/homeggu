@@ -1,3 +1,5 @@
+//interior/components/Catalog/Catalog.js
+
 "use client";
 import React, { useState } from "react";
 import {
