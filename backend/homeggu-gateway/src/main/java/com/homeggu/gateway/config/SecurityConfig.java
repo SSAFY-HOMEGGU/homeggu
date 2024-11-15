@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("user/oauth/kakao/login").permitAll()
+                        .requestMatchers("user/oauth/kakao/login", "/goods/board").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
         return http.build();
