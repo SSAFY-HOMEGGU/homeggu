@@ -1,10 +1,12 @@
-//interior/store/canvasStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 const useCanvasStore = create(
   persist(
     (set, get) => ({
+      setSelectedObject: (object) => set({ selectedObject: object }),
+      clearSelectedObject: () => set({ selectedObject: null }),
+
       // Canvas 관련 상태
       canvas: null,
       mode: "select",
@@ -99,7 +101,7 @@ const useCanvasStore = create(
         });
       },
 
-      setActiveObject: (activeObject) => set({ activeObject }),
+      // 캔버스 모드 설정
       setMode: (mode) => {
         set({ mode });
         const { canvas } = get();
@@ -107,25 +109,24 @@ const useCanvasStore = create(
           canvas.setMode(mode);
         }
       },
-      setSelectedObject: (object) => set({ selectedObject: object }),
-      clearSelectedObject: () => set({ selectedObject: null }),
-      setCurrentView: (view) => {
-        const { canvas } = get();
-        set({ currentView: view });
 
-        // 뷰 전환시 자동 저장
-        if (canvas && view === "3d") {
-          canvas.saveState();
+      // 방 즉시 추가
+      addPredefinedRoom: (roomTypeId) => {
+        const { canvas } = get();
+        if (canvas) {
+          canvas.addPredefinedRoom(roomTypeId); // FloorPlanner의 메서드 호출
         }
       },
-      // 객체 리스트 관련 메서드
-      addObject: (obj) =>
-        set((state) => ({
-          objectList: [...state.objectList, obj],
-        })),
-      updateObjectList: (newList) => set({ objectList: newList }),
 
-      // 히스토리 관련 메서드
+      // 가구 추가 메서드
+      addFurniture: (furniture) => {
+        const { canvas } = get();
+        if (canvas) {
+          canvas.createFurniture(furniture); // FloorPlanner의 메서드 호출
+        }
+      },
+
+      // 히스토리 관리
       addToHistory: () => {
         const { canvas } = get();
         if (!canvas) return;
@@ -163,7 +164,7 @@ const useCanvasStore = create(
         }
       },
 
-      // 그리드 관련 메서드
+      // 그리드 토글
       toggleGrid: () => {
         const { canvas } = get();
         if (canvas) {
@@ -180,7 +181,7 @@ const useCanvasStore = create(
         }
       },
 
-      // 상태 저장/불러오기 메서드
+      // Canvas 상태 저장 및 로드
       saveCanvasState: () => {
         const { canvas } = get();
         if (canvas) {
@@ -207,15 +208,7 @@ const useCanvasStore = create(
         }
       },
 
-      // 가구 추가 메서드 정의
-      addFurniture: (furniture) => {
-        const { canvas } = get();
-        if (canvas) {
-          canvas.createFurniture(furniture); // createFurniture는 FloorPlanner의 메서드
-        }
-      },
-
-      // 커스텀 속성 관련 메서드
+      // Custom Properties 설정
       setCustomProperty: (objectId, key, value) => {
         const { canvas } = get();
         if (canvas) {
@@ -231,7 +224,7 @@ const useCanvasStore = create(
         return null;
       },
 
-      // 캔버스 JSON 변환 메서드
+      // JSON 변환 메서드
       toJSON: () => {
         const { canvas } = get();
         if (canvas) {

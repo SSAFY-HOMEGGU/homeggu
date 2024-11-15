@@ -1,6 +1,7 @@
 // interior/utils/FloorPlanner.js
 
 import { fabric } from "fabric";
+import { wallTypes } from "./catalogItems"; // wallTypes를 가져옵니다.
 
 class Wall {
   constructor(x1, y1, x2, y2, fabricObject) {
@@ -1094,7 +1095,70 @@ class FloorPlanner {
     this.rooms = [];
     this.createGrid();
   }
+  addPredefinedRoom(wallTypeId) {
+    // wallTypeId에 해당하는 항목 찾기
+    const wallType = wallTypes.find((type) => type.id === wallTypeId);
 
+    if (!wallType || !wallType.walls) {
+      console.error("Invalid wall type or no walls defined.");
+      return;
+    }
+
+    // 벽 생성 및 방 닫기 처리
+    const walls = [];
+    wallType.walls.forEach(({ x1, y1, x2, y2 }) => {
+      const wall = this.createWallSegment({ x: x1, y: y1 }, { x: x2, y: y2 });
+      walls.push(wall);
+    });
+
+    // 방 생성
+    this.checkAndCreateRoom();
+    this.canvas.renderAll();
+  }
+
+  // 기존 메서드에서 반환값 추가
+  createWallSegment(from, to) {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+    if (length < 1) return; // 너무 짧은 벽은 생성하지 않음
+
+    const wallRect = new fabric.Rect({
+      left: from.x + dx / 2,
+      top: from.y + dy / 2,
+      width: length,
+      height: this.currentWallType.thickness,
+      fill: "#B0B0B0",
+      stroke: "#7D7D7D",
+      strokeWidth: 1,
+      angle: angle,
+      originX: "center",
+      originY: "center",
+      selectable: false,
+      hasControls: false,
+      hasBorders: false,
+      evented: false,
+      isWall: true,
+    });
+
+    const wall = new Wall(from.x, from.y, to.x, to.y, wallRect);
+
+    // 시작점과 끝점의 vertex 찾기 또는 생성
+    let startVertex = this.findOrCreateVertex(from.x, from.y);
+    let endVertex = this.findOrCreateVertex(to.x, to.y);
+
+    wall.startVertex = startVertex;
+    wall.endVertex = endVertex;
+    startVertex.addWall(wall);
+    endVertex.addWall(wall);
+
+    this.walls.push(wall);
+    this.canvas.add(wallRect);
+
+    return wall; // 반환값 추가
+  }
   createFurniture(furniture) {
     if (!furniture) return;
 

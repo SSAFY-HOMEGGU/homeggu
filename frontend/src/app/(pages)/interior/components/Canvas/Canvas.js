@@ -1,5 +1,3 @@
-//interior/components/Canvas/Canvas.js
-
 "use client";
 
 import React, { useRef, useEffect, useCallback, useState } from "react";
@@ -20,12 +18,12 @@ const Canvas = () => {
   const canvasRef = useRef(null);
   const floorPlannerRef = useRef(null);
   const containerRef = useRef(null);
+
   const {
     setCanvas,
     setSelectedObject,
     clearSelectedObject,
     mode,
-    addToHistory,
     gridVisible,
     snapToGrid,
   } = useCanvasStore();
@@ -62,6 +60,18 @@ const Canvas = () => {
       floorPlanner.createGrid();
       setCanvas(floorPlanner);
 
+      // 초기 줌 레벨 설정
+      const initialZoom = 0.5;
+      floorPlanner.canvas.setZoom(initialZoom);
+      floorPlanner.canvas.setViewportTransform([
+        initialZoom,
+        0,
+        0,
+        initialZoom,
+        0,
+        0,
+      ]);
+
       // Selection events
       floorPlanner.canvas.on("selection:created", (e) => {
         const target = e.selected[0];
@@ -70,18 +80,20 @@ const Canvas = () => {
             name: target.name || target.type || "Unknown",
             x1: target.left,
             y1: target.top,
-            x2: target.left + target.width,
-            y2: target.top + target.height,
-            length: target.width,
+            x2: target.left + (target.width || 0),
+            y2: target.top + (target.height || 0),
+            width: target.width,
             height: target.height,
+            angle: target.angle,
             thickness: target.strokeWidth,
-            textureA: target.textureA || "Bricks",
-            textureB: target.textureB || "Bricks",
+            textureA: target.textureA || "Default",
+            textureB: target.textureB || "Default",
           });
         }
       });
 
       floorPlanner.canvas.on("selection:cleared", clearSelectedObject);
+
       setIsLoading(false);
     } catch (err) {
       console.error("Failed to initialize FloorPlanner:", err);
@@ -144,13 +156,12 @@ const Canvas = () => {
       let zoom = canvas.getZoom();
       zoom = Math.min(20, zoom * 1.1);
 
-      // 캔버스 중앙을 기준으로 줌
       const center = {
         x: canvas.width / 2,
         y: canvas.height / 2,
       };
       canvas.zoomToPoint(center, zoom);
-      floorPlannerRef.current.createGrid(); // 그리드 업데이트
+      floorPlannerRef.current.createGrid();
     }
   };
 
@@ -160,13 +171,12 @@ const Canvas = () => {
       let zoom = canvas.getZoom();
       zoom = Math.max(0.5, zoom / 1.1);
 
-      // 캔버스 중앙을 기준으로 줌
       const center = {
         x: canvas.width / 2,
         y: canvas.height / 2,
       };
       canvas.zoomToPoint(center, zoom);
-      floorPlannerRef.current.createGrid(); // 그리드 업데이트
+      floorPlannerRef.current.createGrid();
     }
   };
 
@@ -175,7 +185,7 @@ const Canvas = () => {
       const canvas = floorPlannerRef.current.canvas;
       canvas.setZoom(1);
       canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-      floorPlannerRef.current.createGrid(); // 뷰 리셋 후 그리드 업데이트
+      floorPlannerRef.current.createGrid();
     }
   }, []);
 
