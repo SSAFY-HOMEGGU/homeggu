@@ -62,21 +62,6 @@ const Toolbar = () => {
 
   const tools = [
     {
-      id: "select",
-      icon: MousePointer,
-      label: "Select Tool",
-      action: () => setMode("select"),
-    },
-    {
-      id: "wall",
-      icon: MinusSquare,
-      label: "Draw Wall",
-      action: () => {
-        if (mode === "select") return; // select 모드일 때는 wall 모드로 변경하지 않음
-        setMode("wall");
-      },
-    },
-    {
       id: "door",
       icon: DoorOpen,
       label: "Add Door",
@@ -175,45 +160,13 @@ const Toolbar = () => {
         onClick={() => setIsCatalogOpen(true)}
       >
         <Book className="h-4 w-2" />
-        <span className="ml-2">Catalog</span>
+        <span className="ml-2">Catlog</span>
       </Button>
 
       {/* Tools */}
       {/* Tools */}
       <TooltipProvider>
         <div className="grid grid-cols-2 gap-1">
-          {/* Select Tool */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={mode === "select" ? "primary" : "ghost"} // primary variant for active state
-                size="sm"
-                className={mode === "select" ? "border-2 border-blue-500" : ""} // Add border when active
-                onClick={() => handleModeChange("select")}
-              >
-                <MousePointer className="h-4 w-4" />
-                <span className="ml-2 text-xs">Select</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Select Tool</TooltipContent>
-          </Tooltip>
-
-          {/* Wall Tool */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={mode === "wall" ? "primary" : "ghost"}
-                size="sm"
-                className={mode === "wall" ? "border-2 border-blue-500" : ""}
-                onClick={() => handleModeChange("wall")}
-              >
-                <MinusSquare className="h-4 w-4" />
-                <span className="ml-2 text-xs">Wall</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Draw Wall</TooltipContent>
-          </Tooltip>
-
           {/* Door Tool */}
           <Tooltip>
             <TooltipTrigger asChild>

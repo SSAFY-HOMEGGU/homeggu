@@ -1,6 +1,6 @@
-//interior/components/Catalog/Catalog.js
-
 "use client";
+
+import Image from "next/image";
 import React, { useState } from "react";
 import {
   Dialog,
@@ -30,20 +30,22 @@ const Catalog = ({ open, onClose }) => {
 
   const filteredFurniture = furnitureItems.filter(
     (item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      item.name.includes(searchQuery) || item.sellerId.includes(searchQuery)
   );
 
   const handleSelectItem = (item) => {
     if (item.type === "wall") {
-      if (!canvas) return;
-
-      const wallType = {
-        thickness: item.thickness,
-        height: item.height,
-      };
-      canvas.setWallType?.(wallType);
-      setMode("wall");
+      if (item.id === "room-wall") {
+        // Room Wall이 선택된 경우 방 추가
+        useCanvasStore.getState().addPredefinedRoom(item.id);
+      } else {
+        const wallType = {
+          thickness: item.thickness,
+          height: item.height,
+        };
+        canvas.setWallType?.(wallType);
+        setMode("wall");
+      }
     } else if (item.type === "furniture") {
       addFurniture(item);
     }
@@ -69,7 +71,7 @@ const Catalog = ({ open, onClose }) => {
 
         <Tabs defaultValue="walls" className="flex-1">
           <TabsList className="w-full">
-            <TabsTrigger value="walls">Walls</TabsTrigger>
+            <TabsTrigger value="walls">벽 & 방</TabsTrigger>
             {FURNITURE_CATEGORIES.map((category) => (
               <TabsTrigger key={category.id} value={category.id}>
                 {category.name}
@@ -89,20 +91,20 @@ const Catalog = ({ open, onClose }) => {
                   onClick={() => handleSelectItem({ type: "wall", ...wall })}
                 >
                   <div className="w-full h-32 bg-gray-100 rounded mb-2 flex items-center justify-center">
-                    <div
-                      className="bg-gray-400"
-                      style={{
-                        width: "100%",
-                        height: `${wall.thickness}px`,
-                      }}
+                    <Image
+                      src={wall.image}
+                      alt={wall.name}
+                      width={100}
+                      height={100}
+                      className="rounded"
                     />
                   </div>
                   <h3 className="font-semibold">{wall.name}</h3>
                   <p className="text-sm text-gray-600">
-                    Thickness: {wall.thickness}cm
+                    벽 두께: {wall.thickness}cm
                   </p>
                   <p className="text-sm text-gray-600">
-                    Height: {wall.height}cm
+                    천장까지의 높이: {wall.height}cm
                   </p>
                   <p className="text-sm text-gray-500 mt-2">
                     {wall.description}
@@ -129,13 +131,21 @@ const Catalog = ({ open, onClose }) => {
                         handleSelectItem({ type: "furniture", ...item })
                       }
                     >
-                      <div className="w-full h-32 bg-gray-100 rounded mb-2" />
+                      <div className="w-full h-32 bg-gray-100 rounded mb-2 flex items-center justify-center">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          width={100}
+                          height={100}
+                          className="rounded"
+                        />
+                      </div>
                       <h3 className="font-semibold">{item.name}</h3>
                       <p className="text-sm text-gray-600">
                         {item.width}x{item.depth}x{item.height}cm
                       </p>
                       <p className="text-sm text-gray-500 mt-2">
-                        {item.description}
+                        {item.sellerId}
                       </p>
                     </div>
                   ))}
