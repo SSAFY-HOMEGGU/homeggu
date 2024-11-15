@@ -1,31 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Product from "@/app/components/Product";
 import InputBox from "@/app/components/InputBox";
 import Image from "next/image";
-import useProductListStore from '@/app/store/useProductListStore';
+import useProductStore from "@/app/store/useProductManageStore";
 
 export default function CategoryProducts({ categoryName }) {
-  const { products, fetchProducts } = useProductListStore();
+  const { products, fetchProducts, resetStore, loading, hasMore } = useProductStore();
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState([]);
-
-  const STATUS_MAPPING = {
-    '판매중': 'AVAILABLE',
-    '예약중': 'RESERVING',
-    '판매완료': 'SOLD'
-  };
-
-  const [options, setOptions] = useState({
-    판매중: false,
-    예약중: false,
-    판매완료: false,
-  });
+  const observerTarget = useRef(null);
 
   const CATEGORY_MAPPING = {
-    "전체":'',
+    "전체": '',
     "침대": "BED",
     "식탁": "DINING_TABLE", 
     "책상": "DESK",
@@ -34,64 +22,78 @@ export default function CategoryProducts({ categoryName }) {
     "서랍": "DRESSER",
     "수납": "BOOKSHELF",
     "조명": "LIGHTING",
-    "전등": "LIGHTING",   /// 수정하기
+    "전등": "LIGHTING",
     "가전": "WARDROBE"
   };
 
-  // 선택된 상태에 따른 API 호출 함수
-  const fetchFilteredProducts = async (selectedOptions) => {
-    // 선택된 상태들을 배열로 변환
-    const selectedStatuses = Object.entries(selectedOptions)
-      .filter(([_, isSelected]) => isSelected)
-      .map(([status]) => STATUS_MAPPING[status]);
+  const [options, setOptions] = useState({
+    AVAILABLE: false,
+    RESERVING: false,
+    SOLD: false
+  });
 
-    // API 호출을 위한 기본 파라미터
-    let baseParams = {
+  const fetchFilteredProducts = async (loadMore = false) => {
+    if (!loadMore) {
+      resetStore();
+    }
+
+    const baseParams = {
       category: CATEGORY_MAPPING[categoryName] || '',
-      min_price: minPrice ? parseInt(minPrice, 10) : undefined,
-      max_price: maxPrice ? parseInt(maxPrice, 10) : undefined,
-      page: 0,
-      size: 10
+      ...(minPrice && { min_price: parseInt(minPrice, 10) }),
+      ...(maxPrice && { max_price: parseInt(maxPrice, 10) })
     };
 
-  // undefined 값을 가진 속성 제거
-  baseParams = Object.fromEntries(
-    Object.entries(baseParams).filter(([_, value]) => value !== undefined && value !== '')
-  );
+    const selectedStatuses = Object.entries(options)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([status]) => status);
 
-    // 선택된 상태가 있는 경우, 각 상태별로 API 호출
     if (selectedStatuses.length > 0) {
-      // 각 상태별로 API 호출하고 결과 합치기
-      const allProducts = await Promise.all(
-        selectedStatuses.map(status =>
-          fetchProducts({
-            ...baseParams,
-            isSell: status
-          })
-        )
-      );
-
-      // products는 store에서 자동으로 업데이트됨
+      for (const status of selectedStatuses) {
+        await fetchProducts({
+          ...baseParams,
+          isSell: status
+        });
+      }
     } else {
-      // 선택된 상태가 없으면 기본 파라미터로만 호출
       await fetchProducts(baseParams);
     }
   };
 
-  // 초기 데이터 로딩 및 필터 적용
   useEffect(() => {
-    fetchFilteredProducts(options);
+    fetchFilteredProducts(false);
   }, [categoryName, minPrice, maxPrice, options]);
 
-  // 상품 목록 업데이트
   useEffect(() => {
-    setFilteredProducts(products);
-  }, [products]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && hasMore && !loading) {
+          fetchFilteredProducts(true);
+        }
+      },
+      { 
+        root: null,
+        rootMargin: '50px',
+        threshold: 0.1 
+      }
+    );
 
-  const handleOptionClick = (option) => {
-    setOptions(prevOptions => ({
-      ...prevOptions,
-      [option]: !prevOptions[option],
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, loading, fetchFilteredProducts]);
+
+  const handleOptionClick = (status) => {
+    setOptions(prev => ({
+      ...prev,
+      [status]: !prev[status]
     }));
   };
 
@@ -101,16 +103,12 @@ export default function CategoryProducts({ categoryName }) {
     }
   };
 
-
   return (
     <div className="mt-[1rem]">
       <div className="w-full h-[3.5rem] flex items-center flex-shrink-0 border rounded-[1rem] mb-[1rem]">
-        {/* 가격 영역 */}
+        {/* 가격 필터 */}
         <div className="w-1/2 flex items-center">
-          <span
-            className="font-[Tmoney RoundWind] text-[1.15rem] text-normalText ml-[1rem]"
-            style={{ color: "var(--kakao-logo, #000)" }}
-          >
+          <span className="font-[Tmoney RoundWind] text-[1.15rem] text-normalText ml-[1rem]">
             가격
           </span>
           <div className="ml-[1rem] flex items-center">
@@ -136,45 +134,51 @@ export default function CategoryProducts({ categoryName }) {
           </div>
         </div>
 
-        {/* 옵션 영역 */}
+        {/* 상태 필터 */}
         <div className="w-1/2 flex items-center">
-          <span
-            className="font-[Tmoney RoundWind] text-[1.15rem] text-normalText ml-4"
-            style={{ color: "var(--kakao-logo, #000)" }}
-          >
+          <span className="font-[Tmoney RoundWind] text-[1.15rem] text-normalText ml-4">
             옵션
           </span>
           <div className="ml-[1rem] flex space-x-4 items-center">
-            {["판매중", "예약중", "판매완료"].map((option) => (
+            {[
+              { status: 'AVAILABLE', label: '판매중' },
+              { status: 'RESERVING', label: '예약중' },
+              { status: 'SOLD', label: '판매완료' }
+            ].map(({ status, label }) => (
               <div 
-                key={option} 
+                key={status} 
                 className="flex items-center cursor-pointer" 
-                onClick={() => handleOptionClick(option)}
+                onClick={() => handleOptionClick(status)}
               >
                 <Image
-                  src={options[option] ? "/icons/activeCheck.svg" : "/icons/unactiveCheck.svg"}
-                  alt={`${option} 체크`}
+                  src={options[status] ? "/icons/activeCheck.svg" : "/icons/unactiveCheck.svg"}
+                  alt={`${label} 체크`}
                   width={20}
                   height={20}
                 />
-                <span className="ml-2">{option}</span>
+                <span className="ml-2">{label}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* <h2 className="font-bold text-[1.25rem] text-subText font-tmoney mb-[0.5rem]">
-        {categoryName}
-      </h2> */}
+      {/* 상품 목록 */}
       <div className="grid grid-cols-4 gap-4 md:grid-cols-4 sm:grid-cols-2 grid-cols-1">
-        {filteredProducts.map((product) => (
+        {products.map((product) => (
           <Product 
             key={product.salesBoardId} 
             product={product}
           />
         ))}
       </div>
+
+      {/* Intersection Observer 타겟 */}
+      <div 
+        ref={observerTarget}
+        style={{ height: '20px', margin: '20px 0' }}
+        className="w-full"
+      />
     </div>   
   );
 }

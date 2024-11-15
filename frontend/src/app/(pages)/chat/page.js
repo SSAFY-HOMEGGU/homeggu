@@ -11,10 +11,12 @@ import Image from 'next/image';
 export default function ChatContainer() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedSalesBoardId, setSelectedSalesBoardId] = useState(null);
+  const [selectedPartnerId, setselectedPartnerId] = useState(null);
 
-  const handleRoomSelect = (roomId, salesBoardId) => {
+  const handleRoomSelect = (roomId, salesBoardId, userId) => {
     setSelectedRoom(roomId);
     setSelectedSalesBoardId(salesBoardId);
+    setselectedPartnerId(userId);
   };
 
   return (
@@ -27,6 +29,7 @@ export default function ChatContainer() {
         <ChatPage 
           roomId={selectedRoom} 
           salesBoardId={selectedSalesBoardId}
+          partnerId={selectedPartnerId}
         />
       ) : (
         <div className='w-1/2 h-[86vh] border rounded-[20px] p-5 flex items-center justify-center'>

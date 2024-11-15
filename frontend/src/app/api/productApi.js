@@ -136,15 +136,15 @@ export const updateSalesBoard = (boardId,formData) => {
 
 // 물건 삭제
 export const deleteSalesBoard = (boardId) => {
-  console.time(`상품 상세조회 (ID: ${productId})`);
+  console.time(`상품 상세조회 (ID: ${boardId})`);
   return productInstance.delete(`/board/${boardId}`)
     .then(response => {
-      console.timeEnd(`상품 상세조회 (ID: ${productId})`);
+      console.timeEnd(`상품 상세조회 (ID: ${boardId})`);
       console.log('상세 조회 응답:', response.data);
       return response.data;
     })
     .catch(error => {
-      console.timeEnd(`상품 상세조회 (ID: ${productId})`);
+      console.timeEnd(`상품 상세조회 (ID: ${boardId})`);
       console.error('상세 조회 에러:', {
         status: error.response?.status,
         data: error.response?.data,
@@ -176,7 +176,7 @@ export const salesBoardList = ({
   // page,
   // size
   page = 0,
-  size = 10
+  size = 8
 }) => {
   const params = new URLSearchParams();
   console.log('params',params)
@@ -208,7 +208,7 @@ export const salesBoardList = ({
     .then(response => response.data)
     .catch(error => {
       console.error('❌ API 에러 발생');
-      console.error('에러 응답:', error.response?.data);
+      // console.error('에러 응답:', error.response?.data);
       console.error('에러 상태:', error.response?.status);
       console.error('상세 에러:', error);
       throw error;
