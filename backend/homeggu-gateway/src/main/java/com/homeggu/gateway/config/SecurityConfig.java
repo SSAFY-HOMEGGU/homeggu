@@ -5,31 +5,30 @@ import com.homeggu.gateway.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-                .cors(cors -> {
-                }) // cors 설정 적용
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("user/oauth/kakao/login", "/goods/board").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(new JwtFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+                .authorizeExchange(exchange -> exchange
+                        .pathMatchers("/user/oauth/kakao/login", "/goods/board").permitAll()
+                        .anyExchange().authenticated())
+                .addFilterAt(new JwtFilter(jwtProvider), SecurityWebFiltersOrder.AUTHENTICATION);
+
         return http.build();
     }
 }

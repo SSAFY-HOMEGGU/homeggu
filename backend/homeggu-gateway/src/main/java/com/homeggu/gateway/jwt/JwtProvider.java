@@ -22,7 +22,7 @@ public class JwtProvider {
 
     // 리눅스 환경에서 발급받은 jwt key와 RedisTemplate 사용
     // redis는 환경 변수만 추가해주고, 별도의 설정 없이 사용 가능
-    public JwtProvider(@Value("${spring.jwt.secret}") String secret) {
+    public JwtProvider(@Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(secret));
     }
 
