@@ -2,7 +2,7 @@ import axios from "axios";
 
 // 1. 로그인용 axios instance (8084 포트, 토큰 불필요)
 export const authInstance = axios.create({
-  baseURL: "k11b206.p.ssafy.io/user",
+  baseURL: "https://k11b206.p.ssafy.io/user",
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",
@@ -11,7 +11,7 @@ export const authInstance = axios.create({
 
 // 2. 유저 관련 API용 axios instance (8084 포트, 토큰 필요)
 export const userInstance = axios.create({
-  baseURL: "k11b206.p.ssafy.io/user",
+  baseURL: "https://k11b206.p.ssafy.io/user",
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",
@@ -21,7 +21,7 @@ export const userInstance = axios.create({
 
 // 3. 채팅 API용 axios instance (8080 포트, 토큰 필요)
 export const chatInstance = axios.create({
-  baseURL: "k11b206.p.ssafy.io/chat",
+  baseURL: "https://k11b206.p.ssafy.io/chat",
   timeout: 5000,
   withCredentials: true,
   headers: {
@@ -31,7 +31,7 @@ export const chatInstance = axios.create({
 
 // 4. 상품 API용 axios instance (8082 포트, 토큰 필요)
 export const productInstance = axios.create({
-  baseURL: "k11b206.p.ssafy.io/goods",
+  baseURL: "https://k11b206.p.ssafy.io/goods",
   timeout: 5000,
   withCredentials: true,
   headers: {
@@ -41,7 +41,7 @@ export const productInstance = axios.create({
 
 // 5. 페이 API용 axios instance (8081 포트, 토큰 필요)
 export const payInstance = axios.create({
-  baseURL: "k11b206.p.ssafy.io/pay",
+  baseURL: "https://k11b206.p.ssafy.io/pay",
   timeout: 5000,
   withCredentials: true,
   headers: {
