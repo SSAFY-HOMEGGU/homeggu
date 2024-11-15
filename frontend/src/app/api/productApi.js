@@ -1,4 +1,5 @@
-import { productInstance } from "./axiosInstance";
+// import { productInstance } from "./axiosInstance";
+import { productInstance } from "./axiosInstanceLocal";
 
 // 물건 등록
 export const salesBoard = (formData) => {
@@ -189,7 +190,7 @@ export const salesBoardList = ({
   params.append('page', page);  // 항상 포함
   params.append('size', size);  // 항상 포함
 
-  // const url = `/board?${params}`;
+  const url = `/board?${params.toString()}`;
   console.log('🚀 API 호출 URL:', url);
   console.log('🚀 요청 파라미터:', {
     category,
@@ -201,7 +202,7 @@ export const salesBoardList = ({
     size
   });
 
-  return productInstance.get(`/board?${params.toString()}`,{
+  return productInstance.get(url,{
       timeout: 100000  // 10초
     })
     .then(response => response.data)
