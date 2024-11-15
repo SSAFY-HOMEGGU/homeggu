@@ -32,7 +32,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setRelayHost(rabbitmqHost)
                 .setRelayPort(stompPort)
                 .setClientLogin(rabbitmqUsername)
-                .setClientPasscode(rabbitmqPassword);
+                .setClientPasscode(rabbitmqPassword)
+                .setSystemLogin(rabbitmqUsername)
+                .setSystemPasscode(rabbitmqPassword);
     }
 
     @Override
