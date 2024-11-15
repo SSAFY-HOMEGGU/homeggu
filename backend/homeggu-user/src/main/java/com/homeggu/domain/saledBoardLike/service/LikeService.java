@@ -34,7 +34,7 @@ public class LikeService {
                 .isLiked(true)
                 .build();
     }
-
+    
     // 찜 해제
     public LikeResponse deleteLike(Long userId, Long salesBoardId) {
         User user = userRepository.findById(userId).orElse(null);
