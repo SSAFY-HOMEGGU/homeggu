@@ -1,60 +1,50 @@
-// "use client";
+// page.js
+"use client";
+import React, { useState } from "react";
+import Canvas from "./components/Canvas/Canvas";
+import Viewer3D from "./components/Viewer3D/Viewer3D";
+import Toolbar from "./components/Toolbar/Toolbar";
 
-// import React from "react";
-// import { useReactPlanner } from "./hooks/useReactPlanner";
-// import { Provider } from "react-redux";
-// import dynamic from "next/dynamic";
+const InteriorPage = () => {
+  const [view, setView] = useState("2d");
 
-// const ReactPlanner = dynamic(
-//   () => import("../../../../react-planner/es/ReactPlanner"),
-//   {
-//     ssr: false,
-//     loading: () => <div>Loading planner components...</div>,
-//   }
-// );
-
-// const InteriorPage = () => {
-//   const { components, windowSize, stateExtractor, isReady } = useReactPlanner();
-//   const [mounted, setMounted] = React.useState(false);
-
-//   React.useEffect(() => {
-//     setMounted(true);
-//   }, []);
-
-//   if (!mounted) {
-//     return <div>Loading...</div>;
-//   }
-
-//   if (!isReady || !components) {
-//     return <div>Initializing planner components...</div>;
-//   }
-
-//   console.log("Rendering InteriorPage with components:", !!components);
-
-//   return (
-//     <Provider store={components.store}>
-//       <div style={{ height: "100vh" }}>
-//         <ReactPlanner
-//           catalog={components.catalog}
-//           width={windowSize.width}
-//           height={windowSize.height - 50}
-//           translator={components.translator}
-//           stateExtractor={stateExtractor}
-//           plugins={[]}
-//           customContents={components.customContents}
-//           toolbarButtons={[]}
-//           sidebarComponents={[]}
-//         />
-//       </div>
-//     </Provider>
-//   );
-// };
-
-// export default InteriorPage;
-import React from 'react'
-
-export default function page() {
   return (
-    <div>page</div>
-  )
-}
+    <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex-1 flex flex-col">
+        <div className="flex justify-between items-center p-2 border-b bg-white">
+          <h1 className="text-xl font-semibold">Floor Planner</h1>
+          <div className="flex gap-2">
+            <button
+              className={`px-3 py-1 rounded text-sm ${
+                view === "2d" ? "bg-blue-500 text-white" : "bg-gray-100"
+              }`}
+              onClick={() => setView("2d")}
+            >
+              2D View
+            </button>
+            <button
+              className={`px-3 py-1 rounded text-sm ${
+                view === "3d" ? "bg-blue-500 text-white" : "bg-gray-100"
+              }`}
+              onClick={() => setView("3d")}
+            >
+              3D View
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 relative">
+          {view === "2d" ? <Canvas /> : <Viewer3D />}
+        </div>
+      </div>
+
+      <div className="w-40 border-l bg-white shadow-lg">
+        {" "}
+        {/* 너비를 40(160px)로 줄임 */}
+        <Toolbar />
+      </div>
+    </div>
+  );
+};
+
+export default InteriorPage;
