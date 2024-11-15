@@ -35,12 +35,13 @@ export const preferenceInit = () => {
 
 // 회원가입
 export const firstLogin = () => {
-  return userInstance.get('/oauth/kakao/firstLogin')
-  .then((response) => response.data)
-  .catch((error) => {
-    console.error("상세 에러 정보:", error);
-    throw error;
-  });
+  return userInstance
+    .get("/oauth/kakao/firstLogin")
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("상세 에러 정보:", error);
+      throw error;
+    });
 };
 
 // 찜 상품 조회
@@ -56,18 +57,19 @@ export const goodsLikeList = () => {
 
 // 찜 등록
 export const goodsLike = (salesBoardId) => {
-  return userInstance.post("/goods/like", {'salesBoardId':salesBoardId})
+  return userInstance
+    .post("/goods/like", { salesBoardId: salesBoardId })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
       throw error;
     });
 };
-
 
 // 찜 해제
 export const goodsUnlike = (salesBoardId) => {
-  return userInstance.delete("/goods/unlike", {'salesBoardId':salesBoardId})
+  return userInstance
+    .delete("/goods/unlike", { salesBoardId: salesBoardId })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -75,11 +77,12 @@ export const goodsUnlike = (salesBoardId) => {
     });
 };
 
-// 찜 여부 확인 
+// 찜 여부 확인
 export const goodsIsLike = (salesBoardId) => {
-  console.log('찜 여부 확인', salesBoardId)
-  return userInstance.get('/like/isLike',{'salesBoardId':salesBoardId})
-  .then((response) => response.data)
+  console.log("찜 여부 확인", salesBoardId);
+  return userInstance
+    .get("/like/isLike", { salesBoardId: salesBoardId })
+    .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
       throw error;
@@ -163,37 +166,35 @@ export const uploadProfileImage = async (file) => {
   }
 };
 
-
-
 // 사용자 행동에 따른 선호도 업데이트
 export const preferenceUpdate = (formData) => {
-  console.log('선호도 업데이트',formData)
-  return userInstance.post('/preference/update',formData)
-  .then((response) => response.data)
-  .catch((error) => {
-    console.error('상세 에러 정보',error)
-  })
-}
-
+  console.log("선호도 업데이트", formData);
+  return userInstance
+    .post("/preference/update", formData)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("상세 에러 정보", error);
+    });
+};
 
 // 가구 구매 시 선호도 업데이트
 export const preferenceBuy = (formData) => {
-  console.log('구매시 선호도 업데이트',formData)
-  return userInstance.post('/preference/buy',formData)
-  .then((response) => response.data)
-  .catch((error) => {
-    console.error('상세 에러 정보',error)
-  })
-}
+  console.log("구매시 선호도 업데이트", formData);
+  return userInstance
+    .post("/preference/buy", formData)
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("상세 에러 정보", error);
+    });
+};
 
 // 최근 본 상품 조회
 export const fetchRecentViewedItems = () => {
   return userInstance
-    .get(" /user/goods/latest")
+    .get("/goods/latest")
     .then((response) => response.data)
     .catch((error) => {
       console.error("최근 본 상품 조회 에러:", error);
       throw error;
     });
 };
-
