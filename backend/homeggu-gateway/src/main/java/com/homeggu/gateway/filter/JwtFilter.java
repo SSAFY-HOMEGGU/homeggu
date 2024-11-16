@@ -42,12 +42,15 @@ public class JwtFilter implements WebFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // 7. userId를 custom header로 추가
-            ServerWebExchange modifiedExchange = exchange.mutate()
-                    .request(r -> r.header("userId", String.valueOf(userId)))
-                    .build();
+//            ServerWebExchange modifiedExchange = exchange.mutate()
+//                    .request(r -> r.header("userId", String.valueOf(userId)))
+//                    .build();
+
+            // 수정 - 헤더를 직접 수정하는 대신 userId 속성을 추가
+            exchange.getAttributes().put("userId", String.valueOf(userId));
 
             // 8. userId가 추가된 헤더와 함께 다음 필터로 요청 전달
-            return chain.filter(modifiedExchange);
+            return chain.filter(exchange);
         }
 
         // 9. 토큰이 유효하지 않은 경우 필터 체인 유지
