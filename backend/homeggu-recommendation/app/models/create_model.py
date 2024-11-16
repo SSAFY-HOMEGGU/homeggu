@@ -5,7 +5,7 @@ import requests
 from app.models.recommender import ContentBasedRecommender
 
 # Goods 서버 API URL
-GOODS_SERVER_URL = "https://k11bk11b206.p.ssafy.io/api/goods/board"
+GOODS_SERVER_URL = "https://k11b206.p.ssafy.io/api/goods/board"
 
 def fetch_goods_from_server():
     # Goods 서버에서 상품 데이터를 가져옵니다
