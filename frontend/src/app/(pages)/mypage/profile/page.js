@@ -312,22 +312,7 @@ export default function ProfilePage() {
             width="w-[30rem]"
             height="h-[2.2rem]"
           />
-          <InputBox
-            type="text"
-            placeholder="받는 사람 이름"
-            value={receiverName}
-            onChange={(e) => setReceiverName(e.target.value)}
-            width="w-[30rem]"
-            height="h-[2.2rem]"
-          />
-          <InputBox
-            type="text"
-            placeholder="받는 사람 전화번호"
-            value={receiverPhone}
-            onChange={handleReceiverPhoneChange}
-            width="w-[30rem]"
-            height="h-[2.2rem]"
-          />
+          
           {receiverPhoneError && (
             <p className="text-red-500 text-sm">{receiverPhoneError}</p>
           )}
