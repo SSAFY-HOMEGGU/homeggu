@@ -18,7 +18,7 @@ class Preferences(BaseModel):
     mood_preferences: Dict[str, float]
     top_n: int = 10  # 기본값 10개 추천
 
-@router.post("/recommend")
+@router.get("/recommend")
 def recommend_items(preferences: Preferences):
     """
     FastAPI 엔드포인트: 추천 리스트 반환
