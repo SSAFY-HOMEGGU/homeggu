@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -18,15 +18,17 @@ public class UserController {
     // 카카오 로그인
     // 프론트에서 보낸 인가 코드를 이용해 카카오 서버에서 access token을 발급받습니다.
     // 이후에 자체 access token을 생성해 response로 전송합니다.
-    @PostMapping("/oauth/kakao/login")
+    @PostMapping("/user/oauth/kakao/login")
     public ResponseEntity<?> kakaoLogin(@RequestBody KakaoLoginRequest loginRequest) {
         String code = loginRequest.getCode();
+        System.out.println("들어옴");
+        System.out.println(code);
         KakaoLoginResponse kakaoLoginResponse = userService.kakaoLogin(code);
         return ResponseEntity.ok(kakaoLoginResponse);
     }
 
     // 카카오 로그아웃
-    @PostMapping("/oauth/kakao/logout")
+    @PostMapping("/user/oauth/kakao/logout")
     public ResponseEntity<?> logout(@RequestHeader("userId") Long userId) {
         if (userService.kakaoLogout(userId)) {
             return ResponseEntity.ok("로그아웃 성공");
@@ -36,7 +38,7 @@ public class UserController {
     }
 
     // 최초 로그인 시, 사용자 취향 반영 완료
-    @GetMapping("/oauth/kakao/firstLogin")
+    @GetMapping("/user/oauth/kakao/firstLogin")
     public ResponseEntity<?> firstLogin(@RequestHeader("userId") Long userId) {
         if (userService.firstLogin(userId)) {
             return ResponseEntity.ok("회원가입 성공");
