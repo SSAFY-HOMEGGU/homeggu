@@ -19,6 +19,11 @@ public class JwtFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String userIdHeader = exchange.getRequest().getHeaders().getFirst("userId");
+        if (userIdHeader != null) {
+            return chain.filter(exchange); // userId가 있으면 다음 필터로 이동
+        }
+
         // 1. 요청 헤더에서 "Authorization"을 가져옴
         String authorizationHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
 
