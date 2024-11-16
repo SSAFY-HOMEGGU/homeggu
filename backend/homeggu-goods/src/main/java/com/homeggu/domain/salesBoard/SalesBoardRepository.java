@@ -18,7 +18,8 @@ public interface SalesBoardRepository extends JpaRepository<SalesBoard, Long> {
             "(:minPrice IS NULL OR sb.price >= :minPrice) AND " +
             "(:maxPrice IS NULL OR sb.price <= :maxPrice) AND " +
             "(:isSell IS NULL OR sb.isSell = :isSell) AND " +
-            "(:title IS NULL OR sb.title LIKE %:title%)")
+            "(:title IS NULL OR sb.title LIKE %:title%) " +
+            "ORDER BY sb.createdAt DESC")
     Page<SalesBoard> findByFilters(
             @Param("category") Category category, // Enum 타입으로 수정
             @Param("minPrice") Integer minPrice,

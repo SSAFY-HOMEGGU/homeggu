@@ -80,8 +80,8 @@ public class SalesBoardController {
 //            Long userId = 1L; // 실제 사용자 ID로 변경 필요
             dto.getSalesBoardDTO().setUserId(userId);
 
-            salesBoardService.registerGoods(dto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "성공적으로 등록되었습니다."));
+           Long salesBoardId= salesBoardService.registerGoods(dto);
+            return new ResponseEntity<>(salesBoardId, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "입력한 데이터 형식이 올바르지 않습니다."));
         } catch (Exception e) {
@@ -129,22 +129,22 @@ public class SalesBoardController {
         }
     }
 
-    // 물건 보기
-    @GetMapping
-    public ResponseEntity<Page<SalesBoardDTO>> getGoods(
-            @RequestParam(required = false) Category category, // Enum 타입으로 수정
-            @RequestParam(required = false) Integer min_price,
-            @RequestParam(required = false) Integer max_price,
-            @RequestParam(required = false) IsSell isSell, // Enum 타입으로 수정
-            @RequestParam(required = false) Mood mood,
-            @RequestParam(required = false) String title, // 제목 검색 추가
-            @RequestParam(defaultValue = "0") int page, // 페이지 번호
-            @RequestParam(defaultValue = "10") int size // 페이지당 항목 수
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<SalesBoardDTO> goods = salesBoardService.getFilteredGoods(category, min_price, max_price, isSell, title, pageable);
-        return ResponseEntity.ok(goods);
-    }
+        // 물건 보기
+        @GetMapping
+        public ResponseEntity<Page<SalesBoardDTO>> getGoods(
+                @RequestParam(required = false) Category category, // Enum 타입으로 수정
+                @RequestParam(required = false) Integer min_price,
+                @RequestParam(required = false) Integer max_price,
+                @RequestParam(required = false) IsSell isSell, // Enum 타입으로 수정
+                @RequestParam(required = false) Mood mood,
+                @RequestParam(required = false) String title, // 제목 검색 추가
+                @RequestParam(defaultValue = "0") int page, // 페이지 번호
+                @RequestParam(defaultValue = "10") int size // 페이지당 항목 수
+        ) {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<SalesBoardDTO> goods = salesBoardService.getFilteredGoods(category, min_price, max_price, isSell, title, pageable);
+            return ResponseEntity.ok(goods);
+        }
 
     //물건 상세
     @GetMapping("/{boardId}")
