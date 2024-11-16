@@ -26,7 +26,7 @@ public class PreferenceService {
         this.userRepository = userRepository;
         this.preferenceRepository = preferenceRepository;
         this.redisTemplate = redisTemplate;
-        this.webClient = webClientBuilder.baseUrl("http://127.0.0.1:8000").build();
+        this.webClient = webClientBuilder.baseUrl("http://recommendation-backend:8001").build();
     }
 
     // 회원가입 시 사용자의 카테고리, 분위기 초기화
@@ -35,23 +35,23 @@ public class PreferenceService {
 
         // 초기 카테고리 선호도
         Map<String, Double> categoryPreferences = new HashMap<>();
-        categoryPreferences.put("가전", 0.4);
-        categoryPreferences.put("침대", 0.4);
-        categoryPreferences.put("책상", 0.4);
-        categoryPreferences.put("식탁", 0.4);
-        categoryPreferences.put("의자", 0.4);
-        categoryPreferences.put("소파", 0.4);
-        categoryPreferences.put("조명", 0.4);
-        categoryPreferences.put("전등", 0.4);
-        categoryPreferences.put("수납", 0.4);
-        categoryPreferences.put("서랍", 0.4);
+        categoryPreferences.put("APPLIANCES", 0.4);
+        categoryPreferences.put("BED", 0.4);
+        categoryPreferences.put("DESK", 0.4);
+        categoryPreferences.put("DINING_TABLE", 0.4);
+        categoryPreferences.put("CHAIR", 0.4);
+        categoryPreferences.put("SOFA", 0.4);
+        categoryPreferences.put("LIGHTING", 0.4);
+        categoryPreferences.put("LAMP", 0.4);
+        categoryPreferences.put("STORAGE", 0.4);
+        categoryPreferences.put("DRAWER", 0.4);
 
         // 초기 분위기 선호도
         Map<String, Double> moodPreferences = new HashMap<>();
-        moodPreferences.put("우드 & 빈티지", 0.4);
-        moodPreferences.put("블랙 & 메탈릭", 0.4);
-        moodPreferences.put("화이트 & 미니멀", 0.4);
-        moodPreferences.put("모던 & 클래식", 0.4);
+        moodPreferences.put("WOOD_VINTAGE", 0.4);
+        moodPreferences.put("BLACK_METALLIC", 0.4);
+        moodPreferences.put("WHITE_MINIMAL", 0.4);
+        moodPreferences.put("MODERN_CLASSIC", 0.4);
 
         Preference preference = Preference.builder()
                 .user(user)
