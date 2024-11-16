@@ -72,6 +72,12 @@ public class SalesBoardService {
         salesBoard.setDeliveryPrice(dto.getSalesBoardDTO().getDeliveryPrice());
         salesBoard.setUpdatedAt(LocalDateTime.now());
         salesBoard.setMood(dto.getSalesBoardDTO().getMood());
+        salesBoard.setMood(dto.getSalesBoardDTO().getMood());
+        salesBoard.setIsSell(dto.getSalesBoardDTO().getIsSell());
+        salesBoard.setGoods_x(dto.getSalesBoardDTO().getGoods_x());
+        salesBoard.setGoods_y(dto.getSalesBoardDTO().getGoods_y());
+        salesBoard.setGoods_z(dto.getSalesBoardDTO().getGoods_z());
+
 
         salesBoardRepository.save(salesBoard);
 
