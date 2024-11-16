@@ -4,7 +4,7 @@ import com.homeggu.domain.userProfile.dto.request.NicknameRequest;
 import com.homeggu.domain.userProfile.dto.response.UpdateProfileResponse;
 import com.homeggu.domain.userProfile.entity.UserProfile;
 import com.homeggu.domain.userProfile.service.UserProfileService;
-import com.homeggu.global.util.s3.S3Service;
+import com.homeggu.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
