@@ -4,10 +4,14 @@ import com.homeggu.domain.userProfile.dto.request.NicknameRequest;
 import com.homeggu.domain.userProfile.dto.response.UpdateProfileResponse;
 import com.homeggu.domain.userProfile.entity.UserProfile;
 import com.homeggu.domain.userProfile.service.UserProfileService;
+import com.homeggu.global.util.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/user")
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
+    private final S3Service s3Service;
 
     // 사용자 정보 상세 조회
     @GetMapping("/profile/detail")
@@ -41,4 +46,19 @@ public class UserProfileController {
             return ResponseEntity.ok("사용 가능한 닉네임입니다.");
         }
     }
+
+    // 프로필 이미지 등록
+    @PostMapping("/profile/image")
+    public ResponseEntity<?> uploadUserImage(@RequestParam("file") MultipartFile file)throws IOException {
+         if(file.isEmpty()) {
+            return new ResponseEntity<>("파일이 비어있습니다.",HttpStatus.BAD_REQUEST);
+         }
+        try{
+            String userImagePath = s3Service.uploadFile(file);
+            return new ResponseEntity<>(userImagePath, HttpStatus.CREATED);
+        }catch (Exception e) {
+            return new ResponseEntity<>("서버에서 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
