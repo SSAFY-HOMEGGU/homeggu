@@ -1,4 +1,4 @@
-package com.homeggu.global.util.s3;
+package com.homeggu.global.s3;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
