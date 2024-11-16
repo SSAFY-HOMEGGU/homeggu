@@ -32,42 +32,43 @@ export default function JoinModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+
   const questions = [
     {
       image1: "/joinSurvey/wood1.jpg",
       image2: "/joinSurvey/black1.jpg",
-      label1: "우드 & 빈티지",
-      label2: "블랙 & 메탈릭"
+      label1: "WOOD_VINTAGE",
+      label2: "BLACK_METALLIC"
     },
     {
       image1: "/joinSurvey/white1.jpg",
       image2: "/joinSurvey/modern1.jpg",
-      label1: "화이트 & 미니멀",
-      label2: "모던 & 클래식"
+      label1: "WHITE_MINIMAL",
+      label2: "MODERN_CLASSIC"
     },
     {
       image1: "/joinSurvey/wood2.jpg",
       image2: "/joinSurvey/white2.jpg",
-      label1: "우드 & 빈티지",
-      label2: "화이트 & 미니멀"
+      label1: "WOOD_VINTAGE",
+      label2: "WHITE_MINIMAL"
     },
     {
       image1: "/joinSurvey/black2.jpg",
       image2: "/joinSurvey/modern2.jpg",
-      label1: "블랙 & 메탈릭",
-      label2: "모던 & 클래식"
+      label1: "BLACK_METALLIC",
+      label2: "MODERN_CLASSIC"
     },
     {
       image1: "/joinSurvey/modern3.jpg",
       image2: "/joinSurvey/wood3.jpg",
-      label1: "모던 & 클래식",
-      label2: "우드 & 빈티지"
+      label1: "MODERN_CLASSIC",
+      label2: "WOOD_VINTAGE"
     },
     {
       image1: "/joinSurvey/white3.jpg",
       image2: "/joinSurvey/black3.jpg",
-      label1: "화이트 & 미니멀",
-      label2: "블랙 & 메탈릭"
+      label1: "WHITE_MINIMAL",
+      label2: "BLACK_METALLIC"
     },
   ];
 

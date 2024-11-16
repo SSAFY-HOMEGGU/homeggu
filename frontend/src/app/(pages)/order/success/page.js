@@ -102,8 +102,8 @@ const OrderSuccessPage = () => {
         }
 
         const preferenceData = {
-          category: categoryMap[selectedProduct.category],
-          mood: moodMap[selectedProduct.mood],
+          category: selectedProduct.category,
+          mood: selectedProduct.mood,
           action: ""
         };
         

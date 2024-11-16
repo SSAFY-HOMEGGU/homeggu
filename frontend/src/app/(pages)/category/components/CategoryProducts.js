@@ -19,11 +19,11 @@ export default function CategoryProducts({ categoryName }) {
     "책상": "DESK",
     "소파": "SOFA",
     "의자": "CHAIR",
-    "서랍": "DRESSER",
-    "수납": "BOOKSHELF",
+    "서랍": "DRAWER",
+    "수납": "STORAGE",
     "조명": "LIGHTING",
-    "전등": "LIGHTING",
-    "가전": "WARDROBE"
+    "전등": "LAMP",
+    "가전": "APPLIANCES"
   };
 
   const [options, setOptions] = useState({

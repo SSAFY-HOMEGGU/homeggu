@@ -124,12 +124,12 @@ import useProductStore from '@/app/store/useProductStore';
 export default function Product({ product }) {
   const { toggleLike, fetchProduct } = useProductStore();
 
-  const MOOD_KOREAN = {
-    'WOOD_VINTAGE': '우드 & 빈티지',
-    'BLACK_METALLIC': '블랙 & 메탈릭',
-    'WHITE_MINIMAL': '화이트 & 미니멀',
-    'MODERN_CLASSIC': '모던 & 클래식'
-  };
+  // const MOOD_KOREAN = {
+  //   'WOOD_VINTAGE': '우드 & 빈티지',
+  //   'BLACK_METALLIC': '블랙 & 메탈릭',
+  //   'WHITE_MINIMAL': '화이트 & 미니멀',
+  //   'MODERN_CLASSIC': '모던 & 클래식'
+  // };
 
   const handleLikeClick = async (e) => {
     e.preventDefault();
@@ -150,7 +150,7 @@ export default function Product({ product }) {
       // 선호도 업데이트
       await preferenceUpdate({
         category: product.category,
-        mood: MOOD_KOREAN[product.mood],
+        mood: product.mood,
         action: "click",
         clickedSalesBoardId: product.salesBoardId
       });
