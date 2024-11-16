@@ -13,6 +13,17 @@ export default function JoinModal({ isOpen, onClose }) {
   const totalSteps = 6;
 
   useEffect(() => {
+    if (isOpen) {
+      questions.forEach(question => {
+        const img1 = new Image();
+        const img2 = new Image();
+        img1.src = question.image1;
+        img2.src = question.image2;
+      });
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     // 모달이 열릴 때만 API 호출
     if (isOpen) {
       const fetchProfile = async () => {
@@ -71,7 +82,7 @@ export default function JoinModal({ isOpen, onClose }) {
       label2: "BLACK_METALLIC"
     },
   ];
-
+  
 
   const handleCloseModal = () => {
     setShowSurvey(false);
@@ -157,6 +168,7 @@ export default function JoinModal({ isOpen, onClose }) {
                     src={questions[currentStep].image1}
                     alt={questions[currentStep].label1}
                     fill
+                    loading="eager"
                     className="object-cover rounded-lg"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
@@ -173,6 +185,7 @@ export default function JoinModal({ isOpen, onClose }) {
                     src={questions[currentStep].image2}
                     alt={questions[currentStep].label2}
                     fill
+                    loading="eager"
                     className="object-cover rounded-lg"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />

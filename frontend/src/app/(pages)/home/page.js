@@ -153,6 +153,7 @@ function HomeContent() {
   ];
 
   const [modalData, setModalData] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
