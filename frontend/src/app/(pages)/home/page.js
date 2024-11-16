@@ -126,6 +126,8 @@ import Product from "@/app/components/Product";
 import useProductManageStore from '@/app/store/useProductManageStore';
 import JoinModal from "./components/JoinModal";
 import { useRouter } from "next/navigation";
+import ModelReadyModal from "../sell/services/ModelReadyModal";
+import { backgroundConversionService } from "../sell/services/backgroundConversionService";
 
 function HomeContent() {
   const router = useRouter()
@@ -148,6 +150,20 @@ function HomeContent() {
     { src: "/images/home_banner3.png", alt: "Slide 3" },
     { src: "/images/home_banner4.png", alt: "Slide 4" },
   ];
+
+  const [modalData, setModalData] = useState(null);
+
+  useEffect(() => {
+    // backgroundConversionService 콜백 설정
+    backgroundConversionService.setModelReadyCallback((data) => {
+      setModalData(data);
+    });
+
+    return () => {
+      backgroundConversionService.setModelReadyCallback(null);
+    };
+  }, []);
+
 
   useEffect(() => {
     console.log('[Home] 초기 데이터 로딩 시작');
@@ -224,6 +240,14 @@ function HomeContent() {
       </div>
 
       <JoinModal isOpen={showSurvey} onClose={handleCloseModal} />
+
+      <ModelReadyModal
+        isOpen={!!modalData}
+        onClose={() => setModalData(null)}
+        objUrl={modalData?.objUrl}
+        onUploadComplete={modalData?.onUploadComplete}
+      />
+
     </div>
   );
 }

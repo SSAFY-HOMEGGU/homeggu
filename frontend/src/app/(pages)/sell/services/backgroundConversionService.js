@@ -1,4 +1,5 @@
 
+// [ver1. 직접 obj 파일 다운 받기]
 
 // import axios from 'axios';
 // import { salesBoard, uploadGoods3DImage, updateSalesBoard } from '@/app/api/productApi';
@@ -159,13 +160,143 @@
 // export const backgroundConversionService = new BackgroundConversionService();
 
 
+
+
+
+
+
+
+
+
+// [ver2. 다운 받을 obj 파일 backend에 보내기]
+
+// import axios from 'axios';
+// import { salesBoard, uploadGoods3DImage, updateSalesBoard } from '@/app/api/productApi';
+
+// class BackgroundConversionService {
+//   constructor() {
+//     this.polling = null;
+//     this.POLLING_INTERVAL = 3000;
+//   }
+
+//   async startConversion(mainImageUrl, formData) {
+//     const MESHY_API_KEY = 'msy_99FYmmosDk1oyIcQMZfGGBgn2VwokDVv6D5L';
+
+//     try {
+//       console.log('1. 상품 등록 시작');
+//       const productResponse = await salesBoard(formData);
+//       const productId = productResponse.id;
+//       console.log('상품 등록 완료. 상품 ID:', productId);
+  
+//       console.log('2. Meshy API 호출 시작');
+//       const meshyResponse = await axios.post(
+//         'https://api.meshy.ai/v1/image-to-3d',
+//         {
+//           image_url: mainImageUrl,
+//           enable_pbr: true
+//         },
+//         { 
+//           headers: { 
+//             Authorization: `Bearer ${MESHY_API_KEY}`,
+//             'Content-Type': 'application/json'
+//           }
+//         }
+//       );
+  
+//       const taskId = meshyResponse.data.result;
+//       console.log('Meshy API 호출 완료. Task ID:', taskId);
+      
+//       this.startPolling(taskId, MESHY_API_KEY, productId);
+//       return taskId;
+//     } catch (error) {
+//       console.error('에러 발생:', error);
+//       throw error;
+//     }
+//   }
+
+//   startPolling(taskId, apiKey, productId) {
+//     if (this.polling) {
+//       clearInterval(this.polling);
+//     }
+
+//     this.polling = setInterval(async () => {
+//       try {
+//         console.log('3. 변환 상태 확인 중...');
+//         const response = await axios.get(
+//           `https://api.meshy.ai/v1/image-to-3d/${taskId}`,
+//           { 
+//             headers: { Authorization: `Bearer ${apiKey}` }
+//           }
+//         );
+
+//         const { status, progress, model_urls } = response.data;
+//         console.log('변환 진행률:', progress + '%');
+
+//         if (status === 'SUCCEEDED' && progress === 100) {
+//           console.log('변환 완료. 모델 URL:', model_urls);
+          
+//           try {
+//             console.log('4. 백엔드로 OBJ URL 전송');
+//             const uploadResponse = await uploadGoods3DImage(model_urls.obj);
+//             console.log('서버 응답:', uploadResponse);
+            
+//             await updateSalesBoard(productId, {
+//               threeDimensionsGoodsImagePaths: uploadResponse
+//             });
+//             console.log('5. 상품 정보 업데이트 완료');
+
+//             this.stopPolling();
+//           } catch (error) {
+//             console.error('OBJ URL 처리 실패:', error);
+//             this.stopPolling();
+//           }
+//         } 
+        
+//         if (status === 'FAILED') {
+//           console.error('3D 모델 변환 실패');
+//           this.stopPolling();
+//         }
+//       } catch (error) {
+//         console.error('상태 확인 중 오류:', error);
+//         this.stopPolling();
+//       }
+//     }, this.POLLING_INTERVAL);
+//   }
+
+//   stopPolling() {
+//     if (this.polling) {
+//       clearInterval(this.polling);
+//       this.polling = null;
+//       console.log('폴링 종료');
+//     }
+//   }
+// }
+
+// export const backgroundConversionService = new BackgroundConversionService();
+
+
+
+
+
+
+
+// [ver3. 사용자가 직접 3d 이미지 업로드하기]
+
 import axios from 'axios';
-import { salesBoard, uploadGoods3DImage, updateSalesBoard } from '@/app/api/productApi';
+import { toast } from 'react-toastify'; 
+import ModelReadyModal from './ModelReadyModal';
+import { salesBoard, uploadGoods3DImage, updateSalesBoard, uploadGoodsImage } from '@/app/api/productApi';
 
 class BackgroundConversionService {
   constructor() {
     this.polling = null;
     this.POLLING_INTERVAL = 3000;
+    this.onModelReady = null; // 모달을 표시하기 위한 콜백
+  }
+
+  // 콜백 설정 메서드
+  setModelReadyCallback(callback) {
+    this.onModelReady = callback;
   }
 
   async startConversion(mainImageUrl, formData) {
@@ -220,25 +351,34 @@ class BackgroundConversionService {
 
         const { status, progress, model_urls } = response.data;
         console.log('변환 진행률:', progress + '%');
+        toast(`3D 변환 진행률: ${progress}%`);
 
         if (status === 'SUCCEEDED' && progress === 100) {
           console.log('변환 완료. 모델 URL:', model_urls);
           
-          try {
-            console.log('4. 백엔드로 OBJ URL 전송');
-            const uploadResponse = await uploadGoods3DImage(model_urls.obj);
-            console.log('서버 응답:', uploadResponse);
-            
-            await updateSalesBoard(productId, {
-              threeDimensionsGoodsImagePaths: uploadResponse
+          // 모달을 표시하기 위해 콜백 호출
+          if (this.onModelReady) {
+            this.onModelReady({
+              objUrl: model_urls.obj,
+              productId: productId,
+              onUploadComplete: async (uploadedFile) => {
+                try {
+                  toast('파일 업로드 중...');
+                  // const uploadResponse = await uploadGoods3DImage(uploadedFile);
+                  const uploadResponse = await uploadGoodsImage(uploadedFile);
+                  
+                  await updateSalesBoard(productId, {    
+                    threeDimensionsGoodsImagePaths: uploadResponse
+                  });
+                  toast('상품 정보가 업데이트되었습니다.');
+                } catch (error) {
+                  toast('파일 업로드 실패: ' + error.message);
+                }
+              }
             });
-            console.log('5. 상품 정보 업데이트 완료');
-
-            this.stopPolling();
-          } catch (error) {
-            console.error('OBJ URL 처리 실패:', error);
-            this.stopPolling();
           }
+
+          this.stopPolling();
         } 
         
         if (status === 'FAILED') {

@@ -11,6 +11,7 @@ import TradeMethod from './components/TradeMethod';
 import ConversionStatus from './components/ConversionStatus';
 import { BlueButton, WhiteButton } from '@/app/components/Button';
 import { backgroundConversionService } from './services/backgroundConversionService';
+import ModelReadyModal from './services/ModelReadyModal';
 
 
 export default function Sell() {
@@ -18,7 +19,7 @@ export default function Sell() {
   const [formData, setFormData] = useState(sellService.getInitialFormData());
   const [isLoading, setIsLoading] = useState(false);
   const [mainImageUrl, setMainImageUrl] = useState('');
-
+  const [modalData, setModalData] = useState(null);  
   const isFormValid = sellService.validateForm(formData);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function Sell() {
       }
     }));
   };
+
 
   // const handleImageUpload = (imageData) => {
   //   if (!imageData) return;
@@ -162,6 +164,13 @@ export default function Sell() {
       </div>
       
       <ConversionStatus />
+
+      <ModelReadyModal
+        isOpen={!!modalData}
+        onClose={() => setModalData(null)}
+        objUrl={modalData?.objUrl}
+        onUploadComplete={modalData?.onUploadComplete}
+      />
     </div>
   );
 }
