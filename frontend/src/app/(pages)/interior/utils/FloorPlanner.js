@@ -530,78 +530,205 @@ class FloorPlanner {
       }
     }
   }
+
+  findWallUnderPoint(pointer) {
+    for (const wall of this.walls) {
+      const dx = wall.x2 - wall.x1;
+      const dy = wall.y2 - wall.y1;
+      const wallLength = Math.sqrt(dx * dx + dy * dy);
+
+      // 점과 벽 사이의 수직 거리 계산
+      const distance = Math.abs(
+        (dy * pointer.x -
+          dx * pointer.y +
+          wall.x2 * wall.y1 -
+          wall.y2 * wall.x1) /
+          wallLength
+      );
+
+      // 점이 벽의 시작점에서 끝점 사이에 있는지 확인
+      const dot = (pointer.x - wall.x1) * dx + (pointer.y - wall.y1) * dy;
+      const t = Math.max(0, Math.min(1, dot / (wallLength * wallLength)));
+
+      if (distance < 10 && t >= 0 && t <= 1) {
+        // 벽 위의 정확한 위치 계산
+        const x = wall.x1 + t * dx;
+        const y = wall.y1 + t * dy;
+
+        // 벽의 각도를 정확하게 계산 (벽의 방향 벡터로부터)
+        const wallAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+        return {
+          wall,
+          position: { x, y },
+          angle: wallAngle, // 벽의 정확한 각도
+          t: t,
+        };
+      }
+    }
+    return null;
+  }
+
   addDoor(wallInfo) {
+    if (!wallInfo || !wallInfo.position) return;
+
     const doorWidth = 60;
-    const doorThickness = this.currentWallType.thickness;
+    const doorThickness = this.currentWallType.thickness + 2;
 
-    const door = new fabric.Group([], {
-      left: wallInfo.position.x,
-      top: wallInfo.position.y,
-      angle: wallInfo.angle,
-      originX: "center",
-      originY: "center",
-      selectable: true,
-      hasControls: false,
-      lockMovementX: true,
-      lockMovementY: true,
-      lockRotation: true,
-      type: "door",
-    });
-
-    const frame = new fabric.Rect({
+    // 문 객체 생성
+    const doorRect = new fabric.Rect({
       width: doorWidth,
       height: doorThickness,
       fill: "#8B4513",
       stroke: "#000000",
       strokeWidth: 1,
+      originX: "center",
+      originY: "center",
     });
 
-    const swingPath = new fabric.Path(
+    const swingLine = new fabric.Path(
       `M ${-doorWidth / 2} ${
         -doorThickness / 2
       } A ${doorWidth} ${doorWidth} 0 0 1 ${doorWidth / 2} ${
         -doorThickness / 2
       }`,
       {
-        fill: "transparent",
         stroke: "#000000",
+        fill: "transparent",
         strokeWidth: 1,
+        originX: "center",
+        originY: "center",
       }
     );
 
-    door.addWithUpdate(frame);
-    door.addWithUpdate(swingPath);
+    const doorGroup = new fabric.Group([doorRect, swingLine], {
+      left: wallInfo.position.x,
+      top: wallInfo.position.y,
+      angle: wallInfo.angle,
+      selectable: true,
+      hasControls: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockRotation: true,
+      type: "door",
+      is3DRotated: wallInfo.is3DRotated, // 3D 회전 정보 저장
+      wallDirection: wallInfo.direction, // 벽 방향 정보 저장
+    });
 
-    this.canvas.add(door);
+    this.canvas.add(doorGroup);
     this.canvas.renderAll();
+    return doorGroup;
+  }
+
+  // createDoorShape 메서드 추가
+  createDoorShape(width, thickness, wallInfo) {
+    // 문 프레임
+    const frame = new fabric.Rect({
+      width: width,
+      height: thickness,
+      fill: "#8B4513",
+      stroke: "#000000",
+      strokeWidth: 1,
+      originX: "center",
+      originY: "center",
+    });
+
+    // 문 스윙 라인 (호)
+    const swingPath = new fabric.Path(
+      `M ${-width / 2} ${-thickness / 2} A ${width} ${width} 0 0 1 ${
+        width / 2
+      } ${-thickness / 2}`,
+      {
+        fill: "transparent",
+        stroke: "#000000",
+        strokeWidth: 1,
+        originX: "center",
+        originY: "center",
+      }
+    );
+
+    // 문 그룹 생성
+    return new fabric.Group([frame, swingPath], {
+      originX: "center",
+      originY: "center",
+    });
   }
 
   // 창문 추가
   addWindow(wallInfo) {
-    const windowWidth = 40;
-    const windowHeight = this.currentWallType.thickness;
+    if (!wallInfo || !wallInfo.position) return;
 
-    const window = new fabric.Rect({
-      left: wallInfo.position.x,
-      top: wallInfo.position.y,
-      angle: wallInfo.angle,
+    const windowWidth = 40;
+    const windowThickness = this.currentWallType.thickness + 2;
+
+    const windowRect = new fabric.Rect({
       width: windowWidth,
-      height: windowHeight,
+      height: windowThickness,
       fill: "rgba(135, 206, 235, 0.5)",
       stroke: "#000000",
       strokeWidth: 1,
       originX: "center",
       originY: "center",
+    });
+
+    const centerLine = new fabric.Line(
+      [0, -windowThickness / 2, 0, windowThickness / 2],
+      {
+        stroke: "#000000",
+        strokeWidth: 1,
+        originX: "center",
+        originY: "center",
+      }
+    );
+
+    const windowGroup = new fabric.Group([windowRect, centerLine], {
+      left: wallInfo.position.x,
+      top: wallInfo.position.y,
+      angle: wallInfo.angle,
       selectable: true,
       hasControls: false,
       lockMovementX: true,
       lockMovementY: true,
       lockRotation: true,
       type: "window",
+      is3DRotated: wallInfo.is3DRotated, // 3D 회전 정보 저장
+      wallDirection: wallInfo.direction, // 벽 방향 정보 저장
     });
 
-    this.canvas.add(window);
+    this.canvas.add(windowGroup);
     this.canvas.renderAll();
+    return windowGroup;
+  }
+
+  // createWindowShape 메서드 추가
+  createWindowShape(width, thickness) {
+    // 창문 프레임
+    const frame = new fabric.Rect({
+      width: width,
+      height: thickness,
+      fill: "rgba(135, 206, 235, 0.5)",
+      stroke: "#000000",
+      strokeWidth: 1,
+      originX: "center",
+      originY: "center",
+    });
+
+    // 창문 디테일 (선)
+    const verticalLine = new fabric.Line(
+      [0, -thickness / 2, 0, thickness / 2],
+      {
+        stroke: "#000000",
+        strokeWidth: 1,
+        originX: "center",
+        originY: "center",
+      }
+    );
+
+    // 창문 그룹 생성
+    return new fabric.Group([frame, verticalLine], {
+      originX: "center",
+      originY: "center",
+    });
   }
 
   placeDoor(placement) {
@@ -675,18 +802,17 @@ class FloorPlanner {
   }
 
   // 문/창문 배치 처리
-  handleDoorWindowPlacement(e) {
+  handleDoorWindowPlacement(event) {
     if (this.mode !== "door" && this.mode !== "window") return;
 
-    const pointer = this.canvas.getPointer(e.e);
-    const targetWall = this.findWallUnderPoint(pointer);
+    const pointer = this.canvas.getPointer(event.e);
+    const wallInfo = this.findWallUnderPoint(pointer);
 
-    if (targetWall) {
-      const placementPoint = this.getWallPlacementPoint(targetWall, pointer);
+    if (wallInfo) {
       if (this.mode === "door") {
-        this.createDoor(targetWall, placementPoint);
+        this.addDoor(wallInfo);
       } else {
-        this.createWindow(targetWall, placementPoint);
+        this.addWindow(wallInfo);
       }
     }
   }
@@ -706,14 +832,14 @@ class FloorPlanner {
     };
   }
 
-  // 특정 포인트 아래의 벽 찾기
+  // 벽 아래의 점 찾기 메서드 업데이트
   findWallUnderPoint(pointer) {
     for (const wall of this.walls) {
       const dx = wall.x2 - wall.x1;
       const dy = wall.y2 - wall.y1;
       const wallLength = Math.sqrt(dx * dx + dy * dy);
 
-      // 점과 선분 사이의 거리 계산
+      // 점과 벽 사이의 수직 거리 계산
       const distance = Math.abs(
         (dy * pointer.x -
           dx * pointer.y +
@@ -722,7 +848,7 @@ class FloorPlanner {
           wallLength
       );
 
-      // 점이 선분의 범위 내에 있는지 확인
+      // 점이 벽의 시작점에서 끝점 사이에 있는지 확인
       const dot = (pointer.x - wall.x1) * dx + (pointer.y - wall.y1) * dy;
       const t = Math.max(0, Math.min(1, dot / (wallLength * wallLength)));
 
@@ -730,12 +856,27 @@ class FloorPlanner {
         // 벽 위의 정확한 위치 계산
         const x = wall.x1 + t * dx;
         const y = wall.y1 + t * dy;
-        const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+        // 벽의 방향 계산
+        const wallAngle = wall.fabricObject.angle;
+
+        // 3D 변환을 위한 방향 정보 추가
+        const direction = {
+          x: dx / wallLength,
+          y: dy / wallLength,
+        };
+
+        // 벽의 방향에 따른 3D 회전 각도 결정
+        const is3DRotated = Math.abs(Math.abs(wallAngle) - 90) < 1; // 벽이 Y축과 평행한지 확인
 
         return {
           wall,
           position: { x, y },
-          angle: angle,
+          angle: wallAngle,
+          direction,
+          is3DRotated,
+          t: t,
+          thickness: this.currentWallType.thickness,
         };
       }
     }

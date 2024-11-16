@@ -115,23 +115,19 @@ const Viewer3D = () => {
         );
         const angle = Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1);
 
-        // Create wall mesh
         const wallGeometry = new THREE.BoxGeometry(
           wallLength,
           WALL_HEIGHT,
           WALL_THICKNESS
         );
         const wallMaterial = new THREE.MeshStandardMaterial({
-          map: wallTexture, // 텍스처 유지
-          color: 0xffffff, // 기본 색상 하얀색
-          roughness: 0.2, // 더 매끄럽게
+          map: wallTexture,
+          color: 0xffffff,
+          roughness: 0.2,
           metalness: 0.0,
         });
 
-        console.log(wallMaterial);
         const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
-
-        // Position and rotate wall
         wallMesh.position.set(
           (wall.x1 + wall.x2) / 2,
           WALL_HEIGHT / 2,
@@ -147,43 +143,79 @@ const Viewer3D = () => {
 
       // Add doors and windows if they exist
       canvas.canvas.getObjects().forEach((obj) => {
-        if (obj.type === "door") {
-          const doorGeometry = new THREE.BoxGeometry(
-            obj.width,
-            WALL_HEIGHT * 0.8,
-            WALL_THICKNESS
-          );
-          const doorMaterial = new THREE.MeshStandardMaterial({
-            color: COLORS.DOOR,
-            roughness: 0.6,
-            metalness: 0.3,
+        if (obj.type === "door" || obj.type === "window") {
+          // Find the wall this object is attached to
+          const walls = canvas.walls;
+          let attachedWall = null;
+          let minDistance = Infinity;
+
+          walls.forEach((wall) => {
+            const point = { x: obj.left, y: obj.top };
+            const distanceToWall = pointToLineDistance(
+              point,
+              { x: wall.x1, y: wall.y1 },
+              { x: wall.x2, y: wall.y2 }
+            );
+            if (distanceToWall < minDistance) {
+              minDistance = distanceToWall;
+              attachedWall = wall;
+            }
           });
-          const doorMesh = new THREE.Mesh(doorGeometry, doorMaterial);
-          doorMesh.position.set(obj.left, WALL_HEIGHT * 0.4, obj.top);
-          doorMesh.castShadow = true;
-          scene.add(doorMesh);
-          meshesRef.current.set(obj.id, doorMesh);
-        } else if (obj.type === "window") {
-          const windowGeometry = new THREE.BoxGeometry(
-            obj.width,
-            WALL_HEIGHT * 0.4,
-            WALL_THICKNESS
-          );
-          const windowMaterial = new THREE.MeshStandardMaterial({
-            color: COLORS.WINDOW,
-            transparent: true,
-            opacity: 0.6,
-            roughness: 0.2,
-            metalness: 0.8,
-          });
-          const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
-          windowMesh.position.set(obj.left, WALL_HEIGHT * 0.7, obj.top);
-          windowMesh.castShadow = true;
-          scene.add(windowMesh);
-          meshesRef.current.set(obj.id, windowMesh);
+
+          if (attachedWall) {
+            const wallAngle = Math.atan2(
+              attachedWall.y2 - attachedWall.y1,
+              attachedWall.x2 - attachedWall.x1
+            );
+
+            // Create geometry based on type
+            const geometry = new THREE.BoxGeometry(
+              obj.width,
+              obj.type === "door" ? WALL_HEIGHT * 0.8 : WALL_HEIGHT * 0.4,
+              WALL_THICKNESS * 1.2
+            );
+
+            const material = new THREE.MeshStandardMaterial({
+              color: obj.type === "door" ? COLORS.DOOR : COLORS.WINDOW,
+              transparent: obj.type === "window",
+              opacity: obj.type === "window" ? 0.6 : 1,
+              roughness: obj.type === "door" ? 0.6 : 0.2,
+              metalness: obj.type === "door" ? 0.3 : 0.8,
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+
+            // Position the object
+            mesh.position.set(
+              obj.left,
+              obj.type === "door" ? WALL_HEIGHT * 0.4 : WALL_HEIGHT * 0.7,
+              obj.top
+            );
+
+            // Apply the same rotation as the wall
+            mesh.rotation.y = -wallAngle;
+
+            mesh.castShadow = true;
+            scene.add(mesh);
+            meshesRef.current.set(obj.id, mesh);
+          }
         }
       });
     };
+    // Helper function to calculate distance from point to line
+    function pointToLineDistance(point, lineStart, lineEnd) {
+      const numerator = Math.abs(
+        (lineEnd.y - lineStart.y) * point.x -
+          (lineEnd.x - lineStart.x) * point.y +
+          lineEnd.x * lineStart.y -
+          lineEnd.y * lineStart.x
+      );
+      const denominator = Math.sqrt(
+        Math.pow(lineEnd.y - lineStart.y, 2) +
+          Math.pow(lineEnd.x - lineStart.x, 2)
+      );
+      return numerator / denominator;
+    }
 
     // Initial update
     updateScene();
