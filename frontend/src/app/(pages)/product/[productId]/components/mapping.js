@@ -5,11 +5,13 @@ export const categoryMapping = {
   'BED': '침대',
   'SOFA': '의자·소파',
   'CHAIR': '의자·소파',
-  'DRESSER': '수납·서랍',
-  'BOOKSHELF': '수납·서랍',
+  'STORAGE': '수납·서랍',
+  'DRAWER': '수납·서랍',
   'LIGHTING': '조명·전등',
+  'LAMP': '조명·전등',
   'WARDROBE': '가전'
 };
+
 
 export const categoryDetailMapping = {
   'DESK': '책상',
@@ -17,9 +19,10 @@ export const categoryDetailMapping = {
   'BED': '침대',
   'SOFA': '소파',
   'CHAIR': '의자',
-  'DRESSER': '수납',
-  'BOOKSHELF': '서랍',
-  'LIGHTING': '조명·전등',
+  'STORAGE': '수납',
+  'DRAWER': '서랍',
+  'LIGHTING': '조명',
+  'LAMP': '전등',
   'WARDROBE': '가전'
 };
 

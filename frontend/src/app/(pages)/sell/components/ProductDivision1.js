@@ -20,11 +20,11 @@ export default function ProductDivision1({ onInputChange, onCategorySelect }) {
    "책상": "DESK",
    "소파": "SOFA",
    "의자": "CHAIR",
-   "서랍": "DRESSER",
-   "수납": "BOOKSHELF",
+   "서랍": "DRAWER",
+   "수납": "STORAGE",
    "조명": "LIGHTING",
-   "전등": "LIGHTING",   /// 수정하기
-   "가전": "WARDROBE"
+   "전등": "LAMP",   /// 수정하기
+   "가전": "APPLIANCES"
  };
 
  // 가구 스타일 매핑
