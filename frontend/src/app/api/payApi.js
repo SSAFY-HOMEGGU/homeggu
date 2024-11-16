@@ -3,7 +3,7 @@ import { payInstance } from "./axiosInstance";
 // 홈꾸머니 정보 조회
 export const fetchPayInfo = async () => {
   try {
-    const response = await payInstance.get("/pay-info");
+    const response = await payInstance.get("/info");
     const balance = parseInt(response.data.hgMoneyBalance, 10);
     return {
       homccuMoney: balance,
@@ -19,7 +19,7 @@ export const fetchPayInfo = async () => {
 // 이용내역 조회 API
 export const fetchPayHistory = async (page = 0, size = 20, filter = "") => {
   try {
-    let url = `/pay-info/history?page=${page}&size=${size}`;
+    let url = `/info/history?page=${page}&size=${size}`;
     if (filter) {
       // filter가 '전체'가 아닐 경우에만 필터 파라미터 추가
       if (filter === "송금") {
@@ -95,7 +95,8 @@ export const transferMoney = async (
 
 // 안전 송금 확정
 export const transferConfirm = (transferId) => {
-  return payInstance.patch("/transfer/confirm", transferId )
+  return payInstance
+    .patch("/transfer/confirm", transferId)
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -105,11 +106,11 @@ export const transferConfirm = (transferId) => {
 
 // 안전 송금 취소
 export const transferCancel = (transferId) => {
-  return payInstance.patch("/transfer/cancel", transferId )
+  return payInstance
+    .patch("/transfer/cancel", transferId)
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
       throw error;
     });
 };
-
