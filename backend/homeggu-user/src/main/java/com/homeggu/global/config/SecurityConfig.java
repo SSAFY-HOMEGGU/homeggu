@@ -1,7 +1,7 @@
-package com.homeggu.gateway.config;
+package com.homeggu.global.config;
 
-import com.homeggu.gateway.filter.JwtFilter;
-import com.homeggu.gateway.jwt.JwtProvider;
+import com.homeggu.global.util.jwt.JwtFilter;
+import com.homeggu.global.util.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,13 +20,12 @@ public class SecurityConfig {
     private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/user/oauth/kakao/login", "/goods/board").permitAll()
-                        .anyExchange().authenticated())
+                        .anyExchange().permitAll()) // 모든 요청에 대해 접근 허용
                 .addFilterAt(new JwtFilter(jwtProvider), SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
