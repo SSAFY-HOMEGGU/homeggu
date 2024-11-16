@@ -10,7 +10,7 @@ const WALL_THICKNESS = 10;
 const COLORS = {
   FLOOR: 0xeeeeee,
   DOOR: 0x8b4513,
-  WINDOW: 0x87ceeb,
+  WINDOW: 0xffffff,
 };
 
 const WALL_TEXTURE_PATH = "/images/wallpattern.jpg";
@@ -175,13 +175,28 @@ const Viewer3D = () => {
               WALL_THICKNESS * 1.2
             );
 
-            const material = new THREE.MeshStandardMaterial({
-              color: obj.type === "door" ? COLORS.DOOR : COLORS.WINDOW,
-              transparent: obj.type === "window",
-              opacity: obj.type === "window" ? 0.6 : 1,
-              roughness: obj.type === "door" ? 0.6 : 0.2,
-              metalness: obj.type === "door" ? 0.3 : 0.8,
-            });
+            let material;
+
+            if (obj.type === "door") {
+              // 문 재질 설정
+              material = new THREE.MeshStandardMaterial({
+                color: COLORS.DOOR,
+                roughness: 0.6,
+                metalness: 0.3,
+              });
+            } else {
+              // 창문 재질 설정 (발광 효과 추가)
+              material = new THREE.MeshPhongMaterial({
+                color: 0xffffff, // 하얀색
+                transparent: true,
+                opacity: 0.3, // 더 투명하게
+                emissive: 0xffffff, // 하얀색 발광
+                emissiveIntensity: 0.3, // 발광 강도
+                specular: 0xffffff, // 반사광 색상
+                shininess: 100, // 반사광 강도
+                side: THREE.DoubleSide, // 양면 렌더링
+              });
+            }
 
             const mesh = new THREE.Mesh(geometry, material);
 
@@ -195,7 +210,12 @@ const Viewer3D = () => {
             // Apply the same rotation as the wall
             mesh.rotation.y = -wallAngle;
 
+            // 그림자 설정
             mesh.castShadow = true;
+            if (obj.type === "window") {
+              mesh.receiveShadow = true; // 창문은 그림자도 받음
+            }
+
             scene.add(mesh);
             meshesRef.current.set(obj.id, mesh);
           }

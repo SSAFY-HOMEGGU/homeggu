@@ -75,6 +75,7 @@ class FloorPlanner {
     });
 
     this.setupEventListeners();
+    this.setupDoorWindowPreview(); // 미리보기 설정 추가
     this.createGrid();
   }
 
@@ -523,6 +524,12 @@ class FloorPlanner {
     const wallInfo = this.findWallUnderPoint(pointer);
 
     if (wallInfo) {
+      // 미리보기 제거
+      if (this.previewObject) {
+        this.canvas.remove(this.previewObject);
+        this.previewObject = null;
+      }
+
       if (this.mode === "door") {
         this.addDoor(wallInfo);
       } else {
@@ -550,18 +557,22 @@ class FloorPlanner {
       const dot = (pointer.x - wall.x1) * dx + (pointer.y - wall.y1) * dy;
       const t = Math.max(0, Math.min(1, dot / (wallLength * wallLength)));
 
+      // 벽과의 거리가 10px 이내이고, 점이 벽 선분 위에 있는 경우
       if (distance < 10 && t >= 0 && t <= 1) {
-        // 벽 위의 정확한 위치 계산
+        // 벽 위의 정확한 위치 계산 (중앙에 배치하기 위해)
         const x = wall.x1 + t * dx;
         const y = wall.y1 + t * dy;
 
-        // 벽의 각도를 정확하게 계산 (벽의 방향 벡터로부터)
+        // 벽의 방향과 각도 계산
         const wallAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
+        const normalizedDx = dx / wallLength;
+        const normalizedDy = dy / wallLength;
 
         return {
           wall,
           position: { x, y },
-          angle: wallAngle, // 벽의 정확한 각도
+          angle: wallAngle,
+          direction: { x: normalizedDx, y: normalizedDy },
           t: t,
         };
       }
@@ -1844,6 +1855,105 @@ class FloorPlanner {
       });
     }
     this.canvas.renderAll();
+  }
+  // 벽에 hover할 때 미리보기를 표시하는 메서드 추가
+  setupDoorWindowPreview() {
+    this.canvas.on("mouse:move", (event) => {
+      if (this.mode !== "door" && this.mode !== "window") return;
+
+      const pointer = this.canvas.getPointer(event.e);
+      const wallInfo = this.findWallUnderPoint(pointer);
+
+      if (wallInfo) {
+        // 기존 미리보기 제거
+        if (this.previewObject) {
+          this.canvas.remove(this.previewObject);
+        }
+
+        // 새로운 미리보기 생성
+        const previewProps = {
+          width: this.mode === "door" ? 60 : 40,
+          thickness: this.currentWallType.thickness,
+          position: wallInfo.position,
+          angle: wallInfo.angle,
+        };
+
+        this.previewObject =
+          this.mode === "door"
+            ? this.createDoorPreview(previewProps)
+            : this.createWindowPreview(previewProps);
+
+        this.canvas.add(this.previewObject);
+        this.canvas.renderAll();
+      } else if (this.previewObject) {
+        // 벽 위에 없을 때는 미리보기 제거
+        this.canvas.remove(this.previewObject);
+        this.previewObject = null;
+        this.canvas.renderAll();
+      }
+    });
+  }
+
+  createDoorPreview({ width, thickness, position, angle }) {
+    // 반투명한 문 미리보기 생성
+    const doorRect = new fabric.Rect({
+      width: width,
+      height: thickness,
+      fill: "rgba(139, 69, 19, 0.5)",
+      stroke: "rgba(0, 0, 0, 0.5)",
+      strokeWidth: 1,
+    });
+
+    const swingLine = new fabric.Path(
+      `M ${-width / 2} 0 A ${width} ${width} 0 0 1 ${width / 2} 0`,
+      {
+        stroke: "rgba(0, 0, 0, 0.5)",
+        fill: "transparent",
+        strokeWidth: 1,
+      }
+    );
+
+    const group = new fabric.Group([doorRect, swingLine], {
+      left: position.x,
+      top: position.y,
+      angle: angle,
+      originX: "center",
+      originY: "center",
+      selectable: false,
+      evented: false,
+      opacity: 0.7,
+    });
+
+    return group;
+  }
+
+  createWindowPreview({ width, thickness, position, angle }) {
+    // 반투명한 창문 미리보기 생성
+    const windowRect = new fabric.Rect({
+      width: width,
+      height: thickness,
+      fill: "rgba(135, 206, 235, 0.3)",
+      stroke: "rgba(0, 0, 0, 0.5)",
+      strokeWidth: 1,
+    });
+
+    const centerLine = new fabric.Line([0, -thickness / 2, 0, thickness / 2], {
+      stroke: "rgba(0, 0, 0, 0.5)",
+      strokeWidth: 1,
+    });
+
+    const group = new fabric.Group([windowRect, centerLine], {
+      left: position.x,
+      top: position.y,
+      angle: angle,
+      originX: "center",
+      originY: "center",
+      selectable: false,
+      evented: false,
+      opacity: 0.7,
+    });
+
+    return group;
   }
 
   setupEventListeners() {
