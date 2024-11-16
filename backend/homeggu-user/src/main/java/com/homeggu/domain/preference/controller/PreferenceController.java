@@ -37,7 +37,7 @@ public class PreferenceController {
     }
 
     // 추천 상품 리스트
-    @PostMapping("/preference/list")
+    @GetMapping("/preference/list")
     public ResponseEntity<?> recommendList(@RequestHeader("userId") Long userId) {
         Map<String, Object> recommendations = preferenceService.getRecommendations(userId);
         return ResponseEntity.ok(recommendations);
