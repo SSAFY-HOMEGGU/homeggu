@@ -1,20 +1,22 @@
+// pages/api/proxy-download.js
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: '허용되지 않는 메소드입니다' });
-  }
+  const { url } = req.query;
 
   try {
-    const { url } = req.body;
     const response = await axios.get(url, {
-      responseType: 'arraybuffer'
+      responseType: 'arraybuffer',
+      headers: {
+        'Content-Type': 'application/octet-stream'
+      }
     });
 
     res.setHeader('Content-Type', 'application/octet-stream');
-    res.send(response.data);
+    res.setHeader('Content-Disposition', 'attachment; filename=model.obj');
+    res.send(Buffer.from(response.data));
   } catch (error) {
-    console.error('프록시 다운로드 실패:', error);
-    res.status(500).json({ message: '파일 다운로드 실패' });
+    console.error('프록시 다운로드 에러:', error);
+    res.status(500).json({ error: '다운로드 실패' });
   }
 }

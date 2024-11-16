@@ -1,5 +1,3 @@
-// src/app/sell/services/sellService.js
-
 import axios from 'axios';
 import useProductStore from '@/app/store/useProductStore';
 
