@@ -58,6 +58,7 @@ const Toolbar = () => {
     if (newMode === "select" || mode !== "select") {
       setMode(newMode);
     }
+    setMode(newMode);
   };
 
   const tools = [
@@ -65,25 +66,13 @@ const Toolbar = () => {
       id: "door",
       icon: DoorOpen,
       label: "Add Door",
-      action: () => {
-        if (mode === "select") return; // select 모드일 때는 door 추가하지 않음
-        if (canvas) {
-          canvas.createDoor?.();
-          setMode("select");
-        }
-      },
+      action: () => handleModeChange("door"), // canvas.createDoor 대신 모드 변경
     },
     {
       id: "window",
       icon: Square,
       label: "Add Window",
-      action: () => {
-        if (mode === "select") return; // select 모드일 때는 window 추가하지 않음
-        if (canvas) {
-          canvas.createWindow?.();
-          setMode("select");
-        }
-      },
+      action: () => handleModeChange("window"), // canvas.createWindow 대신 모드 변경
     },
   ];
 
@@ -160,10 +149,9 @@ const Toolbar = () => {
         onClick={() => setIsCatalogOpen(true)}
       >
         <Book className="h-4 w-2" />
-        <span className="ml-2">Catlog</span>
+        <span className="ml-2">Catalog</span>
       </Button>
 
-      {/* Tools */}
       {/* Tools */}
       <TooltipProvider>
         <div className="grid grid-cols-2 gap-1">
@@ -174,10 +162,7 @@ const Toolbar = () => {
                 variant={mode === "door" ? "primary" : "ghost"}
                 size="sm"
                 className={mode === "door" ? "border-2 border-blue-500" : ""}
-                onClick={() => {
-                  canvas?.createDoor?.();
-                  handleModeChange("select");
-                }}
+                onClick={() => handleModeChange("door")}
               >
                 <DoorOpen className="h-4 w-4" />
                 <span className="ml-2 text-xs">Door</span>
@@ -193,10 +178,7 @@ const Toolbar = () => {
                 variant={mode === "window" ? "primary" : "ghost"}
                 size="sm"
                 className={mode === "window" ? "border-2 border-blue-500" : ""}
-                onClick={() => {
-                  canvas?.createWindow?.();
-                  handleModeChange("select");
-                }}
+                onClick={() => handleModeChange("window")}
               >
                 <Square className="h-4 w-4" />
                 <span className="ml-2 text-xs">Window</span>

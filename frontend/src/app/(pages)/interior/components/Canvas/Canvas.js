@@ -1,3 +1,4 @@
+//interior/components/Canvas/Canvas.js
 "use client";
 
 import React, { useRef, useEffect, useCallback, useState } from "react";

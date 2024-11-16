@@ -1,3 +1,4 @@
+//interior/components/Catalog/Catalog.js
 "use client";
 
 import Image from "next/image";
@@ -61,7 +62,7 @@ const Catalog = ({ open, onClose }) => {
 
         <div className="relative mb-4">
           <Input
-            placeholder="Search items..."
+            placeholder="이름 또는 판매자명 검색"
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

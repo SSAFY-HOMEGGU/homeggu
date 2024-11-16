@@ -82,21 +82,94 @@ class FloorPlanner {
     this.mode = mode;
     this.isDrawingWall = false;
 
-    if (mode === "select") {
+    if (mode === "door" || mode === "window") {
       this.canvas.selection = false;
-      this.updateVerticesState();
-      this.canvas.forEachObject((obj) => {
-        if (obj.isWall || obj.isRoom) {
-          obj.evented = true;
+      this.canvas.defaultCursor = "pointer";
+
+      // 벽들을 이벤트 받을 수 있게 설정
+      this.walls.forEach((wall) => {
+        if (wall.fabricObject) {
+          wall.fabricObject.set({
+            selectable: false,
+            evented: true,
+            hoverCursor: "pointer",
+          });
         }
+      });
+
+      // 문/창문 배치를 위한 클릭 이벤트 설정
+      this.canvas.on("mouse:down", this.handleDoorWindowClick.bind(this));
+
+      // 다른 모든 객체 선택 불가능하게 설정
+      this.canvas.forEachObject((obj) => {
+        if (!obj.isGrid && !obj.isWall) {
+          obj.selectable = false;
+          obj.evented = false;
+        }
+      });
+    }
+
+    if (mode === "select") {
+      this.canvas.selection = true;
+
+      // 모든 벽을 선택 가능하게 설정
+      this.walls.forEach((wall) => {
+        if (wall.fabricObject) {
+          wall.fabricObject.set({
+            selectable: true,
+            evented: true,
+            hasControls: false,
+            hasBorders: true,
+            hoverCursor: "move",
+          });
+        }
+      });
+
+      // vertex는 초기에 숨김
+      this.vertices.forEach((vertex) => {
+        if (vertex.fabricObject) {
+          vertex.fabricObject.set({
+            selectable: true,
+            evented: true,
+            visible: false,
+          });
+        }
+      });
+
+      // 방은 선택 불가능하게
+      this.rooms.forEach((room) => {
+        room.set({
+          selectable: false,
+          evented: true,
+        });
       });
     } else if (mode === "wall") {
       this.canvas.selection = false;
-      this.canvas.forEachObject((obj) => {
-        obj.selectable = false;
-        obj.evented = false;
-      });
       this.canvas.discardActiveObject();
+
+      // 모든 벽을 선택 불가능하게 설정
+      this.walls.forEach((wall) => {
+        if (wall.fabricObject) {
+          wall.fabricObject.set({
+            selectable: false,
+            evented: false,
+            hasControls: false,
+            hasBorders: false,
+            hoverCursor: "default",
+          });
+        }
+      });
+
+      // vertex 숨김 및 비활성화
+      this.vertices.forEach((vertex) => {
+        if (vertex.fabricObject) {
+          vertex.fabricObject.set({
+            selectable: false,
+            evented: false,
+            visible: false,
+          });
+        }
+      });
     }
 
     this.canvas.renderAll();
@@ -121,51 +194,76 @@ class FloorPlanner {
     this.canvas.renderAll();
   }
   handleMouseDown(e) {
-    if (e.e.button === 2) return;
-    if (this.mode !== "wall") return;
+    if (e.e.button === 2) return; // 우클릭 무시
+    if (this.mode !== "wall") return; // wall 모드가 아니면 리턴
 
-    this.isDrawingWall = true;
+    // 현재 선택된 객체가 있다면 선택 해제
+    this.canvas.discardActiveObject();
+
+    // wall 모드일 때는 모든 기존 벽의 이벤트를 완전히 차단
+    this.walls.forEach((wall) => {
+      if (wall.fabricObject) {
+        wall.fabricObject.set({
+          selectable: false,
+          evented: false,
+          hasControls: false,
+          hasBorders: false,
+          lockMovementX: true,
+          lockMovementY: true,
+        });
+      }
+    });
 
     this.vertices.forEach((vertex) => {
       if (vertex.fabricObject) {
-        vertex.fabricObject.selectable = false;
-        vertex.fabricObject.evented = false;
+        vertex.fabricObject.set({
+          selectable: false,
+          evented: false,
+          visible: false,
+        });
       }
     });
+
+    this.isDrawingWall = true;
+    this.isDrawing = true;
 
     const pointer = this.canvas.getPointer(e.e);
     const snappedPoint = this.snapToGrid
       ? this.snapToGridPoint(pointer)
       : pointer;
     this.mouseFrom = { x: snappedPoint.x, y: snappedPoint.y };
-    this.isDrawing = true;
 
+    // 시작점 마커를 더 눈에 띄게 수정
     this.startMarker = new fabric.Circle({
       left: snappedPoint.x,
       top: snappedPoint.y,
-      radius: 5,
-      fill: "blue",
-      stroke: "white",
+      radius: 6,
+      fill: "#2196F3",
+      stroke: "#ffffff",
       strokeWidth: 2,
       selectable: false,
       evented: false,
       originX: "center",
       originY: "center",
+      hoverCursor: "default",
     });
 
+    // 끝점 마커도 동일하게 수정
     this.endMarker = new fabric.Circle({
       left: snappedPoint.x,
       top: snappedPoint.y,
-      radius: 5,
-      fill: "blue",
-      stroke: "white",
+      radius: 6,
+      fill: "#2196F3",
+      stroke: "#ffffff",
       strokeWidth: 2,
       selectable: false,
       evented: false,
       originX: "center",
       originY: "center",
+      hoverCursor: "default",
     });
 
+    // 그리는 중인 벽
     this.drawingObject = new fabric.Line(
       [snappedPoint.x, snappedPoint.y, snappedPoint.x, snappedPoint.y],
       {
@@ -173,9 +271,11 @@ class FloorPlanner {
         strokeWidth: 5,
         selectable: false,
         evented: false,
+        hoverCursor: "default",
       }
     );
 
+    // 길이 표시 텍스트
     this.lengthText = new fabric.Text("0 cm", {
       left: snappedPoint.x,
       top: snappedPoint.y - 20,
@@ -185,12 +285,28 @@ class FloorPlanner {
       evented: false,
       originX: "center",
       originY: "center",
+      backgroundColor: "rgba(255,255,255,0.8)",
     });
 
     this.canvas.add(this.startMarker);
     this.canvas.add(this.endMarker);
     this.canvas.add(this.drawingObject);
     this.canvas.add(this.lengthText);
+
+    // 캔버스의 모든 객체에 대해 이벤트 비활성화
+    this.canvas.forEachObject((obj) => {
+      if (
+        obj !== this.startMarker &&
+        obj !== this.endMarker &&
+        obj !== this.drawingObject &&
+        obj !== this.lengthText
+      ) {
+        obj.evented = false;
+        obj.selectable = false;
+        obj.hoverCursor = "default";
+      }
+    });
+
     this.canvas.renderAll();
   }
 
@@ -252,6 +368,8 @@ class FloorPlanner {
   }
 
   handleMouseUp() {
+    if (!this.isDrawing) return;
+
     if (this.isDrawing && this.mouseFrom && this.mouseTo) {
       const length = Math.sqrt(
         Math.pow(this.mouseTo.x - this.mouseFrom.x, 2) +
@@ -263,19 +381,17 @@ class FloorPlanner {
       }
     }
 
-    if (this.drawingObject) {
-      this.canvas.remove(this.drawingObject);
-    }
-    if (this.startMarker) {
-      this.canvas.remove(this.startMarker);
-    }
-    if (this.endMarker) {
-      this.canvas.remove(this.endMarker);
-    }
-    if (this.lengthText) {
-      this.canvas.remove(this.lengthText);
-    }
+    // 그리기 관련 객체들 제거
+    [
+      this.drawingObject,
+      this.startMarker,
+      this.endMarker,
+      this.lengthText,
+    ].forEach((obj) => {
+      if (obj) this.canvas.remove(obj);
+    });
 
+    // 상태 초기화
     this.isDrawing = false;
     this.isDrawingWall = false;
     this.drawingObject = null;
@@ -284,6 +400,18 @@ class FloorPlanner {
     this.lengthText = null;
     this.mouseFrom = null;
     this.mouseTo = null;
+
+    // wall 모드일 때는 계속해서 다른 객체들의 이벤트를 비활성화 상태로 유지
+    if (this.mode === "wall") {
+      this.canvas.forEachObject((obj) => {
+        if (!obj.isGrid) {
+          // 그리드 제외
+          obj.evented = false;
+          obj.selectable = false;
+          obj.hoverCursor = "default";
+        }
+      });
+    }
 
     this.canvas.renderAll();
   }
@@ -388,6 +516,310 @@ class FloorPlanner {
     ];
   }
 
+  handleDoorWindowClick(event) {
+    if (this.mode !== "door" && this.mode !== "window") return;
+
+    const pointer = this.canvas.getPointer(event.e);
+    const wallInfo = this.findWallUnderPoint(pointer);
+
+    if (wallInfo) {
+      if (this.mode === "door") {
+        this.addDoor(wallInfo);
+      } else {
+        this.addWindow(wallInfo);
+      }
+    }
+  }
+  addDoor(wallInfo) {
+    const doorWidth = 60;
+    const doorThickness = this.currentWallType.thickness;
+
+    const door = new fabric.Group([], {
+      left: wallInfo.position.x,
+      top: wallInfo.position.y,
+      angle: wallInfo.angle,
+      originX: "center",
+      originY: "center",
+      selectable: true,
+      hasControls: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockRotation: true,
+      type: "door",
+    });
+
+    const frame = new fabric.Rect({
+      width: doorWidth,
+      height: doorThickness,
+      fill: "#8B4513",
+      stroke: "#000000",
+      strokeWidth: 1,
+    });
+
+    const swingPath = new fabric.Path(
+      `M ${-doorWidth / 2} ${
+        -doorThickness / 2
+      } A ${doorWidth} ${doorWidth} 0 0 1 ${doorWidth / 2} ${
+        -doorThickness / 2
+      }`,
+      {
+        fill: "transparent",
+        stroke: "#000000",
+        strokeWidth: 1,
+      }
+    );
+
+    door.addWithUpdate(frame);
+    door.addWithUpdate(swingPath);
+
+    this.canvas.add(door);
+    this.canvas.renderAll();
+  }
+
+  // 창문 추가
+  addWindow(wallInfo) {
+    const windowWidth = 40;
+    const windowHeight = this.currentWallType.thickness;
+
+    const window = new fabric.Rect({
+      left: wallInfo.position.x,
+      top: wallInfo.position.y,
+      angle: wallInfo.angle,
+      width: windowWidth,
+      height: windowHeight,
+      fill: "rgba(135, 206, 235, 0.5)",
+      stroke: "#000000",
+      strokeWidth: 1,
+      originX: "center",
+      originY: "center",
+      selectable: true,
+      hasControls: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockRotation: true,
+      type: "window",
+    });
+
+    this.canvas.add(window);
+    this.canvas.renderAll();
+  }
+
+  placeDoor(placement) {
+    const doorWidth = 60;
+    const doorThickness = placement.wallThickness;
+
+    const frame = new fabric.Rect({
+      width: doorWidth,
+      height: doorThickness,
+      fill: "#8B4513",
+      stroke: "#000000",
+      strokeWidth: 1,
+    });
+
+    const swingPath = new fabric.Path(
+      `M ${-doorWidth / 2} ${
+        -doorThickness / 2
+      } A ${doorWidth} ${doorWidth} 0 0 1 ${doorWidth / 2} ${
+        -doorThickness / 2
+      }`,
+      {
+        fill: "transparent",
+        stroke: "#000000",
+        strokeWidth: 1,
+      }
+    );
+
+    const door = new fabric.Group([frame, swingPath], {
+      left: placement.x,
+      top: placement.y,
+      angle: placement.angle,
+      originX: "center",
+      originY: "center",
+      selectable: true,
+      hasControls: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockRotation: true,
+      type: "door",
+    });
+
+    this.canvas.add(door);
+    this.canvas.renderAll();
+  }
+
+  placeWindow(placement) {
+    const windowWidth = 40;
+    const windowHeight = placement.wallThickness;
+
+    const window = new fabric.Rect({
+      left: placement.x,
+      top: placement.y,
+      angle: placement.angle,
+      width: windowWidth,
+      height: windowHeight,
+      fill: "rgba(135, 206, 235, 0.5)",
+      stroke: "#000000",
+      strokeWidth: 1,
+      originX: "center",
+      originY: "center",
+      selectable: true,
+      hasControls: false,
+      lockMovementX: true,
+      lockMovementY: true,
+      lockRotation: true,
+      type: "window",
+    });
+
+    this.canvas.add(window);
+    this.canvas.renderAll();
+  }
+
+  // 문/창문 배치 처리
+  handleDoorWindowPlacement(e) {
+    if (this.mode !== "door" && this.mode !== "window") return;
+
+    const pointer = this.canvas.getPointer(e.e);
+    const targetWall = this.findWallUnderPoint(pointer);
+
+    if (targetWall) {
+      const placementPoint = this.getWallPlacementPoint(targetWall, pointer);
+      if (this.mode === "door") {
+        this.createDoor(targetWall, placementPoint);
+      } else {
+        this.createWindow(targetWall, placementPoint);
+      }
+    }
+  }
+
+  calculatePlacementOnWall(wallInfo, pointer) {
+    const { wall, angle } = wallInfo;
+
+    // 벽 위의 위치 계산
+    const x = wall.x1 + (wall.x2 - wall.x1) * wallInfo.t;
+    const y = wall.y1 + (wall.y2 - wall.y1) * wallInfo.t;
+
+    return {
+      x,
+      y,
+      angle,
+      wallThickness: this.currentWallType.thickness,
+    };
+  }
+
+  // 특정 포인트 아래의 벽 찾기
+  findWallUnderPoint(pointer) {
+    for (const wall of this.walls) {
+      const dx = wall.x2 - wall.x1;
+      const dy = wall.y2 - wall.y1;
+      const wallLength = Math.sqrt(dx * dx + dy * dy);
+
+      // 점과 선분 사이의 거리 계산
+      const distance = Math.abs(
+        (dy * pointer.x -
+          dx * pointer.y +
+          wall.x2 * wall.y1 -
+          wall.y2 * wall.x1) /
+          wallLength
+      );
+
+      // 점이 선분의 범위 내에 있는지 확인
+      const dot = (pointer.x - wall.x1) * dx + (pointer.y - wall.y1) * dy;
+      const t = Math.max(0, Math.min(1, dot / (wallLength * wallLength)));
+
+      if (distance < 10 && t >= 0 && t <= 1) {
+        // 벽 위의 정확한 위치 계산
+        const x = wall.x1 + t * dx;
+        const y = wall.y1 + t * dy;
+        const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+        return {
+          wall,
+          position: { x, y },
+          angle: angle,
+        };
+      }
+    }
+    return null;
+  }
+
+  // 포인트가 벽 근처에 있는지 확인
+  isPointNearWall(point, wall) {
+    const tolerance = 10; // 허용 오차 (픽셀)
+
+    // 벽의 시작점과 끝점
+    const p1 = { x: wall.x1, y: wall.y1 };
+    const p2 = { x: wall.x2, y: wall.y2 };
+
+    // 점과 선분 사이의 거리 계산
+    const distance = this.pointToLineDistance(point, p1, p2);
+
+    // 거리가 허용 오차 이내이고, 점이 선분의 범위 안에 있는지 확인
+    return (
+      distance <= tolerance && this.isPointWithinLineSegment(point, p1, p2)
+    );
+  }
+
+  // 벽에 맞춘 배치 위치 계산
+  getWallPlacementPoint(wall, point) {
+    // 벽의 방향 벡터 계산
+    const dx = wall.x2 - wall.x1;
+    const dy = wall.y2 - wall.y1;
+    const angle = Math.atan2(dy, dx);
+
+    // 벽에 수직으로 투영된 점 찾기
+    const projectedPoint = this.projectPointOnLine(
+      point,
+      { x: wall.x1, y: wall.y1 },
+      { x: wall.x2, y: wall.y2 }
+    );
+
+    return {
+      x: projectedPoint.x,
+      y: projectedPoint.y,
+      angle: (angle * 180) / Math.PI,
+    };
+  }
+
+  // 보조 함수들
+  pointToLineDistance(point, lineStart, lineEnd) {
+    const numerator = Math.abs(
+      (lineEnd.y - lineStart.y) * point.x -
+        (lineEnd.x - lineStart.x) * point.y +
+        lineEnd.x * lineStart.y -
+        lineEnd.y * lineStart.x
+    );
+
+    const denominator = Math.sqrt(
+      Math.pow(lineEnd.y - lineStart.y, 2) +
+        Math.pow(lineEnd.x - lineStart.x, 2)
+    );
+
+    return numerator / denominator;
+  }
+
+  isPointWithinLineSegment(point, lineStart, lineEnd) {
+    const dotProduct =
+      ((point.x - lineStart.x) * (lineEnd.x - lineStart.x) +
+        (point.y - lineStart.y) * (lineEnd.y - lineStart.y)) /
+      (Math.pow(lineEnd.x - lineStart.x, 2) +
+        Math.pow(lineEnd.y - lineStart.y, 2));
+
+    return dotProduct >= 0 && dotProduct <= 1;
+  }
+
+  projectPointOnLine(point, lineStart, lineEnd) {
+    const dx = lineEnd.x - lineStart.x;
+    const dy = lineEnd.y - lineStart.y;
+    const dotProduct =
+      ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) /
+      (dx * dx + dy * dy);
+
+    return {
+      x: lineStart.x + dotProduct * dx,
+      y: lineStart.y + dotProduct * dy,
+    };
+  }
+
   createWall(from, to) {
     if (!from || !to) return;
 
@@ -434,7 +866,7 @@ class FloorPlanner {
     const length = Math.sqrt(dx * dx + dy * dy);
     const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
-    if (length < 1) return; // 너무 짧은 벽은 생성하지 않음
+    if (length < 1) return;
 
     const wallRect = new fabric.Rect({
       left: from.x + dx / 2,
@@ -447,26 +879,127 @@ class FloorPlanner {
       angle: angle,
       originX: "center",
       originY: "center",
-      selectable: false,
+      selectable: false, // 초기에는 선택 불가능
       hasControls: false,
-      hasBorders: false,
-      evented: false,
+      hasBorders: true,
+      evented: false, // 초기에는 이벤트 비활성화
+      lockRotation: true,
+      hoverCursor: "move",
       isWall: true,
     });
 
     const wall = new Wall(from.x, from.y, to.x, to.y, wallRect);
 
-    // 시작점과 끝점의 vertex 찾기 또는 생성
-    let startVertex = this.findOrCreateVertex(from.x, from.y);
-    let endVertex = this.findOrCreateVertex(to.x, to.y);
+    // 정확한 위치에 vertex 생성
+    let startVertex = this.findOrCreateVertex(wall.x1, wall.y1);
+    let endVertex = this.findOrCreateVertex(wall.x2, wall.y2);
 
     wall.startVertex = startVertex;
     wall.endVertex = endVertex;
     startVertex.addWall(wall);
     endVertex.addWall(wall);
 
+    wallRect.on("selected", () => {
+      this.handleWallSelected(wall);
+    });
+
+    wallRect.on("moving", (e) => {
+      if (this.mode !== "select") return false;
+
+      const pointer = this.snapToGrid
+        ? this.snapToGridPoint(this.canvas.getPointer(e.e))
+        : this.canvas.getPointer(e.e);
+
+      // 벽의 각도와 길이 유지
+      const originalAngle = Math.atan2(wall.y2 - wall.y1, wall.x2 - wall.x1);
+      const length = Math.sqrt(
+        Math.pow(wall.x2 - wall.x1, 2) + Math.pow(wall.y2 - wall.y1, 2)
+      );
+
+      // 마우스 위치에 따라 벽의 중심점 이동
+      const center = {
+        x: pointer.x,
+        y: pointer.y,
+      };
+
+      // 각도를 유지한 채로 양 끝점 위치 계산
+      wall.x1 = center.x - (length / 2) * Math.cos(originalAngle);
+      wall.y1 = center.y - (length / 2) * Math.sin(originalAngle);
+      wall.x2 = center.x + (length / 2) * Math.cos(originalAngle);
+      wall.y2 = center.y + (length / 2) * Math.sin(originalAngle);
+
+      // fabric 객체 업데이트
+      wallRect.set({
+        left: center.x,
+        top: center.y,
+        width: length,
+        angle: (originalAngle * 180) / Math.PI,
+      });
+
+      // vertex 위치 동기화
+      if (wall.startVertex && wall.startVertex.fabricObject) {
+        wall.startVertex.x = wall.x1;
+        wall.startVertex.y = wall.y1;
+        wall.startVertex.fabricObject.set({
+          left: wall.x1,
+          top: wall.y1,
+        });
+
+        // 시작점에 연결된 다른 벽들 업데이트
+        wall.startVertex.walls.forEach((connectedWall) => {
+          if (connectedWall !== wall) {
+            if (connectedWall.startVertex === wall.startVertex) {
+              connectedWall.x1 = wall.x1;
+              connectedWall.y1 = wall.y1;
+            } else if (connectedWall.endVertex === wall.startVertex) {
+              connectedWall.x2 = wall.x1;
+              connectedWall.y2 = wall.y1;
+            }
+            // 연결된 벽의 fabric 객체 업데이트
+            this.updateWallPosition(connectedWall, wall.startVertex, {
+              x: wall.x1,
+              y: wall.y1,
+            });
+          }
+        });
+      }
+
+      // 끝점에 대해서도 동일한 처리
+      if (wall.endVertex && wall.endVertex.fabricObject) {
+        wall.endVertex.x = wall.x2;
+        wall.endVertex.y = wall.y2;
+        wall.endVertex.fabricObject.set({
+          left: wall.x2,
+          top: wall.y2,
+        });
+
+        // 끝점에 연결된 다른 벽들 업데이트
+        wall.endVertex.walls.forEach((connectedWall) => {
+          if (connectedWall !== wall) {
+            if (connectedWall.startVertex === wall.endVertex) {
+              connectedWall.x1 = wall.x2;
+              connectedWall.y1 = wall.y2;
+            } else if (connectedWall.endVertex === wall.endVertex) {
+              connectedWall.x2 = wall.x2;
+              connectedWall.y2 = wall.y2;
+            }
+            // 연결된 벽의 fabric 객체 업데이트
+            this.updateWallPosition(connectedWall, wall.endVertex, {
+              x: wall.x2,
+              y: wall.y2,
+            });
+          }
+        });
+      }
+
+      // 방 업데이트
+      this.updateRooms();
+      this.canvas.renderAll();
+    });
+
     this.walls.push(wall);
     this.canvas.add(wallRect);
+    return wall;
   }
 
   findWallIntersections(start, end) {
@@ -559,7 +1092,7 @@ class FloorPlanner {
     const vertexControl = new fabric.Circle({
       left: vertex.x,
       top: vertex.y,
-      radius: 5,
+      radius: 6,
       fill: "#2196F3",
       stroke: "#fff",
       strokeWidth: 2,
@@ -567,17 +1100,18 @@ class FloorPlanner {
       originY: "center",
       hasControls: false,
       hasBorders: false,
-      selectable: this.mode === "select" && !this.isDrawingWall,
-      evented: this.mode === "select" && !this.isDrawingWall,
+      selectable: true,
+      evented: true,
+      visible: false, // 초기에는 숨김
       isVertex: true,
+      hoverCursor: "move",
     });
 
     vertex.fabricObject = vertexControl;
 
+    // vertex 이동 이벤트 처리
     vertexControl.on("moving", (e) => {
-      if (this.isDrawingWall) {
-        return false;
-      }
+      if (this.isDrawingWall) return false;
 
       const pointer = this.snapToGrid
         ? this.snapToGridPoint(this.canvas.getPointer(e.e))
@@ -588,15 +1122,16 @@ class FloorPlanner {
         top: pointer.y,
       });
 
+      // 이 vertex와 연결된 모든 벽 업데이트
       vertex.walls.forEach((wall) => {
         this.updateWallPosition(wall, vertex, pointer);
       });
 
+      // 방도 함께 업데이트
       this.updateRooms();
       this.canvas.renderAll();
     });
 
-    this.canvas.add(vertexControl);
     return vertexControl;
   }
 
@@ -817,6 +1352,20 @@ class FloorPlanner {
       this.createRoom(path);
     });
 
+    if (this.mode === "select") {
+      this.walls.forEach((wall) => {
+        if (wall.fabricObject) {
+          wall.fabricObject.set({
+            selectable: true,
+            evented: true,
+            hasControls: false,
+            hasBorders: true,
+            hoverCursor: "move",
+          });
+        }
+      });
+    }
+
     this.canvas.renderAll();
   }
 
@@ -1015,6 +1564,146 @@ class FloorPlanner {
 
     this.canvas.renderAll();
   }
+  createWallSegment(from, to) {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+    if (length < 1) return;
+
+    // 벽 객체를 선택 가능하도록 수정
+    const wallRect = new fabric.Rect({
+      left: from.x + dx / 2,
+      top: from.y + dy / 2,
+      width: length,
+      height: this.currentWallType.thickness,
+      fill: "#B0B0B0",
+      stroke: "#7D7D7D",
+      strokeWidth: 1,
+      angle: angle,
+      originX: "center",
+      originY: "center",
+      selectable: this.mode === "select",
+      hasControls: false,
+      hasBorders: true,
+      evented: this.mode === "select",
+      lockRotation: true,
+      hoverCursor: this.mode === "select" ? "move" : "default",
+      isWall: true,
+    });
+
+    const wall = new Wall(from.x, from.y, to.x, to.y, wallRect);
+
+    // 시작점과 끝점의 vertex 생성 또는 찾기
+    let startVertex = this.findOrCreateVertex(from.x, from.y);
+    let endVertex = this.findOrCreateVertex(to.x, to.y);
+
+    wall.startVertex = startVertex;
+    wall.endVertex = endVertex;
+    startVertex.addWall(wall);
+    endVertex.addWall(wall);
+
+    // 벽 선택 이벤트 추가
+    wallRect.on("selected", () => {
+      this.handleWallSelected(wall);
+    });
+
+    this.walls.push(wall);
+    this.canvas.add(wallRect);
+
+    return wall;
+  }
+
+  handleWallSelected(wall) {
+    if (this.mode !== "select") return;
+
+    // vertex 정확한 위치에 표시
+    if (wall.startVertex?.fabricObject) {
+      wall.startVertex.fabricObject.set({
+        left: wall.x1,
+        top: wall.y1,
+        visible: true,
+        evented: true,
+      });
+      this.canvas.bringToFront(wall.startVertex.fabricObject);
+    }
+
+    if (wall.endVertex?.fabricObject) {
+      wall.endVertex.fabricObject.set({
+        left: wall.x2,
+        top: wall.y2,
+        visible: true,
+        evented: true,
+      });
+      this.canvas.bringToFront(wall.endVertex.fabricObject);
+    }
+
+    this.canvas.renderAll();
+  }
+
+  createVertexControl(vertex) {
+    const vertexControl = new fabric.Circle({
+      left: vertex.x,
+      top: vertex.y,
+      radius: 5,
+      fill: "#2196F3",
+      stroke: "#fff",
+      strokeWidth: 2,
+      originX: "center",
+      originY: "center",
+      hasControls: false,
+      hasBorders: false,
+      selectable: true,
+      evented: true,
+      visible: false, // 초기에는 숨김 상태
+      isVertex: true,
+    });
+
+    vertex.fabricObject = vertexControl;
+
+    // vertex 이동 이벤트 처리
+    vertexControl.on("moving", (e) => {
+      const pointer = this.snapToGrid
+        ? this.snapToGridPoint(this.canvas.getPointer(e.e))
+        : this.canvas.getPointer(e.e);
+
+      vertexControl.set({
+        left: pointer.x,
+        top: pointer.y,
+      });
+
+      // 연결된 모든 벽 업데이트
+      vertex.walls.forEach((wall) => {
+        this.updateWallPosition(wall, vertex, pointer);
+      });
+
+      // 방 업데이트
+      this.updateRooms();
+      this.canvas.renderAll();
+    });
+
+    this.canvas.add(vertexControl);
+    return vertexControl;
+  }
+
+  // 벽이 선택 해제될 때의 처리
+  handleWallDeselected(wall) {
+    // vertex 숨기기
+    if (wall.startVertex && wall.startVertex.fabricObject) {
+      wall.startVertex.fabricObject.set({
+        visible: false,
+        evented: false,
+      });
+    }
+    if (wall.endVertex && wall.endVertex.fabricObject) {
+      wall.endVertex.fabricObject.set({
+        visible: false,
+        evented: false,
+      });
+    }
+    this.canvas.renderAll();
+  }
 
   setupEventListeners() {
     this.canvas.on("mouse:down", (e) => this.handleMouseDown(e));
@@ -1060,9 +1749,20 @@ class FloorPlanner {
       } else {
         this.clearAreaText(); // 다른 객체를 선택했을 때는 면적 제거
       }
+
+      const selectedObject = e.selected[0];
+      if (selectedObject && selectedObject.isWall) {
+        const wall = this.walls.find((w) => w.fabricObject === selectedObject);
+        if (wall) {
+          this.handleWallSelected(wall);
+        }
+      }
     });
 
     this.canvas.on("selection:cleared", () => {
+      this.walls.forEach((wall) => {
+        this.handleWallDeselected(wall);
+      });
       // 선택 해제 시 면적 텍스트 제거
       this.clearAreaText();
     });
@@ -1116,14 +1816,13 @@ class FloorPlanner {
     this.canvas.renderAll();
   }
 
-  // 기존 메서드에서 반환값 추가
   createWallSegment(from, to) {
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const length = Math.sqrt(dx * dx + dy * dy);
     const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
 
-    if (length < 1) return; // 너무 짧은 벽은 생성하지 않음
+    if (length < 1) return;
 
     const wallRect = new fabric.Rect({
       left: from.x + dx / 2,
@@ -1136,16 +1835,17 @@ class FloorPlanner {
       angle: angle,
       originX: "center",
       originY: "center",
-      selectable: false,
+      selectable: true,
       hasControls: false,
-      hasBorders: false,
-      evented: false,
+      hasBorders: true,
+      evented: true,
+      lockRotation: true, // 회전 방지
+      hoverCursor: "move",
       isWall: true,
     });
 
     const wall = new Wall(from.x, from.y, to.x, to.y, wallRect);
 
-    // 시작점과 끝점의 vertex 찾기 또는 생성
     let startVertex = this.findOrCreateVertex(from.x, from.y);
     let endVertex = this.findOrCreateVertex(to.x, to.y);
 
@@ -1154,11 +1854,80 @@ class FloorPlanner {
     startVertex.addWall(wall);
     endVertex.addWall(wall);
 
+    // 벽 선택 이벤트
+    wallRect.on("selected", () => {
+      this.handleWallSelected(wall);
+    });
+
+    // 벽 드래그 이벤트
+    wallRect.on("moving", (e) => {
+      const pointer = this.snapToGrid
+        ? this.snapToGridPoint(this.canvas.getPointer(e.e))
+        : this.canvas.getPointer(e.e);
+
+      // 이동 거리 계산
+      const dx = pointer.x - (wall.x1 + wall.x2) / 2;
+      const dy = pointer.y - (wall.y1 + wall.y2) / 2;
+
+      // 벽과 vertex들의 새로운 위치 계산
+      const newStartX = wall.x1 + dx;
+      const newStartY = wall.y1 + dy;
+      const newEndX = wall.x2 + dx;
+      const newEndY = wall.y2 + dy;
+
+      // wall 객체 업데이트
+      wall.x1 = newStartX;
+      wall.y1 = newStartY;
+      wall.x2 = newEndX;
+      wall.y2 = newEndY;
+
+      // vertex 위치 업데이트
+      if (wall.startVertex && wall.startVertex.fabricObject) {
+        wall.startVertex.x = newStartX;
+        wall.startVertex.y = newStartY;
+        wall.startVertex.fabricObject.set({
+          left: newStartX,
+          top: newStartY,
+        });
+      }
+
+      if (wall.endVertex && wall.endVertex.fabricObject) {
+        wall.endVertex.x = newEndX;
+        wall.endVertex.y = newEndY;
+        wall.endVertex.fabricObject.set({
+          left: newEndX,
+          top: newEndY,
+        });
+      }
+
+      // 연결된 다른 벽들 업데이트
+      wall.startVertex.walls.forEach((connectedWall) => {
+        if (connectedWall !== wall) {
+          this.updateWallPosition(connectedWall, wall.startVertex, {
+            x: newStartX,
+            y: newStartY,
+          });
+        }
+      });
+
+      wall.endVertex.walls.forEach((connectedWall) => {
+        if (connectedWall !== wall) {
+          this.updateWallPosition(connectedWall, wall.endVertex, {
+            x: newEndX,
+            y: newEndY,
+          });
+        }
+      });
+
+      // 방 업데이트
+      this.updateRooms();
+    });
+
     this.walls.push(wall);
     this.canvas.add(wallRect);
-
-    return wall; // 반환값 추가
+    return wall;
   }
+
   createFurniture(furniture) {
     if (!furniture) return;
 
