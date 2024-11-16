@@ -3,7 +3,7 @@ import axios from "axios";
 // 1. 로그인용 axios instance (8084 포트, 토큰 불필요)
 export const authInstance = axios.create({
   baseURL: "http://localhost:8084",
-  timeout: 5000,
+  timeout: 100000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -12,7 +12,7 @@ export const authInstance = axios.create({
 // 2. 유저 관련 API용 axios instance (8084 포트, 토큰 필요)
 export const userInstance = axios.create({
   baseURL: "http://localhost:8084",
-  timeout: 5000,
+  timeout: 100000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -22,7 +22,7 @@ export const userInstance = axios.create({
 // 3. 채팅 API용 axios instance (8080 포트, 토큰 필요)
 export const chatInstance = axios.create({
   baseURL: "http://localhost:8083/chat",
-  timeout: 5000,
+  timeout: 100000,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -32,7 +32,7 @@ export const chatInstance = axios.create({
 // 4. 상품 API용 axios instance (8082 포트, 토큰 필요)
 export const productInstance = axios.create({
   baseURL: "http://localhost:8080",
-  timeout: 5000,
+  timeout: 100000,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export const productInstance = axios.create({
 // 5. 페이 API용 axios instance (8081 포트, 토큰 필요)
 export const payInstance = axios.create({
   baseURL: "http://localhost:8081",
-  timeout: 5000,
+  timeout: 100000,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

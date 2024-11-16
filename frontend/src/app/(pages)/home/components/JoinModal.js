@@ -94,6 +94,7 @@ export default function JoinModal({ isOpen, onClose }) {
 
     try {
       // API 호출
+      console.log('설문요청',preferenceData)
       await preferenceUpdate(preferenceData);
     } catch (error) {
       console.error('선호도 업데이트 실패:', error);

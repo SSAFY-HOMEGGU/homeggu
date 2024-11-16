@@ -7,6 +7,7 @@ export const authInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 // 2. 유저 관련 API용 axios instance (8084 포트, 토큰 필요)

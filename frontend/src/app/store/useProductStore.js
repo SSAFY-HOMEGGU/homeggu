@@ -1,65 +1,71 @@
 import { create } from 'zustand';
 
 const useProductStore = create((set) => ({
-  // 기존 상태
-  selectedProduct: null,
-  setSelectedProduct: (product) => set({ selectedProduct: product }),
+  // 상품 정보
+  salesBoardDTO: {
+    title: '',
+    content: '',
+    category: 'BED', // 기본값 설정
+    mood: 'WOOD_VINTAGE', // 기본값 설정
+    isSell: 'AVAILABLE',
+    status: '',
+    tradeMethod: '',
+    isSafe: false,
+    hopeLocation: '',
+    price: 0,
+    deliveryPrice: 0,
+    goods_x: 0,
+    goods_y: 0,
+    goods_z: 0,
+  },
+  goodsImagePaths: [],
+  threeDimensionsGoodsImagePaths: [],
+
+  // 상품 정보 업데이트
+  updateProduct: (key, value) => set((state) => ({
+    salesBoardDTO: {
+      ...state.salesBoardDTO,
+      [key]: value
+    }
+  })),
+
+  // 이미지 경로 업데이트
+  setGoodsImages: (paths) => set({ 
+    goodsImagePaths: paths 
+  }),
   
-  // 3D 변환 관련 상태와 함수들
-  tempProduct: null,
-  conversionStatus: {
-    isConverting: false,
-    progress: 0,
-    error: null
-  },
-
-  // 이미지 관련 상태 추가
-  productImages: {
-    goodsImagePaths: [],
-    threeDimensionsGoodsImagePaths: [],
-    mainImageIndex: 0
-  },
-
-  // 액션들
-  setTempProduct: (product) => set({ 
-    tempProduct: product 
+  // 3D 이미지 경로 업데이트
+  set3DImages: (paths) => set({ 
+    threeDimensionsGoodsImagePaths: paths 
   }),
 
-  setConversionStatus: (status) => set((state) => ({
-    conversionStatus: {
-      ...state.conversionStatus,
-      ...status
-    }
-  })),
-
-  // 이미지 관련 액션 추가
-  setProductImages: (imageData) => set((state) => ({
-    productImages: {
-      ...state.productImages,
-      goodsImagePaths: imageData.goodsImagePaths,
-      mainImageIndex: imageData.mainImageIndex
-    }
-  })),
-
-  set3DImages: (imageUrls) => set((state) => ({
-    productImages: {
-      ...state.productImages,
-      threeDimensionsGoodsImagePaths: imageUrls
-    }
-  })),
-
-  clearStore: () => set({
-    tempProduct: null,
-    conversionStatus: {
-      isConverting: false,
-      progress: 0,
-      error: null
+  // 초기화
+  resetStore: () => set({
+    salesBoardDTO: {
+      title: '',
+      content: '',
+      category: 'BED',
+      mood: 'WOOD_VINTAGE',
+      isSell: 'AVAILABLE',
+      status: '',
+      tradeMethod: '',
+      isSafe: false,
+      hopeLocation: '',
+      price: 0,
+      deliveryPrice: 0,
+      goods_x: 0,
+      goods_y: 0,
+      goods_z: 0,
     },
-    productImages: {
-      goodsImagePaths: [],
-      threeDimensionsGoodsImagePaths: [],
-      mainImageIndex: 0
-    }
+    goodsImagePaths: [],
+    threeDimensionsGoodsImagePaths: [],
+  }),
+
+  // 전체 데이터 가져오기 (유효성 검사용)
+  getFormData: () => ({
+    salesBoardDTO: useProductStore.getState().salesBoardDTO,
+    goodsImagePaths: useProductStore.getState().goodsImagePaths,
+    threeDimensionsGoodsImagePaths: useProductStore.getState().threeDimensionsGoodsImagePaths
   })
 }));
 

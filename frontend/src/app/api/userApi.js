@@ -93,7 +93,7 @@ export const goodsIsLike = (salesBoardId) => {
 // 사용자 프로필 조회
 export const fetchUserProfile = () => {
   return userInstance
-    .get("/user-profile/detail")
+    .get("/profile/detail")
     .then((response) => {
       console.log("Response Data:", response.data); // 응답 데이터 출력
       return response.data;
@@ -138,7 +138,7 @@ export const updateUserProfile = (profileData) => {
   };
 
   return userInstance
-    .put("/user-profile/update", requestBody)
+    .put("/profile/update", requestBody)
     .then((response) => response.data)
     .catch((error) => {
       console.error("프로필 업데이트 에러:", error);
