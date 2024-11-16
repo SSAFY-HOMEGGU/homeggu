@@ -128,6 +128,7 @@ import JoinModal from "./components/JoinModal";
 import { useRouter } from "next/navigation";
 import ModelReadyModal from "../sell/services/ModelReadyModal";
 import { backgroundConversionService } from "../sell/services/backgroundConversionService";
+import { preferenceList } from "@/app/api/userApi";
 
 function HomeContent() {
   const router = useRouter()
@@ -152,6 +153,23 @@ function HomeContent() {
   ];
 
   const [modalData, setModalData] = useState(null);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const response = await preferenceList();
+        setRecommendations(response); // API 응답 데이터로 상태 업데이트
+      } catch (error) {
+        console.error('추천 상품 조회 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, []);
+
+
 
   useEffect(() => {
     // backgroundConversionService 콜백 설정
