@@ -27,7 +27,7 @@ public class SalesBoardService {
 
   // 상품 등록
   @Transactional
-   public void registerGoods (RegisterGoodsRequest dto){
+   public Long registerGoods (RegisterGoodsRequest dto){
 
       SalesBoard salesBoard = SalesBoard.toEntity(dto.getSalesBoardDTO());
       salesBoardRepository.save(salesBoard);
@@ -52,6 +52,7 @@ public class SalesBoardService {
           }
       }
 
+      return salesBoard.getSalesBoardId();
    }
 
 
