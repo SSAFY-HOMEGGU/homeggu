@@ -87,7 +87,7 @@ export default function JoinModal({ isOpen, onClose }) {
       category: "",
       mood: selectedMood,
       action: "firstCheck",
-      clickedSalesBoardId: ""
+      clickedSalesBoardId: null
     };
 
     console.log('설문',preferenceData)
