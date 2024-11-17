@@ -12,38 +12,6 @@ export default function JoinModal({ isOpen, onClose }) {
   const [userName, setUserName] = useState(null);
   const totalSteps = 6;
 
-  useEffect(() => {
-    if (isOpen) {
-      questions.forEach(question => {
-        const img1 = new Image();
-        const img2 = new Image();
-        img1.src = question.image1;
-        img2.src = question.image2;
-      });
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    // 모달이 열릴 때만 API 호출
-    if (isOpen) {
-      const fetchProfile = async () => {
-        try {
-          const data = await fetchUserProfile();
-          setUserName(data.user.username);
-          // userName이 필요한 경우 여기서 설정
-          // setUserName(data.name);
-        } catch (error) {
-          console.error("프로필 로딩 실패:", error);
-        }
-      };
-
-      fetchProfile();
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-
   const questions = [
     {
       image1: "/joinSurvey/wood1.jpg",
@@ -82,6 +50,40 @@ export default function JoinModal({ isOpen, onClose }) {
       label2: "BLACK_METALLIC"
     },
   ];
+  
+  useEffect(() => {
+    if (isOpen) {
+      questions.forEach(question => {
+        const img1 = new Image();
+        const img2 = new Image();
+        img1.src = question.image1;
+        img2.src = question.image2;
+      });
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // 모달이 열릴 때만 API 호출
+    if (isOpen) {
+      const fetchProfile = async () => {
+        try {
+          const data = await fetchUserProfile();
+          setUserName(data.user.username);
+          // userName이 필요한 경우 여기서 설정
+          // setUserName(data.name);
+        } catch (error) {
+          console.error("프로필 로딩 실패:", error);
+        }
+      };
+
+      fetchProfile();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+
+  
   
 
   const handleCloseModal = () => {
