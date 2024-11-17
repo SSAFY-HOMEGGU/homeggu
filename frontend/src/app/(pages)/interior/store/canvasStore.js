@@ -124,7 +124,26 @@ const useCanvasStore = create(
       addFurniture: (furniture) => {
         const { canvas } = get();
         if (canvas) {
-          canvas.createFurniture(furniture); // FloorPlanner의 메서드 호출
+          // 3D 모델 정보를 포함한 새로운 가구 객체 생성
+          const furnitureData = {
+            ...furniture,
+            metadata: {
+              ...furniture,
+              model3D:
+                furniture.name === "a"
+                  ? {
+                      // 이름이 "a"인 가구에만 3D 모델 정보 추가
+                      obj: "/3d/a",
+                      mtl: "/3d/a.mtl",
+                      width: furniture.width,
+                      height: furniture.height,
+                      depth: furniture.depth,
+                    }
+                  : null,
+            },
+          };
+
+          canvas.createFurniture(furnitureData);
         }
       },
 
