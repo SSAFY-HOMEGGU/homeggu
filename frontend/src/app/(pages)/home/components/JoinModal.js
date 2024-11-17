@@ -51,16 +51,16 @@ export default function JoinModal({ isOpen, onClose }) {
     },
   ];
   
-  useEffect(() => {
-    if (isOpen) {
-      questions.forEach(question => {
-        const img1 = new Image();
-        const img2 = new Image();
-        img1.src = question.image1;
-        img2.src = question.image2;
-      });
-    }
-  }, [isOpen]);
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     questions.forEach(question => {
+  //       const img1 = new Image();
+  //       const img2 = new Image();
+  //       img1.src = question.image1;
+  //       img2.src = question.image2;
+  //     });
+  //   }
+  // }, [isOpen]);
 
   useEffect(() => {
     // 모달이 열릴 때만 API 호출

@@ -55,6 +55,7 @@ const addTokenInterceptor = (instance) => {
   instance.interceptors.request.use(
     (config) => {
       const accessToken = localStorage.getItem("accessToken");
+      console.log('Interceptor token:', accessToken);
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
