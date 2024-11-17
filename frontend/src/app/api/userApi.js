@@ -45,16 +45,16 @@ export const firstLogin = () => {
     });
 };
 
-// 회원탈퇴
-export const deleteAccount = () => {
-  return userInstance
-    .delete("/oauth/delete")
-    .then((response) => response.data)
-    .catch((error) => {
-      console.error("상세 에러 정보:", error);
-      throw error;
-    });
-};
+// // 회원탈퇴
+// export const deleteAccount = () => {
+//   return userInstance
+//     .delete("/oauth/delete")
+//     .then((response) => response.data)
+//     .catch((error) => {
+//       console.error("상세 에러 정보:", error);
+//       throw error;
+//     });
+// };
 
 // 찜 상품 조회
 export const goodsLikeList = () => {
