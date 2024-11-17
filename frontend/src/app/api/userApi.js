@@ -157,7 +157,7 @@ export const uploadProfileImage = async (file) => {
   formData.append("file", file);
 
   try {
-    const response = await userInstance.put("/profile/image", formData, {
+    const response = await userInstance.post("/profile/image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
