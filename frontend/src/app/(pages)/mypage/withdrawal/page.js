@@ -17,14 +17,29 @@ export default function WithdrawalPage() {
       await deleteAccount();
       alert("회원 탈퇴가 완료되었습니다.");
       setShowModal(false);
-      // 로그아웃 처리 및 메인 페이지로 이동
+      // 로컬 스토리지의 토큰 등 사용자 데이터 삭제
+      localStorage.clear();
+      // 메인 페이지로 이동
       router.push("/");
     } catch (error) {
-      if (error.response?.data?.message) {
-        alert(error.response.data.message);
+      console.error("탈퇴 처리 중 에러:", error);
+
+      // 에러 메시지 처리
+      if (error.response) {
+        if (error.response.status === 404) {
+          alert("탈퇴 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        } else if (error.response.data?.message) {
+          alert(error.response.data.message);
+        } else {
+          alert("회원 탈퇴 처리 중 오류가 발생했습니다.");
+        }
+      } else if (error.request) {
+        alert("서버와의 통신에 실패했습니다. 네트워크 연결을 확인해주세요.");
       } else {
         alert("회원 탈퇴 처리 중 오류가 발생했습니다.");
       }
+
+      setShowModal(false);
     } finally {
       setIsLoading(false);
     }
