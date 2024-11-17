@@ -156,15 +156,18 @@ function HomeContent() {
   const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
+    console.log('Current token:', localStorage.getItem('accessToken'));
+  }, []);
+  
+
+  useEffect(() => {
     const fetchRecommendations = async () => {
       try {
         const response = await preferenceList();
         setRecommendations(response); // API 응답 데이터로 상태 업데이트
       } catch (error) {
         console.error('추천 상품 조회 실패:', error);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     fetchRecommendations();
