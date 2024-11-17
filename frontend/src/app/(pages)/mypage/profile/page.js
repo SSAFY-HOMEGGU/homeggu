@@ -37,12 +37,16 @@ export default function ProfilePage() {
     const file = event.target.files[0];
     if (file) {
       try {
-        const imageUrl = URL.createObjectURL(file);
-        setUploadedImage(imageUrl);
-        setProfileImageFile(file);
+        // 이미지 업로드 API 호출
+        const response = await uploadProfileImage(file);
+
+        // 서버에서 받은 실제 이미지 경로로 상태 업데이트
+        if (response.userImagePath) {
+          setUploadedImage(response.userImagePath);
+        }
       } catch (error) {
-        console.error("이미지 처리 실패:", error);
-        alert("이미지 처리에 실패했습니다.");
+        console.error("이미지 업로드 실패:", error);
+        alert("이미지 업로드에 실패했습니다.");
       }
     }
   }, []);
@@ -206,7 +210,7 @@ export default function ProfilePage() {
           <label htmlFor="profile-upload" style={{ cursor: "pointer" }}>
             {uploadedImage ? (
               <Image
-                src={uploadedImage}
+                src={uploadedImage || "/icons/addprofileimg.svg"} // 기본 이미지 경로 수정
                 alt="Profile Image"
                 width={120}
                 height={120}
@@ -214,7 +218,7 @@ export default function ProfilePage() {
                   width: "137px",
                   height: "137px",
                   borderRadius: "50%",
-                  objectFit: "cover", // 이미지 비율 유지하면서 채우기
+                  objectFit: "cover",
                 }}
               />
             ) : (

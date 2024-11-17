@@ -95,8 +95,16 @@ export const fetchUserProfile = () => {
   return userInstance
     .get("/profile/detail")
     .then((response) => {
-      console.log("Response Data:", response.data); // 응답 데이터 출력
-      return response.data;
+      // blob URL을 사용하지 않고 서버에서 받은 실제 이미지 경로를 사용
+      const profileData = response.data;
+      if (
+        profileData.userImagePath &&
+        profileData.userImagePath.startsWith("blob:")
+      ) {
+        // blob URL인 경우 처리
+        delete profileData.userImagePath;
+      }
+      return profileData;
     })
     .catch((error) => {
       console.error("프로필 조회 에러:", error);
@@ -165,11 +173,6 @@ export const uploadProfileImage = async (file) => {
     return response.data;
   } catch (error) {
     console.error("이미지 업로드 에러:", error.response || error);
-    if (error.response?.status === 404) {
-      throw new Error(
-        error.response.data.message || "이미지 업로드에 실패했습니다."
-      );
-    }
     throw error;
   }
 };
