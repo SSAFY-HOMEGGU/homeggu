@@ -4,48 +4,17 @@ export default function SideMenu() {
   return (
     <aside className="">
       {/* a버전: 마이 페이지 */}
-      <h1 className="text-black font-noto text-[1.2rem] font-bold mb-6">
+      <h1 className="text-black font-noto text-[1.2rem] font-bold mb-4">
         마이 페이지
       </h1>
 
-      {/* b버전: 거래 정보 */}
-      <h2 className="text-normalText font-noto text-[1rem] font-bold mb-3">
-        My PAY
-      </h2>
       <ul className="space-y-1">
         <li>
           <Link
             href="/mypage/pay"
             className="text-normalText font-noto text-[0.8rem] font-normal"
           >
-            홈꾸머니
-          </Link>
-        </li>
-      </ul>
-      {/* 밑줄 */}
-      <hr className="my-4 border-t border-gray-300 w-full" />
-
-      {/* b버전: 거래 정보 */}
-      <h2 className="text-normalText font-noto text-[1rem] font-bold mb-3">
-        거래 정보
-      </h2>
-
-      {/* c버전: 판매 내역 */}
-      <ul className="space-y-1">
-        <li>
-          <Link
-            href="/mypage"
-            className="text-normalText font-noto text-[0.8rem] font-normal"
-          >
-            판매 내역
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/mypage/purchase"
-            className="text-normalText font-noto text-[0.8rem] font-normal"
-          >
-            구매 내역
+            거래내역
           </Link>
         </li>
         <li>
@@ -56,18 +25,7 @@ export default function SideMenu() {
             찜한 상품
           </Link>
         </li>
-      </ul>
 
-      {/* 밑줄 */}
-      <hr className="my-4 border-t border-gray-300 w-full" />
-
-      {/* b버전: 내 정보 */}
-      <h2 className="text-normalText font-noto text-[1rem] font-bold mb-3">
-        내 정보
-      </h2>
-
-      {/* c버전: 내 정보 수정 / 탈퇴하기 */}
-      <ul className="space-y-1">
         <li>
           <Link
             href="/mypage/profile"
