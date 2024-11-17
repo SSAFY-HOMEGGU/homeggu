@@ -23,6 +23,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'k11b206.p.ssafy.io',
+        pathname: '/**',  // 모든 경로 허용
+      },
+      {
+        protocol: 'https',
         hostname: 'homeggu-s3.s3.ap-northeast-2.amazonaws.com',
         port: '',
         pathname: '/**',
