@@ -15,10 +15,14 @@ export default function WithdrawalPage() {
     try {
       setIsLoading(true);
       await deleteAccount();
+
+      // 로컬 스토리지의 토큰 삭제
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
       alert("회원 탈퇴가 완료되었습니다.");
       setShowModal(false);
-      // 로컬 스토리지의 토큰 등 사용자 데이터 삭제
-      localStorage.clear();
+
       // 메인 페이지로 이동
       router.push("/");
     } catch (error) {
@@ -38,8 +42,6 @@ export default function WithdrawalPage() {
       } else {
         alert("회원 탈퇴 처리 중 오류가 발생했습니다.");
       }
-
-      setShowModal(false);
     } finally {
       setIsLoading(false);
     }
