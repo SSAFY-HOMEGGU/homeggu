@@ -14,7 +14,7 @@ export const fetchLogin = (code) => {
 
 // 로그아웃
 export const fetchLogout = (accessToken) => {
-  return userInstance
+  return userInstancez
     .post("/oauth/kakao/logout", { accessToken: accessToken })
     .then((response) => response.data)
     .catch((error) => {
@@ -142,17 +142,22 @@ export const updateUserProfile = (profileData) => {
     .then((response) => response.data)
     .catch((error) => {
       console.error("프로필 업데이트 에러:", error);
+      if (error.response?.status === 404) {
+        throw new Error(
+          error.response.data.message || "프로필 업데이트에 실패했습니다."
+        );
+      }
       throw error;
     });
 };
 
-// // 프로필 이미지 업로드 수정
+// 프로필 이미지 등록
 export const uploadProfileImage = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
   try {
-    const response = await userInstance.post("/upload/user-image", formData, {
+    const response = await userInstance.put("/profile/image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -160,8 +165,10 @@ export const uploadProfileImage = async (file) => {
     return response.data;
   } catch (error) {
     console.error("이미지 업로드 에러:", error.response || error);
-    if (error.response?.status === 403) {
-      throw new Error("권한이 없습니다. 다시 로그인해주세요.");
+    if (error.response?.status === 404) {
+      throw new Error(
+        error.response.data.message || "이미지 업로드에 실패했습니다."
+      );
     }
     throw error;
   }
@@ -200,16 +207,13 @@ export const fetchRecentViewedItems = () => {
     });
 };
 
-
 // 추천 상품
 export const preferenceList = () => {
-  return userInstance.get("/preference/list")
+  return userInstance
+    .get("/preference/list")
     .then((response) => response.data)
     .catch((error) => {
       console.error("최근 본 상품 조회 에러:", error);
       throw error;
     });
-}
-
-
-
+};

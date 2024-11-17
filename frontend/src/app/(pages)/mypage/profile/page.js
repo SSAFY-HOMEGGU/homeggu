@@ -40,15 +40,15 @@ export default function ProfilePage() {
       const imageUrl = URL.createObjectURL(file);
       setUploadedImage(imageUrl);
 
-      const formData = new FormData();
-      formData.append("file", file);
-
       try {
-        const response = await uploadProfileImage(formData);
+        const response = await uploadProfileImage(file); // formData 직접 생성하지 않고 file만 전달
+        if (response.userImagePath) {
+          setUploadedImage(response.userImagePath); // 서버에서 받은 이미지 경로로 업데이트
+        }
         console.log("이미지 업로드 성공:", response);
       } catch (error) {
         console.error("이미지 업로드 실패:", error);
-        alert("이미지 업로드에 실패했습니다.");
+        alert(error.message || "이미지 업로드에 실패했습니다.");
       }
     }
   }, []);
@@ -60,14 +60,12 @@ export default function ProfilePage() {
         setNickname(profileData.nickname || "");
         setOriginalNickname(profileData.nickname || "");
         setPhoneNumber(profileData.phoneNumber || "");
-        setReceiverName(profileData.receiverName || "");
-        setReceiverPhone(profileData.receiverPhone || "");
         setSelectedAddress(profileData.address || "");
-        setSelectedZipCode(profileData.zipCode || "");
         setDetailAddress(profileData.addressDetail || "");
         setAddressNickname(profileData.addressNickname || "우리집");
-        if (profileData.profileImage) {
-          setUploadedImage(profileData.profileImage);
+        if (profileData.userImagePath) {
+          // profileImage -> userImagePath로 변경
+          setUploadedImage(profileData.userImagePath);
         }
       } catch (error) {
         console.error("프로필 조회 실패:", error);
@@ -109,16 +107,6 @@ export default function ProfilePage() {
       setPhoneError("");
     }
     setPhoneNumber(formatPhoneNumber(value));
-  };
-
-  const handleReceiverPhoneChange = (e) => {
-    const value = e.target.value;
-    if (/[^0-9-]/.test(value)) {
-      setReceiverPhoneError("숫자만 입력할 수 있습니다.");
-    } else {
-      setReceiverPhoneError("");
-    }
-    setReceiverPhone(formatPhoneNumber(value));
   };
 
   const handleNicknameCheck = async () => {
@@ -179,22 +167,24 @@ export default function ProfilePage() {
 
     try {
       const profileData = {
-        nickname: nickname || null,
-        address: selectedAddress || null,
-        addressDetail: detailAddress || null,
-        addressNickname: addressNickname || "우리집",
+        nickname,
+        address: selectedAddress,
+        addressDetail: detailAddress,
+        addressNickname,
         phoneNumber: phoneNumber ? phoneNumber.replace(/-/g, "") : null,
-        userImagePath: uploadedImage || null,
+        userImagePath: uploadedImage,
       };
 
       const response = await updateUserProfile(profileData);
       if (response.message === "수정 완료") {
         setOriginalNickname(nickname);
         alert("프로필이 성공적으로 수정되었습니다.");
+        // 선택적: 페이지 새로고침이나 리다이렉션이 필요한 경우
+        window.location.reload();
       }
     } catch (error) {
       console.error("프로필 수정 실패:", error);
-      alert("프로필 수정에 실패했습니다.");
+      alert(error.response?.data?.message || "프로필 수정에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -312,7 +302,7 @@ export default function ProfilePage() {
             width="w-[30rem]"
             height="h-[2.2rem]"
           />
-          
+
           {receiverPhoneError && (
             <p className="text-red-500 text-sm">{receiverPhoneError}</p>
           )}
@@ -328,7 +318,6 @@ export default function ProfilePage() {
             {isSubmitting ? "수정 중..." : "수정하기"}
           </BlueButton>
         </div>
-
       </div>
     </div>
   );
