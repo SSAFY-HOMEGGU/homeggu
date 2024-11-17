@@ -14,7 +14,7 @@ export const fetchLogin = (code) => {
 
 // 로그아웃
 export const fetchLogout = (accessToken) => {
-  return userInstancez
+  return userInstance    
     .post("/oauth/kakao/logout", { accessToken: accessToken })
     .then((response) => response.data)
     .catch((error) => {
