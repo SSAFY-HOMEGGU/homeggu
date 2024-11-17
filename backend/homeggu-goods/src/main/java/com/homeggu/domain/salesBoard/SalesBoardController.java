@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/goods/board")
+@RequestMapping("/api/goods/board")
 @RequiredArgsConstructor
 public class SalesBoardController {
     private final SalesBoardService salesBoardService;
