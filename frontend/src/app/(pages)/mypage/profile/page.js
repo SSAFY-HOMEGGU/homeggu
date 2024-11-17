@@ -51,14 +51,16 @@ export default function ProfilePage() {
     const loadUserProfile = async () => {
       try {
         const profileData = await fetchUserProfile();
+        console.log("프로필 데이터:", profileData); // 데이터 확인용
         setNickname(profileData.nickname || "");
         setOriginalNickname(profileData.nickname || "");
         setPhoneNumber(profileData.phoneNumber || "");
         setSelectedAddress(profileData.address || "");
         setDetailAddress(profileData.addressDetail || "");
         setAddressNickname(profileData.addressNickname || "우리집");
+
+        // 프로필 이미지 설정
         if (profileData.userImagePath) {
-          // profileImage -> userImagePath로 변경
           setUploadedImage(profileData.userImagePath);
         }
       } catch (error) {
@@ -208,17 +210,23 @@ export default function ProfilePage() {
                 alt="Profile Image"
                 width={120}
                 height={120}
-                style={{ width: "137px", height: "137px", borderRadius: "50%" }}
+                style={{
+                  width: "137px",
+                  height: "137px",
+                  borderRadius: "50%",
+                  objectFit: "cover", // 이미지 비율 유지하면서 채우기
+                }}
               />
             ) : (
               <Image
                 src={addProfileImg}
-                alt="Profile Image"
+                alt="Default Profile Image"
                 width={120}
                 height={120}
               />
             )}
           </label>
+
           <input
             id="profile-upload"
             type="file"
