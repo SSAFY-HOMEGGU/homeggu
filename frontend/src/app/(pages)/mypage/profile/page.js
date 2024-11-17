@@ -15,70 +15,45 @@ import useUserStore from "@/app/store/userStore";
 
 export default function ProfilePage() {
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState("");
+  const [selectedZipCode, setSelectedZipCode] = useState("");
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [detailAddress, setDetailAddress] = useState("");
   const [addressNickname, setAddressNickname] = useState("우리집");
   const [nickname, setNickname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneError, setPhoneError] = useState("");
-  const [serverImagePath, setServerImagePath] = useState(null);
   const [isNicknameAvailable, setIsNicknameAvailable] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalNickname, setOriginalNickname] = useState("");
   const { updateUser } = useUserStore();
 
-  const handleImageUpload = useCallback(
-    async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
+  const handleImageUpload = useCallback(async (event) => {
+    const file = event.target.files[0];
+    if (file) {
       try {
-        // 파일 크기 체크 (5MB 제한)
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error("파일 크기는 5MB 이하여야 합니다.");
-        }
-
-        // 파일 형식 체크
-        if (!file.type.startsWith("image/")) {
-          throw new Error("이미지 파일만 업로드 가능합니다.");
-        }
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        // 이미지 미리보기 설정
-        const previewUrl = URL.createObjectURL(file);
-        setUploadedImage(previewUrl);
-
-        // 서버에 이미지 업로드
-        const response = await uploadProfileImage(formData);
-        if (response.userImagePath) {
-          setServerImagePath(response.userImagePath);
-          updateUser({ userImagePath: response.userImagePath });
-        }
+        const imageUrl = URL.createObjectURL(file);
+        setUploadedImage(imageUrl);
+        setProfileImageFile(file);
       } catch (error) {
-        console.error("이미지 업로드 실패:", error);
-        alert(error.message || "이미지 업로드에 실패했습니다.");
-        setUploadedImage(null);
-        setServerImagePath(null);
+        console.error("이미지 처리 실패:", error);
+        alert("이미지 처리에 실패했습니다.");
       }
-    },
-    [updateUser]
-  );
+    }
+  }, []);
 
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
         const profileData = await fetchUserProfile();
-        console.log("프로필 데이터:", profileData); // 데이터 확인용
         setNickname(profileData.nickname || "");
         setOriginalNickname(profileData.nickname || "");
         setPhoneNumber(profileData.phoneNumber || "");
         setSelectedAddress(profileData.address || "");
         setDetailAddress(profileData.addressDetail || "");
         setAddressNickname(profileData.addressNickname || "우리집");
-
-        // 프로필 이미지 설정
         if (profileData.userImagePath) {
           setUploadedImage(profileData.userImagePath);
         }
@@ -171,7 +146,6 @@ export default function ProfilePage() {
     }
   };
 
-  // 프로필 수정 처리
   const handleEdit = async () => {
     if (nickname !== originalNickname && !isNicknameAvailable) {
       alert("닉네임 중복 확인을 해주세요.");
@@ -188,14 +162,12 @@ export default function ProfilePage() {
         addressDetail: detailAddress,
         addressNickname,
         phoneNumber: phoneNumber ? phoneNumber.replace(/-/g, "") : null,
-        userImagePath: serverImagePath,
+        userImagePath: uploadedImage,
       };
 
       const response = await updateUserProfile(profileData);
-
       if (response.message === "수정 완료") {
         setOriginalNickname(nickname);
-        updateUser(profileData);
         alert("프로필이 성공적으로 수정되었습니다.");
       }
     } catch (error) {
@@ -205,6 +177,7 @@ export default function ProfilePage() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div>
       <h1 className="text-2xl font-bold">내 정보 수정</h1>
@@ -225,20 +198,24 @@ export default function ProfilePage() {
       >
         <div className="flex justify-center my-4">
           <label htmlFor="profile-upload" style={{ cursor: "pointer" }}>
-            <Image
-              src={uploadedImage || addProfileImg}
-              alt="Profile Image"
-              width={120}
-              height={120}
-              style={{
-                width: "137px",
-                height: "137px",
-                borderRadius: "50%",
-                objectFit: "cover",
-              }}
-            />
+            {uploadedImage ? (
+              <Image
+                src={uploadedImage}
+                alt="Profile Image"
+                width={120}
+                height={120}
+                style={{ width: "137px", height: "137px", borderRadius: "50%" }}
+                unoptimized={true}
+              />
+            ) : (
+              <Image
+                src={addProfileImg}
+                alt="Profile Image"
+                width={120}
+                height={120}
+              />
+            )}
           </label>
-
           <input
             id="profile-upload"
             type="file"
@@ -314,10 +291,6 @@ export default function ProfilePage() {
             width="w-[30rem]"
             height="h-[2.2rem]"
           />
-
-          {receiverPhoneError && (
-            <p className="text-red-500 text-sm">{receiverPhoneError}</p>
-          )}
         </div>
 
         <div className="flex justify-center mt-8">
