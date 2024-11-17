@@ -2182,7 +2182,7 @@ class FloorPlanner {
   createFurniture(furniture) {
     if (!furniture) return;
 
-    const { width, depth, name } = furniture;
+    const { width, depth, name, model3D, ...otherProps } = furniture; // model3D 추가
     const canvas = this.getCanvas();
     const center = canvas.getCenter();
 
@@ -2203,7 +2203,9 @@ class FloorPlanner {
       originY: "center",
       name: name,
       type: "furniture",
-      metadata: furniture,
+      metadata: {
+        ...furniture,
+      },
     });
 
     // 가구 이름 텍스트를 중앙에 배치
@@ -2231,6 +2233,10 @@ class FloorPlanner {
       lockMovementY: false, // 세로 이동 가능
       hasBorders: true,
       type: "furniture-group",
+      metadata: {
+        type: "furniture",
+        ...furniture, // 그룹 레벨에서도 3D 모델 정보 유지
+      },
     });
 
     // 이동 시 스냅 동작 추가
