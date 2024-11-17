@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
-@RequestMapping("/pay/charge")
+@RequestMapping("/api/pay/charge")
 @RequiredArgsConstructor
 @Tag(name = "Charge", description = "머니 충전 API")
 public class ChargeController {
