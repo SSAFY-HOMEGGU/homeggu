@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.*;
@@ -252,23 +253,35 @@ public class PreferenceService {
     }
 
     // 추천 상품 리스트
-    public Map<String, Object> getRecommendations(Long userId) {
+    public Mono<Map<String, Object>> getRecommendations(Long userId) {
         // 사용자 선호도 가져오기
-        Preference preference = preferenceRepository.findById(userId).orElse(null);
-        Map<String, Double> categoryPreferences = preference.getCategoryPreferences();
-        Map<String, Double> moodPreferences = preference.getMoodPreferences();
+        return Mono.fromCallable(() -> {
+            Preference preference = preferenceRepository.findById(userId).orElse(null);
+            if (preference == null) {
+                throw new IllegalArgumentException("User preference not found");
+            }
+            Map<String, Double> categoryPreferences = preference.getCategoryPreferences();
+            Map<String, Double> moodPreferences = preference.getMoodPreferences();
 
-        // request 데이터 구성
-        Map<String, Object> preferences = new HashMap<>();
-        preferences.put("category_preferences", categoryPreferences);
-        preferences.put("mood_preferences", moodPreferences);
+            // 쿼리 파라미터에 사용자 선호도 데이터 추가
+            String categoryPreferencesParam = categoryPreferences.toString();
+            String moodPreferencesParam = moodPreferences.toString();
 
-        // FastAPI로 POST 요청 전송
-        return this.webClient.post()
-                .uri("/fast-api/recommend")
-                .bodyValue(preferences)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+            return Map.of(
+                    "categoryPreferences", categoryPreferencesParam,
+                    "moodPreferences", moodPreferencesParam
+            );
+        }).flatMap(preferences ->
+                // FastAPI로 GET 요청 전송
+                this.webClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/fast-api/recommend")
+                                .queryParam("category_preferences", preferences.get("categoryPreferences"))
+                                .queryParam("mood_preferences", preferences.get("moodPreferences"))
+                                .build())
+                        .retrieve()
+                        .bodyToMono(Map.class)
+        );
     }
+
 }

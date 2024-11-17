@@ -5,6 +5,7 @@ import com.homeggu.domain.preference.service.PreferenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -36,10 +37,12 @@ public class PreferenceController {
         return ResponseEntity.ok().build();
     }
 
-    // 추천 상품 리스트
     @GetMapping("/preference/list")
-    public ResponseEntity<?> recommendList(@RequestHeader("userId") Long userId) {
-        Map<String, Object> recommendations = preferenceService.getRecommendations(userId);
-        return ResponseEntity.ok(recommendations);
+    public Mono<ResponseEntity<Map<String, Object>>> recommendList(@RequestHeader("userId") Long userId) {
+        return preferenceService.getRecommendations(userId)
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(
+                        Map.of("error", e.getMessage())
+                )));
     }
 }
