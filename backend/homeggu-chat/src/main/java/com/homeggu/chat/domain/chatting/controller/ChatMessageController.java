@@ -28,6 +28,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/api")
 public class ChatMessageController {
 
     private final RabbitTemplate rabbitTemplate;
