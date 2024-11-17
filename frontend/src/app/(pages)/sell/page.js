@@ -208,7 +208,7 @@ export default function Sell() {
   } = useProductStore();
   
   // 폼 유효성 검사
-  const isFormValid = sellService.validateForm(getFormData());
+  // const isFormValid = sellService.validateForm(getFormData());
 
   useEffect(() => {
     console.log('상품 등록 데이터',getFormData())
@@ -227,7 +227,7 @@ export default function Sell() {
   };
 
   const handleSubmit = async () => {
-    if (!isFormValid) return;
+    // if (!isFormValid) return;
   
     try {
       setIsLoading(true);
@@ -275,7 +275,17 @@ export default function Sell() {
       />
 
       <div className="flex justify-center my-4">
-        {isFormValid ? (
+        
+          <BlueButton
+            width="w-[30rem]" 
+            height="h-[3.5rem]"
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading ? '처리 중...' : '등록하기'}
+          </BlueButton>
+        
+        {/* {isFormValid ? (
           <BlueButton
             width="w-[30rem]" 
             height="h-[3.5rem]"
@@ -293,7 +303,7 @@ export default function Sell() {
           >
             등록하기
           </WhiteButton>
-        )}
+        )} */}
       </div>
       
       {/* <ConversionStatus /> */}
