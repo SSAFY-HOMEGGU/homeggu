@@ -7,6 +7,7 @@ import com.homeggu.domain.preference.entity.Preference;
 import com.homeggu.domain.preference.repository.PreferenceRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -280,8 +281,8 @@ public class PreferenceService {
                                 .queryParam("mood_preferences", preferences.get("moodPreferences"))
                                 .build())
                         .retrieve()
-                        .bodyToMono(Map.class)
+                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
+                        }) // 반환 타입 명시
         );
     }
-
 }
