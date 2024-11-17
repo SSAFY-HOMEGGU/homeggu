@@ -36,19 +36,13 @@ export default function ProfilePage() {
   const handleImageUpload = useCallback(async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setProfileImageFile(file);
-      const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl);
-
       try {
-        const response = await uploadProfileImage(file); // formData 직접 생성하지 않고 file만 전달
-        if (response.userImagePath) {
-          setUploadedImage(response.userImagePath); // 서버에서 받은 이미지 경로로 업데이트
-        }
-        console.log("이미지 업로드 성공:", response);
+        const imageUrl = URL.createObjectURL(file);
+        setUploadedImage(imageUrl);
+        setProfileImageFile(file);
       } catch (error) {
-        console.error("이미지 업로드 실패:", error);
-        alert(error.message || "이미지 업로드에 실패했습니다.");
+        console.error("이미지 처리 실패:", error);
+        alert("이미지 처리에 실패했습니다.");
       }
     }
   }, []);
@@ -179,8 +173,6 @@ export default function ProfilePage() {
       if (response.message === "수정 완료") {
         setOriginalNickname(nickname);
         alert("프로필이 성공적으로 수정되었습니다.");
-        // 선택적: 페이지 새로고침이나 리다이렉션이 필요한 경우
-        window.location.reload();
       }
     } catch (error) {
       console.error("프로필 수정 실패:", error);
