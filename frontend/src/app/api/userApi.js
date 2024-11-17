@@ -45,16 +45,16 @@ export const firstLogin = () => {
     });
 };
 
-// // 회원탈퇴
-// export const deleteAccount = () => {
-//   return userInstance
-//     .delete("/oauth/delete")
-//     .then((response) => response.data)
-//     .catch((error) => {
-//       console.error("상세 에러 정보:", error);
-//       throw error;
-//     });
-// };
+// 회원탈퇴
+export const deleteAccount = () => {
+  return userInstance
+    .delete("/oauth/delete")
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("상세 에러 정보:", error);
+      throw error;
+    });
+};
 
 // 찜 상품 조회
 export const goodsLikeList = () => {
@@ -145,7 +145,7 @@ export const checkNickname = async (nickname) => {
   }
 };
 
-// 프로필 정보 업데이트 수정
+// 프로필 정보 업데이트
 export const updateUserProfile = (profileData) => {
   const requestBody = {
     nickname: profileData.nickname || null,
@@ -184,6 +184,11 @@ export const uploadProfileImage = async (file) => {
     return response.data;
   } catch (error) {
     console.error("이미지 업로드 에러:", error.response || error);
+    if (error.response?.status === 404) {
+      throw new Error(
+        error.response.data.message || "이미지 업로드에 실패했습니다."
+      );
+    }
     throw error;
   }
 };
