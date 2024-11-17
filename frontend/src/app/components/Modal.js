@@ -16,12 +16,12 @@ export default function Modal({
   cancelText = "취소",
   showConfirmButton = true,
   showCancelButton = true,
-  width = "45.125rem",  // 기본 너비
-  height = "25.25rem",  // 기본 높이
+  width = "45.125rem",
+  height = "25.25rem",
+  disabled = false, // disabled prop 추가
 }) {
   if (!show) return null;
 
-  // 모달 스타일에서 크기 관련 속성을 분리
   const modalStyle = {
     position: "fixed",
     top: "50%",
@@ -42,9 +42,7 @@ export default function Modal({
 
   return (
     <>
-      {/* 모달창 */}
       <div style={modalStyle}>
-        {/* 종료 아이콘 */}
         <Image
           src={closeIcon}
           alt="Close"
@@ -52,12 +50,12 @@ export default function Modal({
             position: "absolute",
             top: "20px",
             right: "20px",
-            cursor: "pointer",
+            cursor: disabled ? "not-allowed" : "pointer",
+            opacity: disabled ? 0.5 : 1,
           }}
-          onClick={onClose}
+          onClick={() => !disabled && onClose()}
         />
 
-        {/* 애니메이션 아이콘 */}
         {icon && (
           <motion.div
             animate={{
@@ -74,7 +72,6 @@ export default function Modal({
           </motion.div>
         )}
 
-        {/* 제목 */}
         <h2
           style={{
             color: "var(--normalText, #2F3438)",
@@ -88,7 +85,6 @@ export default function Modal({
           {title}
         </h2>
 
-        {/* 설명 */}
         <p
           style={{
             color: "var(--subText, #828C94)",
@@ -102,7 +98,6 @@ export default function Modal({
           {description}
         </p>
 
-        {/* 버튼 그룹 */}
         <div
           style={{
             display: "flex",
@@ -115,7 +110,7 @@ export default function Modal({
           {showCancelButton && (
             <button
               className="modal-button cancel-button"
-              onClick={onClose}
+              onClick={() => !disabled && onClose()}
               style={{
                 width: "12rem",
                 height: "2.5rem",
@@ -123,11 +118,13 @@ export default function Modal({
                 border: "1px solid var(--GreyButtonText, #C2C8CB)",
                 backgroundColor: "var(--ButtonText, #FFF)",
                 marginRight: showConfirmButton ? "1rem" : "0",
-                cursor: "pointer",
+                cursor: disabled ? "not-allowed" : "pointer",
                 fontFamily: "'Noto Sans KR', sans-serif",
                 fontSize: "1.0625rem",
                 color: "var(--subText, #828C94)",
+                opacity: disabled ? 0.5 : 1,
               }}
+              disabled={disabled}
             >
               {cancelText}
             </button>
@@ -143,10 +140,12 @@ export default function Modal({
                 backgroundColor: "#F6F8FA",
                 border: "1px solid var(--GreyButtonText, #C2C8CB)",
                 color: "#828C94",
-                cursor: "pointer",
+                cursor: disabled ? "not-allowed" : "pointer",
                 fontFamily: "'Noto Sans KR', sans-serif",
                 fontSize: "1.0625rem",
+                opacity: disabled ? 0.5 : 1,
               }}
+              disabled={disabled}
             >
               {confirmText}
             </button>
@@ -154,7 +153,6 @@ export default function Modal({
         </div>
       </div>
 
-      {/* 모달 배경 */}
       <div
         style={{
           position: "fixed",
@@ -165,7 +163,7 @@ export default function Modal({
           backgroundColor: "rgba(0, 0, 0, 0.5)",
           zIndex: 999,
         }}
-        onClick={onClose}
+        onClick={() => !disabled && onClose()}
       />
     </>
   );

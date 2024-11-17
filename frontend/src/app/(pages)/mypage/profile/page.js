@@ -24,31 +24,22 @@ export default function ProfilePage() {
   const [addressNickname, setAddressNickname] = useState("우리집");
   const [nickname, setNickname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [receiverName, setReceiverName] = useState("");
-  const [receiverPhone, setReceiverPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
-  const [receiverPhoneError, setReceiverPhoneError] = useState("");
   const [isNicknameAvailable, setIsNicknameAvailable] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [originalNickname, setOriginalNickname] = useState(""); // 초기 닉네임 저장용
+  const [originalNickname, setOriginalNickname] = useState("");
   const { updateUser } = useUserStore();
 
   const handleImageUpload = useCallback(async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setProfileImageFile(file);
-      const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl);
-
-      const formData = new FormData();
-      formData.append("file", file);
-
       try {
-        const response = await uploadProfileImage(formData);
-        console.log("이미지 업로드 성공:", response);
+        const imageUrl = URL.createObjectURL(file);
+        setUploadedImage(imageUrl);
+        setProfileImageFile(file);
       } catch (error) {
-        console.error("이미지 업로드 실패:", error);
-        alert("이미지 업로드에 실패했습니다.");
+        console.error("이미지 처리 실패:", error);
+        alert("이미지 처리에 실패했습니다.");
       }
     }
   }, []);
@@ -60,14 +51,11 @@ export default function ProfilePage() {
         setNickname(profileData.nickname || "");
         setOriginalNickname(profileData.nickname || "");
         setPhoneNumber(profileData.phoneNumber || "");
-        setReceiverName(profileData.receiverName || "");
-        setReceiverPhone(profileData.receiverPhone || "");
         setSelectedAddress(profileData.address || "");
-        setSelectedZipCode(profileData.zipCode || "");
         setDetailAddress(profileData.addressDetail || "");
         setAddressNickname(profileData.addressNickname || "우리집");
-        if (profileData.profileImage) {
-          setUploadedImage(profileData.profileImage);
+        if (profileData.userImagePath) {
+          setUploadedImage(profileData.userImagePath);
         }
       } catch (error) {
         console.error("프로필 조회 실패:", error);
@@ -109,16 +97,6 @@ export default function ProfilePage() {
       setPhoneError("");
     }
     setPhoneNumber(formatPhoneNumber(value));
-  };
-
-  const handleReceiverPhoneChange = (e) => {
-    const value = e.target.value;
-    if (/[^0-9-]/.test(value)) {
-      setReceiverPhoneError("숫자만 입력할 수 있습니다.");
-    } else {
-      setReceiverPhoneError("");
-    }
-    setReceiverPhone(formatPhoneNumber(value));
   };
 
   const handleNicknameCheck = async () => {
@@ -179,12 +157,12 @@ export default function ProfilePage() {
 
     try {
       const profileData = {
-        nickname: nickname || null,
-        address: selectedAddress || null,
-        addressDetail: detailAddress || null,
-        addressNickname: addressNickname || "우리집",
+        nickname,
+        address: selectedAddress,
+        addressDetail: detailAddress,
+        addressNickname,
         phoneNumber: phoneNumber ? phoneNumber.replace(/-/g, "") : null,
-        userImagePath: uploadedImage || null,
+        userImagePath: uploadedImage,
       };
 
       const response = await updateUserProfile(profileData);
@@ -194,7 +172,7 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error("프로필 수정 실패:", error);
-      alert("프로필 수정에 실패했습니다.");
+      alert(error.response?.data?.message || "프로필 수정에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -227,6 +205,7 @@ export default function ProfilePage() {
                 width={120}
                 height={120}
                 style={{ width: "137px", height: "137px", borderRadius: "50%" }}
+                unoptimized={true}
               />
             ) : (
               <Image
@@ -312,10 +291,6 @@ export default function ProfilePage() {
             width="w-[30rem]"
             height="h-[2.2rem]"
           />
-          
-          {receiverPhoneError && (
-            <p className="text-red-500 text-sm">{receiverPhoneError}</p>
-          )}
         </div>
 
         <div className="flex justify-center mt-8">
@@ -328,7 +303,6 @@ export default function ProfilePage() {
             {isSubmitting ? "수정 중..." : "수정하기"}
           </BlueButton>
         </div>
-
       </div>
     </div>
   );
