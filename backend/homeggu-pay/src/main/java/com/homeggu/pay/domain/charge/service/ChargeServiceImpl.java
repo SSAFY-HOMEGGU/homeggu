@@ -30,8 +30,8 @@ public class ChargeServiceImpl implements ChargeService {
             throw new IllegalArgumentException("Charge amount must be positive.");
         }
 
-        Account account = accountRepository.findByUserId(userId).orElseThrow();
-        HgMoney hgMoney = hgMoneyRepository.findByUserId(userId).orElseThrow();
+        Account account = accountRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Account not found for userId: " + userId));
+        HgMoney hgMoney = hgMoneyRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("HgMoney not found for userId: " + userId));
 
         // 계좌 잔액 부족시 예외 처리
         if (account.getAccountBalance() < chargeAmount) {
