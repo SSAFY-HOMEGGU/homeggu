@@ -36,17 +36,23 @@ export default function ProfilePage() {
   const handleImageUpload = useCallback(async (event) => {
     const file = event.target.files[0];
     if (file) {
-      try {
-        // 이미지 업로드 API 호출
-        const response = await uploadProfileImage(file);
+      setProfileImageFile(file);
+      const imageUrl = URL.createObjectURL(file);
+      setUploadedImage(imageUrl); // 미리보기용
 
-        // 서버에서 받은 실제 이미지 경로로 상태 업데이트
+      try {
+        const response = await uploadProfileImage(file);
+        console.log("업로드 성공 응답:", response);
+
+        // 서버에서 받은 이미지 경로로 업데이트
         if (response.userImagePath) {
           setUploadedImage(response.userImagePath);
         }
       } catch (error) {
         console.error("이미지 업로드 실패:", error);
-        alert("이미지 업로드에 실패했습니다.");
+        // 원래 이미지로 복구
+        setUploadedImage(null);
+        alert(error.response?.data?.message || "이미지 업로드에 실패했습니다.");
       }
     }
   }, []);
