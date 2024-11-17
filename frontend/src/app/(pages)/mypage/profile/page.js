@@ -15,18 +15,14 @@ import useUserStore from "@/app/store/userStore";
 
 export default function ProfilePage() {
   const [uploadedImage, setUploadedImage] = useState(null);
-  const [profileImageFile, setProfileImageFile] = useState(null);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState("");
-  const [selectedZipCode, setSelectedZipCode] = useState("");
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [detailAddress, setDetailAddress] = useState("");
   const [addressNickname, setAddressNickname] = useState("우리집");
   const [nickname, setNickname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [receiverName, setReceiverName] = useState("");
-  const [receiverPhone, setReceiverPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [serverImagePath, setServerImagePath] = useState(null);
   const [receiverPhoneError, setReceiverPhoneError] = useState("");
   const [isNicknameAvailable, setIsNicknameAvailable] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,23 +32,22 @@ export default function ProfilePage() {
   const handleImageUpload = useCallback(async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setProfileImageFile(file);
-      const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl); // 미리보기용
-
       try {
-        const response = await uploadProfileImage(file);
-        console.log("업로드 성공 응답:", response);
+        // 미리보기용 URL 생성
+        const previewUrl = URL.createObjectURL(file);
+        setUploadedImage(previewUrl);
 
-        // 서버에서 받은 이미지 경로로 업데이트
+        // 서버에 이미지 업로드
+        const response = await uploadProfileImage(file);
         if (response.userImagePath) {
-          setUploadedImage(response.userImagePath);
+          setServerImagePath(response.userImagePath); // 서버 응답으로 받은 이미지 경로 저장
+          console.log("이미지 업로드 성공:", response.userImagePath);
         }
       } catch (error) {
         console.error("이미지 업로드 실패:", error);
-        // 원래 이미지로 복구
+        alert("이미지 업로드에 실패했습니다.");
         setUploadedImage(null);
-        alert(error.response?.data?.message || "이미지 업로드에 실패했습니다.");
+        setServerImagePath(null);
       }
     }
   }, []);
@@ -178,7 +173,7 @@ export default function ProfilePage() {
         addressDetail: detailAddress,
         addressNickname,
         phoneNumber: phoneNumber ? phoneNumber.replace(/-/g, "") : null,
-        userImagePath: uploadedImage,
+        userImagePath: serverImagePath, // 서버에서 받은 이미지 경로 사용
       };
 
       const response = await updateUserProfile(profileData);
@@ -188,7 +183,7 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error("프로필 수정 실패:", error);
-      alert(error.response?.data?.message || "프로필 수정에 실패했습니다.");
+      alert("프로필 수정에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -214,27 +209,18 @@ export default function ProfilePage() {
       >
         <div className="flex justify-center my-4">
           <label htmlFor="profile-upload" style={{ cursor: "pointer" }}>
-            {uploadedImage ? (
-              <Image
-                src={uploadedImage || "/icons/addprofileimg.svg"} // 기본 이미지 경로 수정
-                alt="Profile Image"
-                width={120}
-                height={120}
-                style={{
-                  width: "137px",
-                  height: "137px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                }}
-              />
-            ) : (
-              <Image
-                src={addProfileImg}
-                alt="Default Profile Image"
-                width={120}
-                height={120}
-              />
-            )}
+            <Image
+              src={uploadedImage || addProfileImg}
+              alt="Profile Image"
+              width={120}
+              height={120}
+              style={{
+                width: "137px",
+                height: "137px",
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+            />
           </label>
 
           <input

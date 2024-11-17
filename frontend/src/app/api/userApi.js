@@ -168,13 +168,11 @@ export const uploadProfileImage = async (file) => {
     const response = await userInstance.post("/profile/image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
-        // Content-Type 헤더를 명시적으로 설정하지 않고 브라우저가 자동으로 설정하도록 함
       },
     });
-    console.log("서버 응답:", response); // 응답 확인용
     return response.data;
   } catch (error) {
-    console.error("이미지 업로드 에러 상세:", error.response?.data);
+    console.error("이미지 업로드 에러:", error.response || error);
     throw error;
   }
 };
