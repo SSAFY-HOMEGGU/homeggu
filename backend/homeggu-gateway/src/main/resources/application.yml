@@ -39,7 +39,7 @@ spring:
         - id: homeggu-pay
           uri: lb://HOMEGGU-PAY
           predicates:
-            - Path=/pay/**
+            - Path=/api/pay/**
         - id: homeggu-goods
           uri: lb://HOMEGGU-GOODS
           predicates:
