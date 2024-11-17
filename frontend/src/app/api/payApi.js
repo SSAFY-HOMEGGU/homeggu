@@ -2,9 +2,27 @@ import { payInstance } from "./axiosInstance";
 
 
 // 홈꾸머니 정보 조회
+// export const fetchPayInfo = async () => {
+//   try {
+//     const response = await payInstance.get("/info");
+//     const balance = parseInt(response.data.hgMoneyBalance, 10);
+//     return {
+//       homccuMoney: balance,
+//       accountNumber: response.data.accountNumber,
+//       bank: response.data.bank,
+//     };
+//   } catch (error) {
+//     console.error("홈꾸머니 정보 조회 실패:", error);
+//     throw error;
+//   }
+// };
+// 홈꾸머니 정보 조회
 export const fetchPayInfo = async () => {
   try {
-    const response = await payInstance.get("/pay-info");
+    console.log("홈꾸머니 정보 조회 요청 시작");
+    const response = await payInstance.get("/info");
+    console.log("홈꾸머니 정보 조회 응답 데이터:", response.data);
+
     const balance = parseInt(response.data.hgMoneyBalance, 10);
     return {
       homccuMoney: balance,
@@ -12,7 +30,20 @@ export const fetchPayInfo = async () => {
       bank: response.data.bank,
     };
   } catch (error) {
-    console.error("홈꾸머니 정보 조회 실패:", error);
+    if (error.response) {
+      // 서버 응답이 존재하는 경우
+      console.error(
+        "홈꾸머니 정보 조회 실패 - 서버 응답 에러:",
+        error.response.status,
+        error.response.data
+      );
+    } else if (error.request) {
+      // 요청이 전송되었으나 응답이 없는 경우
+      console.error("홈꾸머니 정보 조회 실패 - 응답 없음:", error.request);
+    } else {
+      // 요청 설정 중에 발생한 에러
+      console.error("홈꾸머니 정보 조회 실패 - 요청 설정 에러:", error.message);
+    }
     throw error;
   }
 };
@@ -20,7 +51,7 @@ export const fetchPayInfo = async () => {
 // 이용내역 조회 API
 export const fetchPayHistory = async (page = 0, size = 20, filter = "") => {
   try {
-    let url = `/pay-info/history?page=${page}&size=${size}`;
+    let url = `/info/history?page=${page}&size=${size}`;
     if (filter) {
       // filter가 '전체'가 아닐 경우에만 필터 파라미터 추가
       if (filter === "송금") {
@@ -96,7 +127,8 @@ export const transferMoney = async (
 
 // 안전 송금 확정
 export const transferConfirm = (transferId) => {
-  return payInstance.patch("/transfer/confirm", transferId )
+  return payInstance
+    .patch("/transfer/confirm", transferId)
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -106,11 +138,11 @@ export const transferConfirm = (transferId) => {
 
 // 안전 송금 취소
 export const transferCancel = (transferId) => {
-  return payInstance.patch("/transfer/cancel", transferId )
+  return payInstance
+    .patch("/transfer/cancel", transferId)
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
       throw error;
     });
 };
-

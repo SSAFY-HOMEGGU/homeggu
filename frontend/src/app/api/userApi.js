@@ -45,6 +45,17 @@ export const firstLogin = () => {
     });
 };
 
+// 회원탈퇴
+export const deleteAccount = () => {
+  return userInstance
+    .delete("/oauth/delete")
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("상세 에러 정보:", error);
+      throw error;
+    });
+};
+
 // 찜 상품 조회
 export const goodsLikeList = () => {
   return userInstance
@@ -95,8 +106,16 @@ export const fetchUserProfile = () => {
   return userInstance
     .get("/profile/detail")
     .then((response) => {
-      console.log("Response Data:", response.data); // 응답 데이터 출력
-      return response.data;
+      // blob URL을 사용하지 않고 서버에서 받은 실제 이미지 경로를 사용
+      const profileData = response.data;
+      if (
+        profileData.userImagePath &&
+        profileData.userImagePath.startsWith("blob:")
+      ) {
+        // blob URL인 경우 처리
+        delete profileData.userImagePath;
+      }
+      return profileData;
     })
     .catch((error) => {
       console.error("프로필 조회 에러:", error);
@@ -107,7 +126,7 @@ export const fetchUserProfile = () => {
 // 닉네임 중복 확인 수정
 export const checkNickname = async (nickname) => {
   try {
-    const response = await userInstance.post("/user-profile/nickname", {
+    const response = await userInstance.post("/profile/nickname", {
       nickname: nickname,
     });
 
@@ -126,7 +145,7 @@ export const checkNickname = async (nickname) => {
   }
 };
 
-// 프로필 정보 업데이트 수정
+// 프로필 정보 업데이트
 export const updateUserProfile = (profileData) => {
   const requestBody = {
     nickname: profileData.nickname || null,
@@ -142,17 +161,22 @@ export const updateUserProfile = (profileData) => {
     .then((response) => response.data)
     .catch((error) => {
       console.error("프로필 업데이트 에러:", error);
+      if (error.response?.status === 404) {
+        throw new Error(
+          error.response.data.message || "프로필 업데이트에 실패했습니다."
+        );
+      }
       throw error;
     });
 };
 
-// // 프로필 이미지 업로드 수정
+// 프로필 이미지 등록
 export const uploadProfileImage = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
   try {
-    const response = await userInstance.post("/upload/user-image", formData, {
+    const response = await userInstance.post("/profile/image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -160,8 +184,10 @@ export const uploadProfileImage = async (file) => {
     return response.data;
   } catch (error) {
     console.error("이미지 업로드 에러:", error.response || error);
-    if (error.response?.status === 403) {
-      throw new Error("권한이 없습니다. 다시 로그인해주세요.");
+    if (error.response?.status === 404) {
+      throw new Error(
+        error.response.data.message || "이미지 업로드에 실패했습니다."
+      );
     }
     throw error;
   }
@@ -200,16 +226,13 @@ export const fetchRecentViewedItems = () => {
     });
 };
 
-
 // 추천 상품
 export const preferenceList = () => {
-  return userInstance.get("/preference/list")
+  return userInstance
+    .get("/preference/list")
     .then((response) => response.data)
     .catch((error) => {
       console.error("최근 본 상품 조회 에러:", error);
       throw error;
     });
-}
-
-
-
+};

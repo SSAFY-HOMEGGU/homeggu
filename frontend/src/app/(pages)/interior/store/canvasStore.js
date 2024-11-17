@@ -1,3 +1,4 @@
+//interior/store/canvasStore.js
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -6,7 +7,8 @@ const useCanvasStore = create(
     (set, get) => ({
       setSelectedObject: (object) => set({ selectedObject: object }),
       clearSelectedObject: () => set({ selectedObject: null }),
-
+      currentView: "2d",
+      setCurrentView: (view) => set({ currentView: view }),
       // Canvas 관련 상태
       canvas: null,
       mode: "select",

@@ -11,7 +11,7 @@ export default function Profile({ user }) {
     salesCount: 0,
     wishlistCount: 0,
   });
-  const { name, profileImage } = user;
+  const { name } = user; // profileImage prop은 제거하고 profileData에서 가져온 이미지를 사용
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -19,6 +19,7 @@ export default function Profile({ user }) {
         // 프로필 정보 가져오기
         const profileInfo = await fetchUserProfile();
         setProfileData(profileInfo);
+        console.log("프로필 정보:", profileInfo); // 데이터 확인용
 
         // 찜한 상품 개수 가져오기
         const wishlistData = await goodsLikeList();
@@ -50,11 +51,15 @@ export default function Profile({ user }) {
       {/* 프로필 섹션 */}
       <div className="flex items-center mb-6">
         <Image
-          src={profileImage ? profileImage : profileDefault}
+          src={profileData?.userImagePath || profileDefault}
           alt="Profile Image"
           width={37}
           height={37}
           className="rounded-full"
+          style={{ objectFit: "cover" }}
+          onError={(e) => {
+            e.target.src = profileDefault; // 이미지 로드 실패 시 기본 이미지로 대체
+          }}
         />
         <h1 className="text-2xl font-bold ml-4">
           {profileData?.nickname || name}님
