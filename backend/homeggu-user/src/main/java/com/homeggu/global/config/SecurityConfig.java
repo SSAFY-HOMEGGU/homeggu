@@ -24,8 +24,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable()) // HTTP Basic 인증 비활성화
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/api/user/oauth/kakao/login", "api/goods/board").permitAll()
-                        .anyExchange().authenticated());
+                        .anyExchange().permitAll());
 //                .addFilterAt(new JwtFilter(jwtProvider), SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
