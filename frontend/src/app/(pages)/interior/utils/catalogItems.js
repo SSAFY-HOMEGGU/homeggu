@@ -11,7 +11,7 @@ export const wallTypes = [
     description: "그냥 벽이구먼요",
   },
   {
-    id: "room-wall",
+    id: "rectangular-room",
     name: "직사각형 방",
     thickness: 10,
     height: 240,
@@ -25,7 +25,7 @@ export const wallTypes = [
     ],
   },
   {
-    id: "rectangular-room",
+    id: "L-room",
     name: "L자형 방",
     thickness: 10,
     height: 240,

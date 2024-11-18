@@ -85,7 +85,22 @@ const Catalog = ({ open, onClose }) => {
         setMode("wall");
       }
     } else if (item.type === "furniture") {
-      addFurniture(item);
+      // 3D 모델 정보를 포함하여 가구 추가
+      const furnitureData = {
+        ...item,
+        metadata: {
+          ...item,
+          model3D: item.glbPath
+            ? {
+                glb: item.glbPath,
+                width: item.width,
+                height: item.height,
+                depth: item.depth,
+              }
+            : null,
+        },
+      };
+      addFurniture(furnitureData);
     }
     onClose();
   };

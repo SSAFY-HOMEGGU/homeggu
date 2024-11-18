@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import useCanvasStore from "../../store/canvasStore";
@@ -25,6 +26,19 @@ const Viewer3D = () => {
   const controlsRef = useRef(null);
   const meshesRef = useRef(new Map());
   const modelRef = useRef(new Map());
+  const loadGLBModel = async (modelPath) => {
+    return new Promise((resolve, reject) => {
+      const loader = new GLTFLoader();
+      loader.load(
+        modelPath,
+        (gltf) => {
+          resolve(gltf.scene);
+        },
+        undefined,
+        reject
+      );
+    });
+  };
 
   useEffect(() => {
     if (!containerRef.current || !canvas) return;
@@ -179,25 +193,19 @@ const Viewer3D = () => {
         meshesRef.current.set(wall.id, wallMesh);
       });
 
-      // Load and add furniture models
+      // 가구 아이템 처리
       const furnitureItems = canvas.canvas
         .getObjects()
         .filter((obj) => obj.type === "furniture-group");
 
-      console.log("Found furniture items:", furnitureItems);
-
       for (const furniture of furnitureItems) {
         const metadata = furniture.getObjects()[0].metadata;
-        console.log("Furniture metadata:", metadata);
 
-        if (metadata?.name === "a" && metadata.model3D) {
+        if (metadata?.model3D?.glb) {
           try {
-            const model = await loadModel(
-              metadata.model3D.obj,
-              metadata.model3D.mtl
-            );
+            const model = await loadGLBModel(metadata.model3D.glb);
 
-            // 현재 모델의 바운딩 박스 크기 계산
+            // 모델의 바운딩 박스 계산
             const bbox = new THREE.Box3().setFromObject(model);
             const modelSize = new THREE.Vector3();
             bbox.getSize(modelSize);
@@ -209,19 +217,17 @@ const Viewer3D = () => {
 
             model.scale.set(scaleX, scaleY, scaleZ);
 
-            // Get the furniture's position from the 2D canvas
+            // 가구의 2D 캔버스 위치를 가져와서 3D 공간에 배치
             const position = furniture.getCenterPoint();
-
-            // 높이 조정하여 바닥 위에 위치시키기
             model.position.set(position.x, metadata.height / 2, position.y);
 
-            // Add the model to the scene
+            // 가구의 회전 적용
+            model.rotation.y = (furniture.angle * Math.PI) / 180;
+
             scene.add(model);
             modelRef.current.set(furniture.id, model);
-
-            console.log("3D model added successfully");
           } catch (error) {
-            console.error("Error loading 3D model:", error);
+            console.error("Error loading GLB model:", error);
           }
         }
       }
