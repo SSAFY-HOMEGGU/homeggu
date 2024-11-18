@@ -1,8 +1,9 @@
-//interior/components/Toolbar/Toolbar.js
-
+/// src/app/interior/components/Toolbar/Toolbar.js
 "use client";
+
 import React, { useState } from "react";
 import useCanvasStore from "../../store/canvasStore";
+import useProjectStore from "../../store/projectStore";
 import {
   MousePointer,
   MinusSquare,
@@ -14,6 +15,7 @@ import {
   Download,
   Upload,
   Book,
+  Save,
   FileDown,
   Image as ImageIcon,
 } from "lucide-react";
@@ -25,12 +27,67 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
+import { useToast } from "@/app/components/ui/use-toast";
 import jsPDF from "jspdf";
 
 const Toolbar = () => {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const { canvas, mode, setMode, selectedObject } = useCanvasStore();
+  const { saveProject, currentProject } = useProjectStore();
+  const { addToast } = useToast(); // useToast에서 addToast를 가져옵니다
+
+  // 저장 처리 함수
+  const handleSave = () => {
+    if (!canvas || !currentProject) return;
+
+    try {
+      // 캔버스의 현재 상태를 JSON으로 저장
+      const canvasState = canvas.canvas.toJSON([
+        "id",
+        "name",
+        "type",
+        "metadata",
+        "customProperties",
+      ]);
+
+      // 프로젝트 데이터 저장
+      const projectData = {
+        canvasState,
+        walls: canvas.walls.map((wall) => ({
+          x1: wall.x1,
+          y1: wall.y1,
+          x2: wall.x2,
+          y2: wall.y2,
+          thickness: wall.thickness,
+        })),
+        metadata: {
+          lastSaved: new Date().toISOString(),
+          version: "1.0",
+        },
+      };
+
+      saveProject(projectData);
+
+      // 성공 메시지 표시
+      addToast({
+        title: "저장 완료",
+        description: "프로젝트가 성공적으로 저장되었습니다.",
+        duration: 3000,
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Save failed:", error);
+
+      // 에러 메시지 표시
+      addToast({
+        title: "저장 실패",
+        description: "프로젝트 저장 중 오류가 발생했습니다.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
 
   const handleExport = (type) => {
     if (!canvas || !canvas.canvas) return;
@@ -213,6 +270,26 @@ const Toolbar = () => {
         <Book className="h-4 w-2" />
         <span className="ml-2">Catalog</span>
       </Button>
+
+      {/* Save Button 추가 */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={handleSave}
+            >
+              <Save className="h-4 w-4" />
+              <span className="ml-2">저장</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>프로젝트 저장하기</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Tools */}
       <TooltipProvider>
