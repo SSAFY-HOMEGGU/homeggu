@@ -74,6 +74,10 @@ class FloorPlanner {
       rotatingPointOffset: 40,
     });
 
+    fabric.Object.prototype.metadata = fabric.Object.prototype.metadata || {
+      type: "unknown",
+    };
+
     this.setupEventListeners();
     this.setupDoorWindowPreview(); // 미리보기 설정 추가
     this.createGrid();
@@ -1560,6 +1564,7 @@ class FloorPlanner {
           selectable: false,
           evented: false,
           isGrid: true,
+          metadata: { type: "grid-line", direction: "horizontal" }, // metadata 추가
         }
       );
       this.canvas.add(horizontalLine);
@@ -1578,6 +1583,7 @@ class FloorPlanner {
           selectable: false,
           evented: false,
           isGrid: true,
+          metadata: { type: "grid-line", direction: "vertical" }, // metadata 추가
         }
       );
       this.canvas.add(verticalLine);
@@ -1591,6 +1597,7 @@ class FloorPlanner {
 
     this.canvas.renderAll();
   }
+
   createWallSegment(from, to) {
     if (!from || !to) return;
 
@@ -1962,6 +1969,16 @@ class FloorPlanner {
       });
       // 선택 해제 시 면적 텍스트 제거
       this.clearAreaText();
+    });
+
+    this.canvas.on("object:added", (e) => {
+      const obj = e.target;
+      // metadata가 없는 경우 기본값 설정
+      if (!obj.metadata) {
+        obj.metadata = {
+          type: obj.isGrid ? "grid-line" : "unknown",
+        };
+      }
     });
 
     this.canvas.on("object:moving", (e) => this.handleObjectMoving(e));
