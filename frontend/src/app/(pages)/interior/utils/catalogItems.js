@@ -1,3 +1,4 @@
+//interior/utils/catalogItems.js
 import { productInstance } from "@/app/api/axiosInstance";
 
 // 벽 타입은 그대로 유지 (API에서 가져오지 않음)
