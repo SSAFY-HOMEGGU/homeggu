@@ -2026,6 +2026,280 @@ class FloorPlanner {
     this.createGrid();
   }
 
+  toJSON() {
+    const walls = this.walls.map((wall) => ({
+      id: wall.id || Math.random().toString(36).substr(2, 9),
+      x1: wall.x1,
+      y1: wall.y1,
+      x2: wall.x2,
+      y2: wall.y2,
+      thickness: this.currentWallType.thickness,
+      height: this.currentWallType.height,
+    }));
+
+    const doors = this.canvas
+      .getObjects()
+      .filter((obj) => obj.type === "door")
+      .map((door) => ({
+        id: door.id || Math.random().toString(36).substr(2, 9),
+        left: door.left,
+        top: door.top,
+        width: door.width,
+        height: door.height,
+        angle: door.angle,
+        type: "door",
+      }));
+
+    const windows = this.canvas
+      .getObjects()
+      .filter((obj) => obj.type === "window")
+      .map((window) => ({
+        id: window.id || Math.random().toString(36).substr(2, 9),
+        left: window.left,
+        top: window.top,
+        width: window.width,
+        height: window.height,
+        angle: window.angle,
+        type: "window",
+      }));
+
+    const furniture = this.canvas
+      .getObjects()
+      .filter((obj) => obj.type === "furniture-group")
+      .map((furniture) => ({
+        id: furniture.id || Math.random().toString(36).substr(2, 9),
+        left: furniture.left,
+        top: furniture.top,
+        width: furniture.width,
+        height: furniture.height,
+        angle: furniture.angle,
+        metadata: furniture.metadata,
+        type: "furniture",
+      }));
+
+    return {
+      version: "1.0",
+      walls,
+      doors,
+      windows,
+      furniture,
+      settings: {
+        gridVisible: this.gridVisible,
+        snapToGrid: this.snapToGrid,
+        gridSize: this.gridSize,
+        currentWallType: this.currentWallType,
+      },
+      viewportTransform: this.canvas.viewportTransform,
+      zoom: this.canvas.getZoom(),
+    };
+  }
+
+  loadFromState(state) {
+    if (!state) return;
+
+    try {
+      // 캔버스 초기화
+      this.clear();
+
+      // 설정 복원
+      if (state.settings) {
+        this.gridVisible = state.settings.gridVisible;
+        this.snapToGrid = state.settings.snapToGrid;
+        this.gridSize = state.settings.gridSize;
+        this.currentWallType = state.settings.currentWallType;
+      }
+
+      // 벽 데이터 복원
+      if (state.walls) {
+        // 모든 벽 생성
+        state.walls.forEach((wallData) => {
+          const wall = this.createWallSegment(
+            { x: wallData.x1, y: wallData.y1 },
+            { x: wallData.x2, y: wallData.y2 }
+          );
+
+          if (wall && wall.fabricObject) {
+            wall.fabricObject.set({
+              thickness: wallData.thickness,
+              height: wallData.height,
+            });
+          }
+        });
+
+        // vertex들 업데이트
+        this.updateVertexControls();
+        this.checkAndCreateRoom();
+      }
+
+      // 문과 창문 복원
+      if (state.objects) {
+        state.objects.forEach((objData) => {
+          // 각 객체의 벽 찾기
+          const wallInfo = this.findWallUnderPoint({
+            x: objData.left,
+            y: objData.top,
+          });
+
+          if (wallInfo) {
+            let newObj;
+            if (objData.type === "door") {
+              newObj = this.addDoor({
+                ...wallInfo,
+                position: { x: objData.left, y: objData.top },
+              });
+            } else if (objData.type === "window") {
+              newObj = this.addWindow({
+                ...wallInfo,
+                position: { x: objData.left, y: objData.top },
+              });
+            }
+
+            if (newObj) {
+              newObj.set({
+                width: objData.width,
+                height: objData.height,
+                angle: objData.angle,
+              });
+            }
+          }
+        });
+      }
+
+      // 가구 데이터 복원
+      if (state.furniture) {
+        state.furniture.forEach((furnitureData) => {
+          const furniture = this.createFurniture({
+            ...furnitureData.metadata,
+            type: "furniture",
+            name: furnitureData.name,
+          });
+
+          if (furniture) {
+            furniture.set({
+              left: furnitureData.left,
+              top: furnitureData.top,
+              width: furnitureData.width,
+              height: furnitureData.height,
+              angle: furnitureData.angle,
+            });
+          }
+        });
+      }
+
+      // 뷰포트와 줌 상태 복원
+      if (state.viewportTransform) {
+        this.canvas.setViewportTransform(state.viewportTransform);
+      }
+      if (state.zoom) {
+        this.canvas.setZoom(state.zoom);
+      }
+
+      // 그리드 재생성
+      this.createGrid();
+
+      // 캔버스 렌더링
+      this.canvas.renderAll();
+
+      console.log("State loaded successfully");
+      return true;
+    } catch (error) {
+      console.error("Error loading state:", error);
+      return false;
+    }
+  }
+
+  // 캔버스 초기화 메서드
+  clear() {
+    // 모든 객체 제거
+    this.canvas.getObjects().forEach((obj) => {
+      this.canvas.remove(obj);
+    });
+
+    // 상태 초기화
+    this.walls = [];
+    this.vertices = [];
+    this.rooms = [];
+
+    // 기본 설정으로 초기화
+    this.gridVisible = true;
+    this.snapToGrid = true;
+    this.mode = "select";
+
+    // 그리드 재생성
+    this.createGrid();
+    this.canvas.renderAll();
+  }
+
+  loadFromJSON(jsonData) {
+    if (!jsonData) return;
+
+    // 기존 캔버스 초기화
+    this.clear();
+
+    // 설정 복원
+    if (jsonData.settings) {
+      this.gridVisible = jsonData.settings.gridVisible;
+      this.snapToGrid = jsonData.settings.snapToGrid;
+      this.gridSize = jsonData.settings.gridSize;
+      this.currentWallType = jsonData.settings.currentWallType;
+    }
+
+    // 뷰포트 및 줌 복원
+    if (jsonData.viewportTransform) {
+      this.canvas.setViewportTransform(jsonData.viewportTransform);
+    }
+    if (jsonData.zoom) {
+      this.canvas.setZoom(jsonData.zoom);
+    }
+
+    // 벽 복원
+    if (jsonData.walls) {
+      jsonData.walls.forEach((wallData) => {
+        this.createWallSegment(
+          { x: wallData.x1, y: wallData.y1 },
+          { x: wallData.x2, y: wallData.y2 }
+        );
+      });
+    }
+
+    // 문 복원
+    if (jsonData.doors) {
+      jsonData.doors.forEach((doorData) => {
+        const wallInfo = this.findWallUnderPoint({
+          x: doorData.left,
+          y: doorData.top,
+        });
+        if (wallInfo) {
+          this.addDoor(wallInfo);
+        }
+      });
+    }
+
+    // 창문 복원
+    if (jsonData.windows) {
+      jsonData.windows.forEach((windowData) => {
+        const wallInfo = this.findWallUnderPoint({
+          x: windowData.left,
+          y: windowData.top,
+        });
+        if (wallInfo) {
+          this.addWindow(wallInfo);
+        }
+      });
+    }
+
+    // 가구 복원
+    if (jsonData.furniture) {
+      jsonData.furniture.forEach((furnitureData) => {
+        this.createFurniture(furnitureData.metadata);
+      });
+    }
+
+    // 방 다시 생성
+    this.checkAndCreateRoom();
+    this.canvas.renderAll();
+  }
+
   // 추가된 addToHistory 메서드
   addToHistory() {
     if (typeof this.onHistoryAdd === "function") {

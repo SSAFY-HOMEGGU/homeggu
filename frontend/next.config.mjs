@@ -34,6 +34,8 @@ const nextConfig = {
       },
     ],
   },
+  productionBrowserSourceMaps: false, // 프로덕션 환경에서 sourcemap 비활성화
+
 }
 
 export default nextConfig;
