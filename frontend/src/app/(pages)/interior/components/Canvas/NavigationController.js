@@ -24,12 +24,12 @@ const NavigationController = ({ onMove, onZoomIn, onZoomOut, onReset }) => {
     <div className="absolute right-4 top-4 flex flex-col gap-3">
       {/* Navigation Controller */}
       <div className="bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg flex flex-col items-center gap-1">
-        <button className={buttonStyle} onClick={() => handleMove(0, -1)}>
+        <button className={buttonStyle} onClick={() => handleMove(0, 1)}>
           <ChevronUp className={iconStyle} />
         </button>
 
         <div className="flex gap-1 items-center">
-          <button className={buttonStyle} onClick={() => handleMove(-1, 0)}>
+          <button className={buttonStyle} onClick={() => handleMove(1, 0)}>
             <ChevronLeft className={iconStyle} />
           </button>
 
@@ -37,12 +37,12 @@ const NavigationController = ({ onMove, onZoomIn, onZoomOut, onReset }) => {
             <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
           </div>
 
-          <button className={buttonStyle} onClick={() => handleMove(1, 0)}>
+          <button className={buttonStyle} onClick={() => handleMove(-1, 0)}>
             <ChevronRight className={iconStyle} />
           </button>
         </div>
 
-        <button className={buttonStyle} onClick={() => handleMove(0, 1)}>
+        <button className={buttonStyle} onClick={() => handleMove(0, -1)}>
           <ChevronDown className={iconStyle} />
         </button>
       </div>

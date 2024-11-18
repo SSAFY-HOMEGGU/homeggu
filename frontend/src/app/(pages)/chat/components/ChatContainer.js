@@ -38,7 +38,7 @@ export default function ChatContainer({ chatRoomId, userId }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const connectWebSocket = () => {
-      const socket = new SockJS("http://localhost:8083/ws");
+      const socket = new SockJS("https://k11b206.p.ssafy.io/ws");
       const client = new Client({
         webSocketFactory: () => socket,
         debug: (str) => console.log(str),

@@ -132,7 +132,7 @@ import { uploadGoodsImage, updateSalesBoard } from '@/app/api/productApi';
 import { toast } from 'react-toastify';
 import useProductStore from '@/app/store/useProductStore';
 
-const ModelReadyModal = ({ isOpen, onClose, objUrl, productId }) => {
+const ModelReadyModal = ({ isOpen, onClose, glbUrl, productId }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
@@ -150,7 +150,7 @@ const ModelReadyModal = ({ isOpen, onClose, objUrl, productId }) => {
   const handleDownload = () => {
     setIsDownloading(true);
     try {
-      window.location.href = objUrl;
+      window.location.href = glbUrl;
       toast.success('다운로드가 시작되었습니다.', {
         position: 'bottom-left'
       });
@@ -184,12 +184,12 @@ const ModelReadyModal = ({ isOpen, onClose, objUrl, productId }) => {
     setUploadError(null);
 
     try {
-      const uploadToastId = toast.loading('파일 업로드 중...', {
-        closeOnClick: false,
-        closeButton: false,
-        draggable: false,
-        position: 'bottom-left'
-      });
+      // const uploadToastId = toast.loading('파일 업로드 중...', {
+      //   closeOnClick: false,
+      //   closeButton: false,
+      //   draggable: false,
+      //   position: 'bottom-left'
+      // });
 
       // 이미지 업로드
       const uploadResponse = await uploadGoodsImage([selectedFile]);
@@ -217,13 +217,13 @@ const ModelReadyModal = ({ isOpen, onClose, objUrl, productId }) => {
 
       // 성공적으로 완료되면 store 초기화
       resetStore();
-      onClose();
+      // onClose();
     } catch (error) {
       console.error('업로드 프로세스 실패:', error);
       setUploadError('파일 업로드에 실패했습니다. 다시 시도해주세요.');
-      toast.error('업로드 실패', {
-        position: 'bottom-left'
-      });
+      // toast.error('업로드 실패', {
+      //   position: 'bottom-left'
+      // });
     } finally {
       setIsUploading(false);
     }
@@ -259,7 +259,7 @@ const ModelReadyModal = ({ isOpen, onClose, objUrl, productId }) => {
 
           <input
             type="file"
-            accept=".obj"
+            accept=".glb"
             onChange={handleFileSelect}
             disabled={isUploading}
             className="w-full p-2 border rounded"

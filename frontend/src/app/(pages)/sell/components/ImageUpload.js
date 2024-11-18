@@ -25,52 +25,55 @@ export default function ImageUpload({ onUpload }) {
   }, [uploadedUrls, imagePreviews, uploadedImages, mainImageIndex]);
 
 
-const handleImageUpload = async (event) => {
-  const files = event.target.files;
-  if (files && files.length > 0) {
-    setIsUploading(true);
-    try {
-      const newFiles = Array.from(files).slice(0, 10 - imagePreviews.length);
-      
-      // 미리보기 생성
-      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      
-      // 서버에 업로드
-      const uploadedData = await uploadGoodsImage(newFiles);
-      const newUrls = Array.isArray(uploadedData) ? uploadedData : [];
-
-      // base64 변환
-      const mainFile = newFiles[mainImageIndex];
-      const base64 = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(mainFile);
-      });
-      
-      // 상태 업데이트
-      setUploadedUrls(prev => {
-        const updatedUrls = [...prev, ...newUrls];
-        console.log('최종 이미지 URL 목록:', updatedUrls);
+  const handleImageUpload = async (event) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      setIsUploading(true);
+      try {
+        // 파일 개수 제한
+        const newFiles = Array.from(files).slice(0, 10 - imagePreviews.length);
         
-        // 부모 컴포넌트에 전달 (formData 업데이트)
-        onUpload?.({
-          goodsImagePaths: updatedUrls,
-          mainImageUrl: updatedUrls[mainImageIndex]
+        // UI용 미리보기 URL 생성
+        const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+        setImagePreviews(prev => [...prev, ...newPreviews]);
+  
+        // 실제 파일 업로드 - 원본 파일을 전송
+        const uploadedData = await uploadGoodsImage(newFiles);
+        const newUrls = Array.isArray(uploadedData) ? uploadedData : [];
+  
+        // base64 변환이 필요한 경우
+        let base64 = null;
+        if (newFiles[mainImageIndex]) {
+          base64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(newFiles[mainImageIndex]);
+          });
+        }
+        
+        // 상태 업데이트
+        setUploadedUrls(prev => {
+          const updatedUrls = [...prev, ...newUrls];
+          console.log('최종 이미지 URL 목록:', updatedUrls);
+          
+          // 부모 컴포넌트에 전달
+          onUpload?.({
+            goodsImagePaths: updatedUrls,
+            mainImageUrl: base64 || updatedUrls[mainImageIndex]
+          });
+          
+          return updatedUrls;
         });
-        
-        return updatedUrls;
-      });
-
-      setImagePreviews(prev => [...prev, ...newPreviews]);
-      setUploadedImages(prev => prev + newFiles.length);
-
-    } catch (error) {
-      console.error('Image upload failed:', error);
-    } finally {
-      setIsUploading(false);
+  
+        setUploadedImages(prev => prev + newFiles.length);
+  
+      } catch (error) {
+        console.error('Image upload failed:', error);
+      } finally {
+        setIsUploading(false);
+      }
     }
-  }
-};
+  };
   const removeImage = (indexToRemove) => {
     const updatedPreviews = imagePreviews.filter((_, index) => index !== indexToRemove);
     const updatedFiles = imageFiles.filter((_, index) => index !== indexToRemove);

@@ -1,14 +1,37 @@
-import ProductInfo from './components/ProductInfo';
-import SellerActions from './components/SellerActions';
-import BuyerActions from './components/BuyerActions';
+// import ProductInfo from './components/ProductInfo';
+// import SellerActions from './components/SellerActions';
+// import BuyerActions from './components/BuyerActions';
 
-export default function productDetail() {
+// export default function productDetail() {
   
 
+//   return (
+//     <div>
+//       <ProductInfo />
+
+//     </div>
+//   )
+// }
+
+'use client';
+
+import { ErrorBoundary } from 'react-error-boundary';
+import ProductInfo from './components/ProductInfo';
+
+function ErrorFallback({ error,componentStack  }) {
   return (
     <div>
-      <ProductInfo />
-
+      <h2>Something went wrong:</h2>
+      <pre>{error.message}</pre>
+      <pre>{componentStack}</pre>
     </div>
-  )
+  );
+}
+
+export default function ProductDetail() {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <ProductInfo />
+    </ErrorBoundary>
+  );
 }

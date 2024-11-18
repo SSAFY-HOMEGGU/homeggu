@@ -1,4 +1,5 @@
 import { authInstance, userInstance } from "./axiosInstance";
+// import { authInstance,userInstance } from "./axiosInstanceLocal";
 
 
 // 로그인
@@ -59,7 +60,7 @@ export const deleteAccount = () => {
 // 찜 상품 조회
 export const goodsLikeList = () => {
   return userInstance
-    .get("/goods/like-list")
+    .get("/like/list")
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -70,7 +71,7 @@ export const goodsLikeList = () => {
 // 찜 등록
 export const goodsLike = (salesBoardId) => {
   return userInstance
-    .post("/goods/like", { salesBoardId: salesBoardId })
+    .post("/like", { salesBoardId: salesBoardId })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -81,7 +82,7 @@ export const goodsLike = (salesBoardId) => {
 // 찜 해제
 export const goodsUnlike = (salesBoardId) => {
   return userInstance
-    .delete("/goods/unlike", { salesBoardId: salesBoardId })
+    .delete("/like", { salesBoardId: salesBoardId })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
