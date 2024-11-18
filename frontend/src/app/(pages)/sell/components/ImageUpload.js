@@ -13,7 +13,9 @@ export default function ImageUpload({ onUpload }) {
 
 
   // Store에서 이미지 관련 상태와 액션 가져오기
-  const setProductImages = useProductStore((state) => state.setProductImages);
+  // const setProductImages = useProductStore((state) => state.setProductImages);
+  const setGoodsImages = useProductStore((state) => state.setGoodsImages);  // store의 실제 함수명 사용
+
 
   useEffect(() => {
     console.log('============ 현재 이미지 목록 ============');
@@ -75,6 +77,67 @@ export default function ImageUpload({ onUpload }) {
   //   }
   // };
   
+  // const handleImageUpload = async (event) => {
+  //   const files = event.target.files;
+  //   if (!files || files.length === 0) return;
+  
+  //   setIsUploading(true);
+  
+  //   try {
+  //     // 각 파일을 개별적으로 처리
+  //     for (let i = 0; i < files.length; i++) {
+  //       const file = files[i];
+  //       console.log('업로드할 파일:', file);  // 파일 객체 확인
+  //       console.log('파일 타입:', file.type); // 파일 타입 확인
+  //       console.log('파일 크기:', file.size); // 파일 크기 확인
+
+  //       // 이미지 개수 체크
+  //       if (uploadedImages >= 10) {
+  //         alert('이미지는 최대 10개까지만 업로드 가능합니다.');
+  //         break;
+  //       }
+  
+  //       // 단일 파일 업로드 및 응답 처리
+  //       const uploadedUrl = await uploadGoodsImage(file);
+        
+  //       if (uploadedUrl) {
+  //         // 미리보기 URL 생성
+  //         const previewUrl = URL.createObjectURL(file);
+  //         setImagePreviews(prev => [...prev, previewUrl]);
+  //         setUploadedUrls(prev => [...prev, uploadedUrl]);
+  //         setUploadedImages(prev => prev + 1);
+          
+  //         // 업로드된 URL 저장
+  //         setUploadedUrls(prev => [...prev, uploadedUrl]);
+          
+  //         // 업로드된 이미지 수 증가
+  //         setUploadedImages(prev => prev + 1);
+  
+  //         // store 업데이트 (첫 번째 이미지를 대표 이미지로 설정)
+  //         if (uploadedImages === 0) {
+  //           const reader = new FileReader();
+  //           reader.onloadend = () => {
+  //             setProductImages({
+  //               goodsImagePaths: [uploadedUrl],
+  //               mainImageUrl: reader.result
+  //             });
+  //           };
+  //           reader.readAsDataURL(file);
+  //         } else {
+  //           setProductImages(prev => ({
+  //             ...prev,
+  //             goodsImagePaths: [...prev.goodsImagePaths, uploadedUrl]
+  //           }));
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('이미지 업로드 중 오류 발생:', error);
+  //     alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
   const handleImageUpload = async (event) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -82,45 +145,36 @@ export default function ImageUpload({ onUpload }) {
     setIsUploading(true);
   
     try {
-      // 각 파일을 개별적으로 처리
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        console.log('업로드할 파일:', file);
+        console.log('파일 타입:', file.type);
+        console.log('파일 크기:', file.size);
         
-        // 이미지 개수 체크
         if (uploadedImages >= 10) {
           alert('이미지는 최대 10개까지만 업로드 가능합니다.');
           break;
         }
   
-        // 단일 파일 업로드 및 응답 처리
+        const formData = new FormData();
+        formData.append('files', file);
+        
         const uploadedUrl = await uploadGoodsImage(file);
         
         if (uploadedUrl) {
-          // 미리보기 URL 생성
           const previewUrl = URL.createObjectURL(file);
           setImagePreviews(prev => [...prev, previewUrl]);
-          
-          // 업로드된 URL 저장
           setUploadedUrls(prev => [...prev, uploadedUrl]);
-          
-          // 업로드된 이미지 수 증가
           setUploadedImages(prev => prev + 1);
   
-          // store 업데이트 (첫 번째 이미지를 대표 이미지로 설정)
           if (uploadedImages === 0) {
             const reader = new FileReader();
             reader.onloadend = () => {
-              setProductImages({
-                goodsImagePaths: [uploadedUrl],
-                mainImageUrl: reader.result
-              });
+              setGoodsImages([uploadedUrl]); // 첫 이미지
             };
             reader.readAsDataURL(file);
           } else {
-            setProductImages(prev => ({
-              ...prev,
-              goodsImagePaths: [...prev.goodsImagePaths, uploadedUrl]
-            }));
+            setGoodsImages([...uploadedUrls, uploadedUrl]); // 추가 이미지
           }
         }
       }
@@ -131,6 +185,7 @@ export default function ImageUpload({ onUpload }) {
       setIsUploading(false);
     }
   };
+  
   const removeImage = (indexToRemove) => {
     const updatedPreviews = imagePreviews.filter((_, index) => index !== indexToRemove);
     const updatedFiles = imageFiles.filter((_, index) => index !== indexToRemove);

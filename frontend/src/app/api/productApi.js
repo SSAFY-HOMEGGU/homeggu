@@ -74,7 +74,11 @@ export const salesBoard = (formData) => {
 // };
 export const uploadGoodsImage = async (file) => {
   const formData = new FormData();
-  formData.append('files', file);
+  formData.append('files[]', file); 
+
+  for (let pair of formData.entries()) {
+    console.log('formData 내용:', pair[0], pair[1]);
+  }
   
   try {
     const response = await productInstance.post('/board/image', formData);
