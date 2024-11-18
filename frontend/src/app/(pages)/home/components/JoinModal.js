@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Lottie from "lottie-react";
 import check from './check.json';
-import { fetchUserProfile,preferenceUpdate, firstLogin } from '@/app/api/userApi';
+import { fetchUserProfile,preferenceUpdate, firstLogin, preferenceInit } from '@/app/api/userApi';
 import { useRouter } from 'next/navigation';
 
 export default function JoinModal({ isOpen, onClose }) {
@@ -51,6 +51,8 @@ export default function JoinModal({ isOpen, onClose }) {
     },
   ];
   
+  
+
   // useEffect(() => {
   //   if (isOpen) {
   //     questions.forEach(question => {
@@ -66,6 +68,15 @@ export default function JoinModal({ isOpen, onClose }) {
     // 모달이 열릴 때만 API 호출
     if (isOpen) {
       const fetchProfile = async () => {
+        // 설문 초기화 하기
+        try {
+          const preferenceResponse = await preferenceInit();
+          console.log('초기 선호도 설정 응답:', preferenceResponse);
+        } catch (error) {
+          console.error('선호도 초기화 에러:', error);
+        }
+        
+        // 이름 가져오기
         try {
           const data = await fetchUserProfile();
           setUserName(data.user.username);

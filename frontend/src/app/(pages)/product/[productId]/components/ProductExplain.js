@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useState,useEffect} from 'react'
 import Product from '@/app/components/Product';
 import Label from './Label';
 import { categoryDetailMapping,statusMapping,moodMapping,tradeMethodMapping, sellStatusMapping } from './mapping';
