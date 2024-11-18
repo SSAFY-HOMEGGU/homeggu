@@ -13,63 +13,120 @@ export const salesBoard = (formData) => {
 };
 
 // 물건 이미지 등록
-export const uploadGoodsImage = async (files) => {
-  const formData = new FormData();
+// export const uploadGoodsImage = async (files) => {
+//   const formData = new FormData();
   
-  // FormData에 파일을 추가하기 전에 로깅
-  console.log('Files to upload:', files);
+//   // FormData에 파일을 추가하기 전에 로깅
+//   console.log('Files to upload:', files);
   
-  // files가 FileList인 경우를 처리
-  if (files instanceof FileList) {
-    Array.from(files).forEach((file, index) => {
-      console.log(`Adding file ${index}:`, {
-        name: file.name,
-        type: file.type,
-        size: file.size
-      });
-      formData.append('files', file, file.name);
-    });
-  } 
-  // files가 배열인 경우를 처리
-  else if (Array.isArray(files)) {
-    files.forEach((file, index) => {
-      console.log(`Adding file ${index}:`, {
-        name: file.name,
-        type: file.type,
-        size: file.size
-      });
-      formData.append('files', file, file.name);
-    });
-  }
+//   // files가 FileList인 경우를 처리
+//   if (files instanceof FileList) {
+//     Array.from(files).forEach((file, index) => {
+//       console.log(`Adding file ${index}:`, {
+//         name: file.name,
+//         type: file.type,
+//         size: file.size
+//       });
+//       formData.append('files', file, file.name);
+//     });
+//   } 
+//   // files가 배열인 경우를 처리
+//   else if (Array.isArray(files)) {
+//     files.forEach((file, index) => {
+//       console.log(`Adding file ${index}:`, {
+//         name: file.name,
+//         type: file.type,
+//         size: file.size
+//       });
+//       formData.append('files', file, file.name);
+//     });
+//   }
 
-  // FormData 내용 확인
-  for (let pair of formData.entries()) {
-    console.log('FormData entry:', {
-      key: pair[0],
-      value: pair[1],
-      fileName: pair[1] instanceof File ? pair[1].name : 'not a file',
-      type: pair[1] instanceof File ? pair[1].type : 'not a file',
-      size: pair[1] instanceof File ? pair[1].size : 'not a file'
-    });
-  }
+//   // FormData 내용 확인
+//   for (let pair of formData.entries()) {
+//     console.log('FormData entry:', {
+//       key: pair[0],
+//       value: pair[1],
+//       fileName: pair[1] instanceof File ? pair[1].name : 'not a file',
+//       type: pair[1] instanceof File ? pair[1].type : 'not a file',
+//       size: pair[1] instanceof File ? pair[1].size : 'not a file'
+//     });
+//   }
+
+//   try {
+//     const response = await productInstance.post('/board/image', formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//       }
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error('이미지 업로드 에러:', {
+//       token: !!localStorage.getItem('accessToken'),
+//       status: error.response?.status,
+//       statusText: error.response?.statusText,
+//       data: error.response?.data,
+//       headers: error.config?.headers,
+//       formDataContent: Array.from(formData.entries())
+//     });
+//     throw error;
+//   }
+// };
+export const uploadGoodsImage = async (file) => {
+  // 시도 1: 단일 파일로 전송
+  const formData1 = new FormData();
+  formData1.append('file', file);  // 키를 'file'로 변경
+
+  // 시도 2: 배열 형태로 전송
+  const formData2 = new FormData();
+  formData2.append('files[]', file);  // 키를 'files[]'로 설정
+
+  // 시도 3: 원래 방식
+  const formData3 = new FormData();
+  formData3.append('files', file);
+
+  // FormData 내용 출력
+  console.log('전송할 파일 정보:', {
+    name: file.name,
+    type: file.type,
+    size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+  });
 
   try {
+    // 현재 사용할 FormData 선택
+    const formData = formData2;  // 여기서 시도할 버전 선택
     const response = await productInstance.post('/board/image', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-      }
+        'Accept': 'application/json',
+        // multipart/form-data의 Content-Type은 자동으로 설정되도록 함
+        // boundary 파라미터가 자동으로 생성됨
+      },
+      transformRequest: [(data) => {
+        // FormData는 변형하지 않음
+        return data;
+      }],
     });
+
+    console.log('이미지 업로드 성공:', response.data);
     return response.data;
   } catch (error) {
-    console.error('이미지 업로드 에러:', {
-      token: !!localStorage.getItem('accessToken'),
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      headers: error.config?.headers,
-      formDataContent: Array.from(formData.entries())
+    console.error('업로드 실패 상세:', {
+      requestConfig: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers,
+        data: error.config?.data instanceof FormData ? 
+          'FormData 객체 (내용 로깅 불가)' : error.config?.data
+      },
+      response: {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      },
+      message: error.message
     });
-    throw error;
+    throw new Error(`이미지 업로드 실패: ${error.response?.data?.message || error.message}`);
   }
 };
 
