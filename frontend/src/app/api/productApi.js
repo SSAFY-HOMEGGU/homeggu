@@ -72,16 +72,10 @@ export const salesBoard = (formData) => {
 //     throw error;
 //   }
 // };
-export const uploadGoodsImage = async (files) => {
+export const uploadGoodsImage = async (file) => {
   const formData = new FormData();
+  formData.append('files', file);
   
-  // files가 배열이든 단일 파일이든 처리할 수 있도록
-  if (Array.isArray(files)) {
-    files.forEach(file => formData.append('files', file));
-  } else {
-    formData.append('files', files);
-  }
-
   try {
     const response = await productInstance.post('/board/image', formData);
     return response.data;
@@ -89,7 +83,7 @@ export const uploadGoodsImage = async (files) => {
     console.error('업로드 실패:', error);
     throw error;
   }
-};
+ };
 
 // 물건 3D 이미지 등록
 export const uploadGoods3DImage = async (files) => {
