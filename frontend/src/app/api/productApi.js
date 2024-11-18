@@ -73,17 +73,28 @@ export const salesBoard = (formData) => {
 //   }
 // };
 export const uploadGoodsImage = async (file) => {
-  // 단일 파일만 처리하도록 변경
-  const formData = new FormData();
-  formData.append('files', file); // 서버가 'files'로 받기 때문에 키는 유지
+  // 시도 1: 단일 파일로 전송
+  const formData1 = new FormData();
+  formData1.append('file', file);  // 키를 'file'로 변경
 
-  console.log('업로드 파일 정보:', {
-    fileName: file.name,
-    fileType: file.type,
-    fileSize: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+  // 시도 2: 배열 형태로 전송
+  const formData2 = new FormData();
+  formData2.append('files[]', file);  // 키를 'files[]'로 설정
+
+  // 시도 3: 원래 방식
+  const formData3 = new FormData();
+  formData3.append('files', file);
+
+  // FormData 내용 출력
+  console.log('전송할 파일 정보:', {
+    name: file.name,
+    type: file.type,
+    size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
   });
 
   try {
+    // 현재 사용할 FormData 선택
+    const formData = formData3;  // 여기서 시도할 버전 선택
     const response = await productInstance.post('/board/image', formData, {
       headers: {
         'Accept': 'application/json',
@@ -100,13 +111,22 @@ export const uploadGoodsImage = async (file) => {
     return response.data;
   } catch (error) {
     console.error('업로드 실패 상세:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      headers: error.response?.headers,
-      data: error.response?.data,
+      requestConfig: {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers,
+        data: error.config?.data instanceof FormData ? 
+          'FormData 객체 (내용 로깅 불가)' : error.config?.data
+      },
+      response: {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      },
       message: error.message
     });
-    throw error;
+    throw new Error(`이미지 업로드 실패: ${error.response?.data?.message || error.message}`);
   }
 };
 
