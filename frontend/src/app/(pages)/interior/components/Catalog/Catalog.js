@@ -91,14 +91,12 @@ const Catalog = ({ open, onClose }) => {
         ...item,
         metadata: {
           ...item,
-          model3D: item.glbPath
-            ? {
-                glb: item.glbPath,
-                width: item.width,
-                height: item.height,
-                depth: item.depth,
-              }
-            : null,
+          model3D: {
+            glb: item.glbPath, // 이미 수정된 경로(/3d/{salesBoardId}.glb)가 들어있음
+            width: item.width,
+            height: item.height,
+            depth: item.depth,
+          },
         },
       };
       addFurniture(furnitureData);

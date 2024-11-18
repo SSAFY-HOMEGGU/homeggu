@@ -66,7 +66,7 @@ export const getFurnitureItems = async (category = "", page = 0, size = 20) => {
         category,
         page,
         size,
-        isSell: "AVAILABLE", // 판매 가능한 상품만 가져오기
+        isSell: "AVAILABLE",
       },
     });
 
@@ -74,11 +74,12 @@ export const getFurnitureItems = async (category = "", page = 0, size = 20) => {
     const items = response.data.content.map((item) => ({
       id: item.salesBoardId.toString(),
       name: item.title,
-      width: item.goods_x,
-      depth: item.goods_y,
-      height: item.goods_z,
-      image: item.goodsImagePaths[0] || "/images/placeholder.jpg", // 첫 번째 2D 이미지
-      glbPath: item.threeDimensionsGoodsImagePaths[0] || null, // 3D .glb 파일 경로
+      width: item.goods_x / 10,
+      depth: item.goods_y / 10,
+      height: item.goods_z / 10,
+      image: item.goodsImagePaths[0] || "/images/placeholder.jpg",
+      // glbPath를 salesBoardId 기반으로 직접 생성
+      glbPath: `/3d/${item.salesBoardId}.glb`,
       sellerId: `판매자 ${item.userId}`,
       category: item.category,
       price: item.price,
