@@ -36,7 +36,7 @@ const handleImageUpload = async (event) => {
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
 
       // 서버에 업로드
-      const uploadedData = await uploadGoodsImage(newPreviews);
+      const uploadedData = await uploadGoodsImage(newFiles);
       const newUrls = Array.isArray(uploadedData) ? uploadedData : [];
 
       // base64 변환
