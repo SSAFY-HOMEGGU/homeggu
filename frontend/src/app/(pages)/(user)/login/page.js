@@ -4,8 +4,8 @@ import Image from 'next/image';
 
 export default function Login() {
   const KAKAO_APP_KEY = '5bf7a75e57aaf59c9780c6373a06ff4d';
-  const REDIRECT_URI = 'http://localhost:3000/kakaoCallback';
-  // const REDIRECT_URI = 'https://k11b206.p.ssafy.io/kakaoCallback';
+  // const REDIRECT_URI = 'http://localhost:3000/kakaoCallback';
+  const REDIRECT_URI = 'https://k11b206.p.ssafy.io/kakaoCallback';
 
   
 // eslint-disable-next-line react-hooks/exhaustive-deps
