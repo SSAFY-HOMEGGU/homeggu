@@ -73,38 +73,32 @@ export const salesBoard = (formData) => {
 //   }
 // };
 export const uploadGoodsImage = async (file) => {
-  // 시도 1: 단일 파일로 전송
-  const formData1 = new FormData();
-  formData1.append('file', file);  // 키를 'file'로 변경
+  const formData = new FormData();
+  formData.append('files', file);  // 서버의 @RequestParam("files")와 일치하도록 'files'로 설정
 
-  // 시도 2: 배열 형태로 전송
-  const formData2 = new FormData();
-  formData2.append('files[]', file);  // 키를 'files[]'로 설정
-
-  // 시도 3: 원래 방식
-  const formData3 = new FormData();
-  formData3.append('files', file);
-
-  // FormData 내용 출력
   console.log('전송할 파일 정보:', {
     name: file.name,
     type: file.type,
     size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
   });
 
+  // FormData 내용 확인을 위한 로깅
+  for (let pair of formData.entries()) {
+    console.log('FormData entry:', {
+      key: pair[0],
+      value: pair[1],
+      fileName: pair[1] instanceof File ? pair[1].name : 'not a file',
+      type: pair[1] instanceof File ? pair[1].type : 'not a file',
+      size: pair[1] instanceof File ? pair[1].size : 'not a file'
+    });
+  }
+
   try {
-    // 현재 사용할 FormData 선택
-    const formData = formData2;  // 여기서 시도할 버전 선택
     const response = await productInstance.post('/board/image', formData, {
       headers: {
         'Accept': 'application/json',
-        // multipart/form-data의 Content-Type은 자동으로 설정되도록 함
-        // boundary 파라미터가 자동으로 생성됨
-      },
-      transformRequest: [(data) => {
-        // FormData는 변형하지 않음
-        return data;
-      }],
+        'Content-Type': 'multipart/form-data',
+      }
     });
 
     console.log('이미지 업로드 성공:', response.data);
@@ -115,8 +109,6 @@ export const uploadGoodsImage = async (file) => {
         url: error.config?.url,
         method: error.config?.method,
         headers: error.config?.headers,
-        data: error.config?.data instanceof FormData ? 
-          'FormData 객체 (내용 로깅 불가)' : error.config?.data
       },
       response: {
         status: error.response?.status,
