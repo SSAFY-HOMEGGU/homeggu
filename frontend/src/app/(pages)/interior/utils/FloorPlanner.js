@@ -2301,10 +2301,9 @@ class FloorPlanner {
     }
     const canvas = this.getCanvas();
     const center = canvas.getCenter();
-    console.log("Creating furniture with data:", furnitureData); // 디버깅용
+    console.log("Creating furniture with data:", furnitureData);
 
     // metadata에서 필요한 값들을 추출하고 기본값 설정
-    // metadata에서 직접 값을 추출
     const {
       width = 100,
       depth = 100,
@@ -2371,6 +2370,7 @@ class FloorPlanner {
         });
       }
     });
+
     console.log("Created furniture group:", {
       name,
       dimensions: { width, depth, height },
@@ -2380,11 +2380,6 @@ class FloorPlanner {
     // 클릭 시 선택 상태 반영
     group.on("mousedown", () => {
       canvas.setActiveObject(group);
-    });
-    console.log("Created furniture group:", {
-      name: displayName,
-      dimensions: { width, depth, height },
-      metadata: group.metadata,
     });
 
     canvas.add(group);

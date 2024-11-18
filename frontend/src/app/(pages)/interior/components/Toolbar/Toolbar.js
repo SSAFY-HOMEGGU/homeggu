@@ -90,20 +90,32 @@ const Toolbar = () => {
             angle: window.angle,
           })),
 
-        // 가구 데이터
+        // 가구 데이터 수정
         furniture: canvas.canvas
           .getObjects()
           .filter((obj) => obj.type === "furniture-group")
           .map((furniture) => ({
-            name: furniture.name,
+            id: furniture.metadata?.id,
+            name: furniture.metadata?.name,
             left: furniture.left,
             top: furniture.top,
-            width: furniture.width,
-            height: furniture.height,
+            width: furniture.metadata?.width || furniture.width,
+            height: furniture.metadata?.height || furniture.height,
+            depth: furniture.metadata?.depth,
             angle: furniture.angle,
-            metadata: furniture.metadata,
+            type: "furniture",
+            metadata: {
+              ...furniture.metadata,
+              model3D: furniture.metadata?.model3D
+                ? {
+                    ...furniture.metadata.model3D,
+                    glb: `/3d/${furniture.metadata.id}.glb`,
+                  }
+                : null,
+            },
           })),
 
+          
         // 뷰포트/줌 상태
         viewportTransform: canvas.canvas.viewportTransform,
         zoom: canvas.canvas.getZoom(),
