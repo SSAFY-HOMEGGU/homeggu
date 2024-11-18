@@ -14,7 +14,9 @@ const useProjectStore = create(
           name,
           createdAt: new Date().toISOString(),
           lastModified: new Date().toISOString(),
-          data: null,
+          data: {
+            canvasState: null,
+          },
         };
 
         set((state) => ({
@@ -26,28 +28,15 @@ const useProjectStore = create(
       },
 
       saveProject: (projectData) => {
-        console.log("Saving project data:", projectData); // 디버깅 로그
-
         set((state) => {
-          const currentProject = state.currentProject;
-          if (!currentProject) {
-            console.error("No current project to save");
-            return state;
-          }
-
           const updatedProject = {
-            ...currentProject,
+            ...projectData,
             lastModified: new Date().toISOString(),
-            data: projectData,
           };
 
-          console.log("Updated project:", updatedProject); // 디버깅 로그
-
           const updatedProjects = state.projects.map((p) =>
-            p.id === currentProject.id ? updatedProject : p
+            p.id === projectData.id ? updatedProject : p
           );
-
-          console.log("Updated projects list:", updatedProjects); // 디버깅 로그
 
           return {
             projects: updatedProjects,
@@ -57,11 +46,14 @@ const useProjectStore = create(
       },
 
       loadProject: (projectId) => {
-        const project = get().projects.find((p) => p.id === projectId);
+        const state = get();
+        const project = state.projects.find((p) => p.id === projectId);
+
         if (project) {
           set({ currentProject: project });
           return project;
         }
+
         return null;
       },
 
@@ -82,6 +74,15 @@ const useProjectStore = create(
     {
       name: "project-storage",
       getStorage: () => localStorage,
+      serialize: (state) => JSON.stringify(state),
+      deserialize: (str) => {
+        try {
+          return JSON.parse(str);
+        } catch (err) {
+          console.error("Failed to parse project data:", err);
+          return { projects: [], currentProject: null };
+        }
+      },
     }
   )
 );
