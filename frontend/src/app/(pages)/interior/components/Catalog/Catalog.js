@@ -90,15 +90,18 @@ const Catalog = ({ open, onClose }) => {
       const furnitureData = {
         ...item,
         metadata: {
+          type: "furniture",
           ...item,
           model3D: {
-            glb: item.glbPath, // 이미 수정된 경로(/3d/{salesBoardId}.glb)가 들어있음
+            glb: item.glbPath,
             width: item.width,
             height: item.height,
             depth: item.depth,
           },
         },
       };
+      console.log("Adding furniture with data:", furnitureData); // 디버깅용
+
       addFurniture(furnitureData);
     }
     onClose();

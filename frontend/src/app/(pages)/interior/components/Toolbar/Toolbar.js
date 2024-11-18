@@ -30,8 +30,17 @@ import {
 import { useToast } from "@/app/components/ui/use-toast";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
+import { Select } from "@/components/ui/select";
+
+const WALL_PATTERNS = [
+  { label: "흰색 민무늬", value: "wallpattern.jpg" },
+  { label: "벽돌", value: "wallpattern1.jpg" },
+  { label: "벽돌(흰색)", value: "wallpattern2.jpg" },
+  { label: "나무", value: "wallpattern3.jpg" },
+];
 
 const Toolbar = () => {
+  const { setWallPattern, wallPattern } = useCanvasStore();
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const { canvas, mode, setMode, selectedObject } = useCanvasStore();
@@ -467,6 +476,13 @@ const Toolbar = () => {
             <TooltipContent>Import</TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <Select value={wallPattern} onValueChange={setWallPattern}>
+          {WALL_PATTERNS.map((pattern) => (
+            <SelectItem key={pattern.value} value={pattern.value}>
+              {pattern.label}
+            </SelectItem>
+          ))}
+        </Select>
       </div>
 
       {/* 드롭다운 메뉴가 열려있을 때 클릭 이벤트를 감지하여 닫기 위한 오버레이 */}

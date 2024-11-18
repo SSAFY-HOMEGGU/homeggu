@@ -2274,8 +2274,8 @@ class FloorPlanner {
     const center = canvas.getCenter();
 
     // 격자 크기에 맞게 스케일 조정 (1 그리드 = 10cm)
-    const scaledWidth = ((width / 10) * this.gridSize) / 10;
-    const scaledDepth = ((depth / 10) * this.gridSize) / 10;
+    const scaledWidth = (width / 10) * this.gridSize;
+    const scaledDepth = (depth / 10) * this.gridSize;
 
     // 가구 생성
     const furnitureObj = new fabric.Rect({
@@ -2290,21 +2290,18 @@ class FloorPlanner {
       originY: "center",
       name: name,
       type: "furniture",
-      metadata: {
-        ...furniture,
-      },
+      metadata: furniture.metadata,
     });
 
-    // 가구 이름 텍스트를 중앙에 배치
-    const text = new fabric.Text(name, {
+    // 가구 이름 텍스트
+    const text = new fabric.Text(furniture.name, {
       left: 0,
       top: 0,
       fontSize: 12,
       fill: "#000000",
       originX: "center",
       originY: "center",
-      selectable: false, // 텍스트는 선택 불가
-      metadata: { type: "furniture-label" },
+      selectable: false,
     });
 
     // 그룹으로 묶기
@@ -2315,16 +2312,12 @@ class FloorPlanner {
       hasControls: false,
       lockScalingX: true,
       lockScalingY: true,
-      lockRotation: false, // 회전 허용
+      lockRotation: false,
       lockMovementX: false,
       lockMovementY: false,
       hasBorders: true,
       type: "furniture-group",
-      metadata: {
-        type: "furniture",
-        ...furniture,
-        model3D: furniture.metadata?.model3D || null,
-      },
+      metadata: furniture.metadata, // 그룹에도 metadata 설정
     });
 
     // 이동 시 스냅 동작 추가
@@ -2337,6 +2330,8 @@ class FloorPlanner {
         group.top = snapPoint.y - group.height / 2;
       }
     });
+
+    console.log("Created furniture group with metadata:", group.metadata); // 디버깅용
 
     // 클릭 시 선택 상태 반영
     group.on("mousedown", () => {
