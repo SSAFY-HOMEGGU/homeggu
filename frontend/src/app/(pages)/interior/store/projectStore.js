@@ -26,9 +26,14 @@ const useProjectStore = create(
       },
 
       saveProject: (projectData) => {
+        console.log("Saving project data:", projectData); // 디버깅 로그
+
         set((state) => {
           const currentProject = state.currentProject;
-          if (!currentProject) return state;
+          if (!currentProject) {
+            console.error("No current project to save");
+            return state;
+          }
 
           const updatedProject = {
             ...currentProject,
@@ -36,9 +41,13 @@ const useProjectStore = create(
             data: projectData,
           };
 
+          console.log("Updated project:", updatedProject); // 디버깅 로그
+
           const updatedProjects = state.projects.map((p) =>
             p.id === currentProject.id ? updatedProject : p
           );
+
+          console.log("Updated projects list:", updatedProjects); // 디버깅 로그
 
           return {
             projects: updatedProjects,

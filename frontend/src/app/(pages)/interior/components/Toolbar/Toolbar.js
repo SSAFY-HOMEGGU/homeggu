@@ -28,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
 import { useToast } from "@/app/components/ui/use-toast";
+import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 
 const Toolbar = () => {
@@ -35,57 +36,98 @@ const Toolbar = () => {
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const { canvas, mode, setMode, selectedObject } = useCanvasStore();
   const { saveProject, currentProject } = useProjectStore();
-  const { addToast } = useToast(); // useToast에서 addToast를 가져옵니다
+  const { Toast } = useToast(); // useToast에서 addToast를 가져옵니다
 
   // 저장 처리 함수
   const handleSave = () => {
-    if (!canvas || !currentProject) return;
+    if (!canvas || !currentProject) {
+      toast.error("캔버스가 초기화되지 않았거나 프로젝트가 없습니다.");
+      return;
+    }
 
     try {
-      // 캔버스의 현재 상태를 JSON으로 저장
-      const canvasState = canvas.canvas.toJSON([
-        "id",
-        "name",
-        "type",
-        "metadata",
-        "customProperties",
-      ]);
+      // 2D 캔버스의 전체 상태 저장
+      const canvasState = {
+        // 캔버스 기본 상태
+        fabricCanvas: canvas.canvas.toJSON([
+          "id",
+          "name",
+          "type",
+          "metadata",
+          "customProperties",
+        ]),
 
-      // 프로젝트 데이터 저장
-      const projectData = {
-        canvasState,
+        // 벽 데이터
         walls: canvas.walls.map((wall) => ({
           x1: wall.x1,
           y1: wall.y1,
           x2: wall.x2,
           y2: wall.y2,
-          thickness: wall.thickness,
+          thickness: wall.thickness || canvas.currentWallType.thickness,
+          height: wall.height || canvas.currentWallType.height,
         })),
+
+        // 문과 창문 데이터
+        objects: canvas.canvas
+          .getObjects()
+          .filter((obj) => obj.type === "door" || obj.type === "window")
+          .map((obj) => ({
+            type: obj.type,
+            left: obj.left,
+            top: obj.top,
+            width: obj.width,
+            height: obj.height,
+            angle: obj.angle,
+            wallId: obj.wallId,
+          })),
+
+        // 가구 데이터
+        furniture: canvas.canvas
+          .getObjects()
+          .filter((obj) => obj.type === "furniture-group")
+          .map((obj) => ({
+            type: "furniture",
+            name: obj.name,
+            left: obj.left,
+            top: obj.top,
+            width: obj.width,
+            height: obj.height,
+            angle: obj.angle,
+            metadata: obj.metadata,
+          })),
+
+        // 뷰포트/줌 상태
+        viewportTransform: canvas.canvas.viewportTransform,
+        zoom: canvas.canvas.getZoom(),
+
+        // 설정 상태
+        settings: {
+          gridVisible: canvas.gridVisible,
+          snapToGrid: canvas.snapToGrid,
+          gridSize: canvas.gridSize,
+          currentWallType: canvas.currentWallType,
+        },
+      };
+
+      // 프로젝트 데이터 구성
+      const projectData = {
+        id: currentProject.id,
+        name: currentProject.name,
+        canvasState,
         metadata: {
           lastSaved: new Date().toISOString(),
           version: "1.0",
         },
       };
 
-      saveProject(projectData);
+      console.log("Saving project data:", projectData); // 디버깅용
 
-      // 성공 메시지 표시
-      addToast({
-        title: "저장 완료",
-        description: "프로젝트가 성공적으로 저장되었습니다.",
-        duration: 3000,
-        variant: "success",
-      });
+      // 프로젝트 저장
+      saveProject(projectData);
+      toast.success("프로젝트가 성공적으로 저장되었습니다.");
     } catch (error) {
       console.error("Save failed:", error);
-
-      // 에러 메시지 표시
-      addToast({
-        title: "저장 실패",
-        description: "프로젝트 저장 중 오류가 발생했습니다.",
-        variant: "destructive",
-        duration: 3000,
-      });
+      toast.error("저장 중 오류가 발생했습니다: " + error.message);
     }
   };
 

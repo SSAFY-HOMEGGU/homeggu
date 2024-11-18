@@ -14,11 +14,30 @@ import {
 } from "@/app/components/ui/tooltip";
 import NavigationController from "./NavigationController";
 
-const Canvas = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
+const Canvas = ({ projectId, onAutoSave, initialData }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const canvasRef = useRef(null);
   const floorPlannerRef = useRef(null);
+
+  useEffect(() => {
+    if (floorPlannerRef.current && initialData) {
+      console.log("Loading initial data:", initialData);
+      try {
+        setIsLoading(true);
+        const success = floorPlannerRef.current.loadFromState(initialData);
+        if (success) {
+          console.log("Successfully loaded project data");
+        } else {
+          console.error("Failed to load project data");
+        }
+      } catch (error) {
+        console.error("Error loading project data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [initialData]);
+
   const containerRef = useRef(null);
   const isDragging = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });

@@ -1,3 +1,4 @@
+//interior/page.js
 "use client";
 
 import React from "react";
@@ -8,14 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/app/components/ui/dialog";
-import { Input } from "@/app/components/ui/input";
-import { Button } from "@/app/components/ui/button";
-import { Label } from "@/app/components/ui/label";
-import { ScrollArea } from "@/app/components/ui/scroll-area";
+} from "@/app/components/ui/dialog.jsx";
+import { Input } from "@/app/components/ui/input.jsx";
+import { Button } from "@/app/components/ui/button.jsx";
+import { Label } from "@/app/components/ui/label.js";
+import { ScrollArea } from "@/app/components/ui/scroll-area.js";
 import useProjectStore from "./store/projectStore";
 import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "react-toastify";
 
 const Page = () => {
   const router = useRouter();
@@ -30,26 +33,23 @@ const Page = () => {
     if (projectName.trim()) {
       const project = createProject(projectName.trim());
       if (project && project.id) {
-        setProjectName(""); // 상태 초기화
-        setIsNewProjectOpen(false); // Dialog 닫기
-        router.push(`/interior/${project.id}`); // 페이지 이동
+        setProjectName("");
+        setIsNewProjectOpen(false);
+        toast.success("새 프로젝트가 생성되었습니다.");
+        router.push(`/interior/${project.id}`);
       } else {
-        console.error("Failed to create project or project.id is missing");
+        toast.error("프로젝트 생성에 실패했습니다.");
       }
-    } else {
-      console.warn("Project name is empty");
     }
   };
 
   const handleSelectProject = (project) => {
-    console.log("Selecting project:", project); // 디버깅 로그
     if (project && project.id) {
       loadProject(project.id);
       setIsProjectListOpen(false);
       router.push(`/interior/${project.id}`);
-      console.log("Navigating to:", `/interior/${project.id}`); // 디버깅 로그
     } else {
-      console.error("Invalid project object or missing project.id");
+      toast.error("프로젝트를 불러올 수 없습니다.");
     }
   };
 
@@ -142,10 +142,12 @@ const Page = () => {
                           <p className="text-sm text-gray-500">
                             마지막 수정:{" "}
                             {formatDistanceToNow(
-                              new Date(project.lastModified)
+                              new Date(project.lastModified),
+                              { locale: ko }
                             )}{" "}
                             전
                           </p>
+                          ;
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
