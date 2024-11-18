@@ -74,7 +74,7 @@ export const salesBoard = (formData) => {
 // };
 export const uploadGoodsImage = async (formData) => {
   try {
-    const response = await axios.post('/api/goods/board/image', formData, {
+    const response = await productInstance.post('/board/image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       }
