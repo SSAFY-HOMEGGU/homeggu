@@ -146,23 +146,26 @@ export default function ImageUpload({ onUpload }) {
   
     try {
       const formData = new FormData();
-      // 모든 파일을 동일한 키로 추가
       Array.from(files).forEach(file => {
         formData.append('files', file);
       });
   
-      const uploadedUrl = await uploadGoodsImage(formData); // formData 직접 전달
+      const uploadedUrls = await uploadGoodsImage(formData); // List<String> 반환
       
-      if (uploadedUrl) {
-        const previewUrl = URL.createObjectURL(file);
-        setImagePreviews(prev => [...prev, previewUrl]);
-        setUploadedUrls(prev => [...prev, uploadedUrl]);
-        setUploadedImages(prev => prev + 1);
+      if (uploadedUrls && uploadedUrls.length > 0) {
+        // 미리보기 생성
+        Array.from(files).forEach(file => {
+          const previewUrl = URL.createObjectURL(file);
+          setImagePreviews(prev => [...prev, previewUrl]);
+        });
+        
+        setUploadedUrls(prev => [...prev, ...uploadedUrls]);
+        setUploadedImages(prev => prev + files.length);
   
         if (uploadedImages === 0) {
-          setGoodsImages([uploadedUrl]);
+          setGoodsImages(uploadedUrls);
         } else {
-          setGoodsImages([...uploadedUrls, uploadedUrl]);
+          setGoodsImages(prev => [...prev, ...uploadedUrls]);
         }
       }
     } catch (error) {
