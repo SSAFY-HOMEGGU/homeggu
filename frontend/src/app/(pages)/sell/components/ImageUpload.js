@@ -140,37 +140,59 @@ export default function ImageUpload({ onUpload }) {
   // };
   const handleImageUpload = async (event) => {
     const files = event.target.files;
+    console.log('1. 선택된 파일:', files);
+    
     if (!files || files.length === 0) return;
   
+    if (uploadedImages + files.length > 10) {
+      alert('최대 10개의 이미지만 업로드할 수 있습니다.');
+      return;
+    }
+  
     setIsUploading(true);
+    console.log('2. 현재 업로드된 이미지 수:', uploadedImages);
   
     try {
       const formData = new FormData();
       Array.from(files).forEach(file => {
+        console.log('3. 파일 정보:', {
+          이름: file.name,
+          타입: file.type,
+          크기: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+        });
         formData.append('files', file);
       });
   
-      const uploadedUrls = await uploadGoodsImage(formData); // List<String> 반환
+      console.log('4. FormData 키 목록:');
+      for (let key of formData.keys()) {
+        console.log('- FormData 키:', key);
+      }
+  
+      console.log('5. API 호출 직전');
+      const uploadedUrls = await uploadGoodsImage(formData);
+      console.log('6. API 응답:', uploadedUrls);
       
       if (uploadedUrls && uploadedUrls.length > 0) {
-        // 미리보기 생성
-        Array.from(files).forEach(file => {
-          const previewUrl = URL.createObjectURL(file);
-          setImagePreviews(prev => [...prev, previewUrl]);
-        });
+        const newPreviews = Array.from(files).map(file => URL.createObjectURL(file));
+        console.log('7. 생성된 미리보기 URL:', newPreviews);
         
+        setImagePreviews(prev => [...prev, ...newPreviews]);
         setUploadedUrls(prev => [...prev, ...uploadedUrls]);
         setUploadedImages(prev => prev + files.length);
-  
-        if (uploadedImages === 0) {
-          setGoodsImages(uploadedUrls);
-        } else {
-          setGoodsImages(prev => [...prev, ...uploadedUrls]);
-        }
+        setGoodsImages([...uploadedUrls]);
+        
+        console.log('8. 상태 업데이트 완료', {
+          미리보기수: newPreviews.length,
+          업로드URL수: uploadedUrls.length
+        });
       }
     } catch (error) {
-      console.error('이미지 업로드 중 오류 발생:', error);
-      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+      console.error('9. 에러 상세 정보:', {
+        메시지: error.message,
+        응답데이터: error.response?.data,
+        상태코드: error.response?.status,
+        헤더: error.response?.headers
+      });
     } finally {
       setIsUploading(false);
     }
