@@ -292,6 +292,48 @@ const useProductStore = create(
         }));
 
         // API 호출
+    //     if (!prevIsLiked) {
+    //       await goodsLike(productId);
+    //       await preferenceUpdate({
+    //         category: product.category,
+    //         mood: product.mood,
+    //         action: "like",
+    //         clickedSalesBoardId: ""
+    //       });
+    //     } else {
+    //       await goodsUnlike(productId);
+    //     }
+
+    //     // 실제 데이터로 갱신
+    //     await get().fetchProduct(productId);
+    //   } catch (error) {
+    //     // 실패시 롤백
+    //     const rollbackLikeStatus = (p) => ({
+    //       ...p,
+    //       isLiked: prevIsLiked,
+    //       likeCnt: prevLikeCnt
+    //     });
+
+    //     set(state => ({
+    //       selectedProduct: state.selectedProduct?.salesBoardId === productId 
+    //         ? rollbackLikeStatus(state.selectedProduct)
+    //         : state.selectedProduct,
+    //       products: state.products.map(p =>
+    //         p.salesBoardId === productId ? rollbackLikeStatus(p) : p
+    //       ),
+    //       error: error.message
+    //     }));
+
+    //     console.error('좋아요 처리 실패:', error);
+    //   }
+    // },
+    // 재시도 로직 추가
+    const maxRetries = 2;
+    let retryCount = 0;
+    let success = false;
+
+    while (!success && retryCount < maxRetries) {
+      try {
         if (!prevIsLiked) {
           await goodsLike(productId);
           await preferenceUpdate({
@@ -303,30 +345,38 @@ const useProductStore = create(
         } else {
           await goodsUnlike(productId);
         }
-
-        // 실제 데이터로 갱신
-        await get().fetchProduct(productId);
-      } catch (error) {
-        // 실패시 롤백
-        const rollbackLikeStatus = (p) => ({
-          ...p,
-          isLiked: prevIsLiked,
-          likeCnt: prevLikeCnt
-        });
-
-        set(state => ({
-          selectedProduct: state.selectedProduct?.salesBoardId === productId 
-            ? rollbackLikeStatus(state.selectedProduct)
-            : state.selectedProduct,
-          products: state.products.map(p =>
-            p.salesBoardId === productId ? rollbackLikeStatus(p) : p
-          ),
-          error: error.message
-        }));
-
-        console.error('좋아요 처리 실패:', error);
+        success = true;
+      } catch (retryError) {
+        retryCount++;
+        if (retryCount === maxRetries) throw retryError;
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
       }
-    },
+    }
+
+      // 성공 시 상품 정보 갱신
+      await get().fetchProduct(productId);
+    } catch (error) {
+      // 실패시 롤백 로직
+      const rollbackLikeStatus = (p) => ({
+        ...p,
+        isLiked: prevIsLiked,
+        likeCnt: prevLikeCnt
+      });
+
+      set(state => ({
+        selectedProduct: state.selectedProduct?.salesBoardId === productId 
+          ? rollbackLikeStatus(state.selectedProduct)
+          : state.selectedProduct,
+        products: state.products.map(p =>
+          p.salesBoardId === productId ? rollbackLikeStatus(p) : p
+        ),
+        error: error.message
+      }));
+
+      console.error('좋아요 처리 실패:', error);
+      throw error;
+    }
+  },
 
     // 채팅 카운트 증가
     updateChatCount: async (productId) => {
