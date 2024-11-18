@@ -40,23 +40,14 @@ const Toolbar = () => {
 
   // 저장 처리 함수
   const handleSave = () => {
-    if (!canvas || !currentProject) {
+    if (!canvas?.canvas || !currentProject) {
       toast.error("캔버스가 초기화되지 않았거나 프로젝트가 없습니다.");
       return;
     }
 
     try {
-      // 2D 캔버스의 전체 상태 저장
+      // 2D 상태만 저장
       const canvasState = {
-        // 캔버스 기본 상태
-        fabricCanvas: canvas.canvas.toJSON([
-          "id",
-          "name",
-          "type",
-          "metadata",
-          "customProperties",
-        ]),
-
         // 벽 데이터
         walls: canvas.walls.map((wall) => ({
           x1: wall.x1,
@@ -67,33 +58,42 @@ const Toolbar = () => {
           height: wall.height || canvas.currentWallType.height,
         })),
 
-        // 문과 창문 데이터
-        objects: canvas.canvas
+        // 문 데이터
+        doors: canvas.canvas
           .getObjects()
-          .filter((obj) => obj.type === "door" || obj.type === "window")
-          .map((obj) => ({
-            type: obj.type,
-            left: obj.left,
-            top: obj.top,
-            width: obj.width,
-            height: obj.height,
-            angle: obj.angle,
-            wallId: obj.wallId,
+          .filter((obj) => obj.type === "door")
+          .map((door) => ({
+            left: door.left,
+            top: door.top,
+            width: door.width || 60,
+            height: door.height || canvas.currentWallType.thickness,
+            angle: door.angle,
+          })),
+
+        // 창문 데이터
+        windows: canvas.canvas
+          .getObjects()
+          .filter((obj) => obj.type === "window")
+          .map((window) => ({
+            left: window.left,
+            top: window.top,
+            width: window.width || 40,
+            height: window.height || canvas.currentWallType.thickness,
+            angle: window.angle,
           })),
 
         // 가구 데이터
         furniture: canvas.canvas
           .getObjects()
           .filter((obj) => obj.type === "furniture-group")
-          .map((obj) => ({
-            type: "furniture",
-            name: obj.name,
-            left: obj.left,
-            top: obj.top,
-            width: obj.width,
-            height: obj.height,
-            angle: obj.angle,
-            metadata: obj.metadata,
+          .map((furniture) => ({
+            name: furniture.name,
+            left: furniture.left,
+            top: furniture.top,
+            width: furniture.width,
+            height: furniture.height,
+            angle: furniture.angle,
+            metadata: furniture.metadata,
           })),
 
         // 뷰포트/줌 상태
@@ -109,21 +109,12 @@ const Toolbar = () => {
         },
       };
 
-      // 프로젝트 데이터 구성
-      const projectData = {
-        id: currentProject.id,
-        name: currentProject.name,
-        canvasState,
-        metadata: {
-          lastSaved: new Date().toISOString(),
-          version: "1.0",
-        },
-      };
-
-      console.log("Saving project data:", projectData); // 디버깅용
-
       // 프로젝트 저장
-      saveProject(projectData);
+      saveProject({
+        ...currentProject,
+        data: { canvasState },
+      });
+
       toast.success("프로젝트가 성공적으로 저장되었습니다.");
     } catch (error) {
       console.error("Save failed:", error);
