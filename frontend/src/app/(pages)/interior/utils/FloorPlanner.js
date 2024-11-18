@@ -2266,12 +2266,16 @@ class FloorPlanner {
     this.canvas.renderAll();
   }
 
-  createFurniture(furniture) {
-    if (!furniture) return;
-
+  createFurniture(furnitureData) {
+    if (!furnitureData || !furnitureData.metadata) {
+      console.error("Invalid furniture data:", furnitureData);
+      return;
+    }
     const canvas = this.getCanvas();
     const center = canvas.getCenter();
-    console.log("Creating furniture with data:", furniture); // 디버깅용
+    console.log("Creating furniture with data:", furnitureData); // 디버깅용
+    // metadata에서 필요한 값들을 추출
+    const { width, depth, height, name } = furnitureData.metadata;
 
     // 격자 크기에 맞게 스케일 조정 (1 그리드 = 10cm)
     const scaledWidth = (width / 10) * this.gridSize;
@@ -2288,13 +2292,12 @@ class FloorPlanner {
       strokeWidth: 2,
       originX: "center",
       originY: "center",
-      name: furniture.name,
+      name: name,
       type: "furniture",
-      metadata: furniture.metadata, // 전체 metadata 포함
+      metadata: furnitureData.metadata,
     });
-
     // 가구 이름 텍스트
-    const text = new fabric.Text(furniture.name, {
+    const text = new fabric.Text(name, {
       left: 0,
       top: 0,
       fontSize: 12,
@@ -2317,11 +2320,13 @@ class FloorPlanner {
       lockMovementY: false,
       hasBorders: true,
       type: "furniture-group",
-      metadata: furniture.metadata, // metadata를 그룹에도 설정
+      metadata: furnitureData.metadata,
     });
 
     // 이동 시 스냅 동작 추가
     group.on("moving", (e) => {
+      if (this.mode !== "select") return;
+
       const pointer = group.getCenterPoint();
       const snapPoint = this.findNearestWallPoint(pointer);
 

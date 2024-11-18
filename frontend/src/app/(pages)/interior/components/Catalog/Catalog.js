@@ -89,7 +89,6 @@ const Catalog = ({ open, onClose }) => {
       // 3D 모델 정보를 포함하여 가구 추가
       const furnitureData = {
         type: "furniture",
-        ...item,
         metadata: {
           type: "furniture",
           id: item.id,
@@ -98,7 +97,7 @@ const Catalog = ({ open, onClose }) => {
           depth: item.depth,
           height: item.height,
           model3D: {
-            glb: `/3d/${item.id}.glb`, // salesBoardId를 이용한 경로 설정
+            glb: `/3d/${item.id}.glb`,
             width: item.width,
             height: item.height,
             depth: item.depth,
