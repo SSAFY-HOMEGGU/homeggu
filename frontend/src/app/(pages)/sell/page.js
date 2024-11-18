@@ -190,6 +190,7 @@ import ConversionStatus from './components/ConversionStatus';
 import { BlueButton, WhiteButton } from '@/app/components/Button';
 import { backgroundConversionService } from './services/backgroundConversionService';
 import ModelReadyModal from './services/ModelReadyModal';
+import { salesBoard } from '@/app/api/productApi';
 
 export default function Sell() {
   const router = useRouter();
@@ -260,17 +261,17 @@ export default function Sell() {
         // 이미지가 없는 경우 일반 상품으로 등록
         console.log('일반 상품 등록 시작');
         await salesBoard(formData);
-        toast.success('상품이 등록되었습니다', {
-          position: 'bottom-left'
-        });
+        // toast.success('상품이 등록되었습니다', {
+        //   position: 'bottom-left'
+        // });
       }
       
       router.push('/');
     } catch (error) {
       console.error('상품 등록 실패:', error);
-      toast.error(error.message || '상품 등록에 실패했습니다', {
-        position: 'bottom-left'
-      });
+      // toast.error(error.message || '상품 등록에 실패했습니다', {
+      //   position: 'bottom-left'
+      // });
     } finally {
       setIsLoading(false);
     }
