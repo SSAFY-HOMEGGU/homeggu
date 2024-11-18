@@ -294,26 +294,24 @@ const Viewer3D = () => {
       });
 
       // 가구 아이템 처리
-      const furnitureItems = canvas.canvas
-        .getObjects()
-        .filter((obj) => obj.type === "furniture-group");
-
-      console.log("Found furniture items:", furnitureItems.length);
-
       for (const furniture of furnitureItems) {
-        if (furniture.metadata.model3D?.glb) {
+        if (!furniture.metadata) {
+          console.warn("Missing metadata for furniture:", furniture);
+          continue;
+        }
+
+        console.log("Processing furniture metadata:", furniture.metadata);
+
+        // metadata 내부의 model3D 정보를 확인
+        const model3DInfo = furniture.metadata.model3D;
+
+        if (model3DInfo?.glb) {
           try {
-            console.log(
-              "Loading 3D model from:",
-              furniture.metadata.model3D.glb
-            );
-            const model = await loadGLBModel(furniture.metadata.model3D.glb);
+            console.log("Loading 3D model from:", model3DInfo.glb);
+            const model = await loadGLBModel(model3DInfo.glb);
 
             if (!model) {
-              console.warn(
-                "Failed to load model:",
-                furniture.metadata.model3D.glb
-              );
+              console.warn("Failed to load model:", model3DInfo.glb);
               continue;
             }
 
@@ -323,43 +321,41 @@ const Viewer3D = () => {
             bbox.getSize(modelSize);
 
             // 실제 크기에 맞게 스케일 조정
-            const scaleX = furniture.metadata.width / modelSize.x;
-            const scaleY = furniture.metadata.height / modelSize.y;
-            const scaleZ = furniture.metadata.depth / modelSize.z;
+            const { width, height, depth } = furniture.metadata;
 
-            // NaN이나 Infinity 방지
-            const scale = isFinite(Math.min(scaleX, scaleY, scaleZ))
-              ? Math.min(scaleX, scaleY, scaleZ)
-              : 1;
+            // 스케일 계산 (단위 변환 고려: cm to meters)
+            const scaleX = width / 100 / (modelSize.x || 1);
+            const scaleY = height / 100 / (modelSize.y || 1);
+            const scaleZ = depth / 100 / (modelSize.z || 1);
 
+            // 균일한 스케일 적용
+            const scale = Math.min(scaleX, scaleY, scaleZ);
+            console.log("Applying scale:", scale, "to model");
             model.scale.set(scale, scale, scale);
 
             // 2D 캔버스의 위치를 3D 공간에 매핑
             const position = furniture.getCenterPoint();
             model.position.set(
               position.x,
-              metadata.height / 10 / 2, // Y축은 높이의 절반으로 설정
+              height / 200, // Y축은 높이의 절반으로 설정 (미터 단위로 변환)
               position.y
             );
 
-            // 회전 적용 (2D의 angle을 3D의 Y축 회전으로 변환)
+            // 회전 적용
             model.rotation.y = -((furniture.angle || 0) * Math.PI) / 180;
 
             scene.add(model);
-            modelRef.current.set(furniture.id, model);
+            modelRef.current.set(furniture.metadata.id, model);
 
-            // 렌더링 업데이트
-            renderer.render(scene, camera);
+            console.log("Successfully added 3D model to scene");
           } catch (error) {
-            console.error(
-              "Error processing furniture item:",
-              error,
-              furniture.metadata
-            );
-            continue;
+            console.error("Error loading 3D model:", error);
           }
         } else {
-          console.warn("No 3D model data for furniture:", furniture.metadata);
+          console.warn(
+            "No 3D model GLB path found in metadata:",
+            furniture.metadata
+          );
         }
       }
 

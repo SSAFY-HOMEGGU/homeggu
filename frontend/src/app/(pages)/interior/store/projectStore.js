@@ -1,4 +1,4 @@
-//interior/store/projectStore.js
+// interior/store/projectStore.js
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -17,7 +17,20 @@ const useProjectStore = create(
           createdAt: new Date().toISOString(),
           lastModified: new Date().toISOString(),
           data: {
-            canvasState: null,
+            canvasState: {
+              walls: [],
+              furniture: [],
+              objects: [],
+              settings: {
+                gridVisible: true,
+                snapToGrid: true,
+                gridSize: 20,
+                currentWallType: {
+                  thickness: 10,
+                  height: 250,
+                },
+              },
+            },
           },
         };
 
@@ -30,21 +43,43 @@ const useProjectStore = create(
       },
 
       saveProject: (projectData) => {
-        set((state) => {
-          const updatedProject = {
-            ...projectData,
-            lastModified: new Date().toISOString(),
-          };
+        const updatedData = {
+          ...projectData,
+          lastModified: new Date().toISOString(),
+          data: {
+            canvasState: {
+              ...projectData.data?.canvasState,
+              // 가구 데이터가 있는 경우 deep clone하여 저장
+              furniture: projectData.data?.canvasState?.furniture?.map(
+                (item) => ({
+                  ...item,
+                  metadata: {
+                    ...item.metadata,
+                    model3D: item.metadata?.model3D
+                      ? {
+                          ...item.metadata.model3D,
+                        }
+                      : null,
+                  },
+                })
+              ),
+            },
+          },
+        };
 
+        set((state) => {
           const updatedProjects = state.projects.map((p) =>
-            p.id === projectData.id ? updatedProject : p
+            p.id === projectData.id ? updatedData : p
           );
 
           return {
             projects: updatedProjects,
-            currentProject: updatedProject,
+            currentProject: updatedData,
           };
         });
+
+        // 디버깅용 로그
+        console.log("Saved project data:", updatedData);
       },
 
       loadProject: (projectId) => {
@@ -52,8 +87,33 @@ const useProjectStore = create(
         const project = state.projects.find((p) => p.id === projectId);
 
         if (project) {
-          set({ currentProject: project });
-          return project;
+          // 프로젝트 데이터 유효성 검사 및 복구
+          const validatedProject = {
+            ...project,
+            data: {
+              canvasState: {
+                walls: project.data?.canvasState?.walls || [],
+                furniture: project.data?.canvasState?.furniture || [],
+                objects: project.data?.canvasState?.objects || [],
+                settings: {
+                  gridVisible:
+                    project.data?.canvasState?.settings?.gridVisible ?? true,
+                  snapToGrid:
+                    project.data?.canvasState?.settings?.snapToGrid ?? true,
+                  gridSize: project.data?.canvasState?.settings?.gridSize ?? 20,
+                  currentWallType: project.data?.canvasState?.settings
+                    ?.currentWallType ?? {
+                    thickness: 10,
+                    height: 250,
+                  },
+                },
+              },
+            },
+          };
+
+          set({ currentProject: validatedProject });
+          console.log("Loaded project data:", validatedProject);
+          return validatedProject;
         }
 
         return null;
@@ -76,10 +136,43 @@ const useProjectStore = create(
     {
       name: "project-storage",
       getStorage: () => localStorage,
-      serialize: (state) => JSON.stringify(state),
+      serialize: (state) => {
+        try {
+          return JSON.stringify(state, (key, value) => {
+            // 순환 참조 방지를 위한 특수 처리
+            if (key === "fabricObject") return undefined;
+            return value;
+          });
+        } catch (error) {
+          console.error("Failed to serialize project data:", error);
+          return JSON.stringify({ projects: [], currentProject: null });
+        }
+      },
       deserialize: (str) => {
         try {
-          return JSON.parse(str);
+          const state = JSON.parse(str);
+          // 데이터 구조 검증
+          if (!state.projects) state.projects = [];
+          if (state.currentProject) {
+            if (!state.currentProject.data) state.currentProject.data = {};
+            if (!state.currentProject.data.canvasState) {
+              state.currentProject.data.canvasState = {
+                walls: [],
+                furniture: [],
+                objects: [],
+                settings: {
+                  gridVisible: true,
+                  snapToGrid: true,
+                  gridSize: 20,
+                  currentWallType: {
+                    thickness: 10,
+                    height: 250,
+                  },
+                },
+              };
+            }
+          }
+          return state;
         } catch (err) {
           console.error("Failed to parse project data:", err);
           return { projects: [], currentProject: null };

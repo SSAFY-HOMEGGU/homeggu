@@ -104,7 +104,7 @@ const Catalog = ({ open, onClose }) => {
           depth: Number(item.depth),
           height: Number(item.height),
           model3D: {
-            glb: `/3d/${item.id}.glb`, // 3D 모델 경로 직접 지정
+            glb: `/3d/${item.id}.glb`,
           },
         },
       };
