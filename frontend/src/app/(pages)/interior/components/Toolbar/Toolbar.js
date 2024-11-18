@@ -30,7 +30,6 @@ import {
 import { useToast } from "@/app/components/ui/use-toast";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
-import { Select } from "@/components/ui/select";
 
 const WALL_PATTERNS = [
   { label: "흰색 민무늬", value: "wallpattern.jpg" },
@@ -476,13 +475,17 @@ const Toolbar = () => {
             <TooltipContent>Import</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <Select value={wallPattern} onValueChange={setWallPattern}>
+        <select
+          value={wallPattern}
+          onChange={(e) => setWallPattern(e.target.value)}
+          className="px-3 py-2 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
           {WALL_PATTERNS.map((pattern) => (
-            <SelectItem key={pattern.value} value={pattern.value}>
+            <option key={pattern.value} value={pattern.value}>
               {pattern.label}
-            </SelectItem>
+            </option>
           ))}
-        </Select>
+        </select>
       </div>
 
       {/* 드롭다운 메뉴가 열려있을 때 클릭 이벤트를 감지하여 닫기 위한 오버레이 */}
