@@ -15,12 +15,22 @@
 
 'use client';
 
+import { ErrorBoundary } from 'react-error-boundary';
 import ProductInfo from './components/ProductInfo';
 
-export default function ProductDetail({ params }) {
+function ErrorFallback({ error }) {
   return (
     <div>
-      <ProductInfo />
+      <h2>Something went wrong:</h2>
+      <pre>{error.message}</pre>
     </div>
+  );
+}
+
+export default function ProductDetail() {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <ProductInfo />
+    </ErrorBoundary>
   );
 }

@@ -283,23 +283,67 @@ export default function ProductInfo() {
     fetchProduct,
     updateSelectedProduct
   } = useProductStore();
+  
 
-  useEffect(() => {
-    const fetchProductAndLikeStatus = async () => {
-      if (params.productId) {
-        try {
-          console.log('Fetching product data...', params.productId);
-          const result = await fetchProduct(params.productId);
-          console.log('Fetch result:', result);
-          console.log('Current store state:', useProductStore.getState());
-        } catch (error) {
-          console.error('상품 정보 또는 좋아요 상태 조회 실패:', error);
-        }
-      }
-    };
+//   useEffect(() => {
+//     const fetchProductAndLikeStatus = async () => {
+//       if (params.productId) {
+//         try {
+//           console.log('Fetching product data...', params.productId);
+//           const result = await fetchProduct(params.productId);
+//           console.log('Fetch result:', result);
+//           console.log('Current store state:', useProductStore.getState());
+//         } catch (error) {
+//           console.error('상품 정보 또는 좋아요 상태 조회 실패:', error);
+//         }
+//       }
+//     };
 
-    fetchProductAndLikeStatus();
-}, [params.productId]);
+//     fetchProductAndLikeStatus();
+// }, [params.productId]);
+
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const userId = localStorage.getItem('userId');
+    console.log('userId', userId);
+    setUserId(userId);
+  }
+}, []);
+
+
+useEffect(() => {
+  if (!params?.productId) {
+    console.error('No productId found');
+    return;
+  }
+
+  const fetchProductAndLikeStatus = async () => {
+    try {
+      console.log('Fetching product data...', params.productId);
+      await fetchProduct(params.productId);
+    } catch (error) {
+      console.error('상품 정보 조회 실패:', error);
+    }
+  };
+
+  fetchProductAndLikeStatus();
+}, [params?.productId]);
+
+if (!params?.productId) {
+  return <div>Invalid product ID</div>;
+}
+
+if (loading) {
+  return <div>Loading...</div>;
+}
+
+if (error) {
+  return <div>Error: {error}</div>;
+}
+
+if (!selectedProduct) {
+  return <div>Product not found</div>;
+}
 
 // loading 체크 전에 상태 출력
 console.log('Component render state:', { loading, selectedProduct, error });
@@ -336,13 +380,7 @@ console.log('Component render state:', { loading, selectedProduct, error });
     'WARDROBE': '/category/electronics'
   };
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const userId = localStorage.getItem('userId');
-      console.log('userId', userId);
-      setUserId(userId);
-    }
-  }, []);
+  
 
   if (loading || !selectedProduct) {
     return <div>Loading...</div>;
