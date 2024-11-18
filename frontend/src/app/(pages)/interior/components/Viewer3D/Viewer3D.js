@@ -301,17 +301,14 @@ const Viewer3D = () => {
       console.log("Found furniture items:", furnitureItems.length);
 
       for (const furniture of furnitureItems) {
-        if (!furniture.metadata) {
-          console.warn("Missing metadata for furniture:", furniture);
-          continue;
-        }
-
-        const { model3D } = furniture.metadata;
-        console.log("Processing furniture:", furniture.metadata);
-
-        if (model3D?.glb) {
+        if (furniture.metadata.model3D?.glb) {
           try {
-            const model = await loadGLBModel(model3D.glb);
+            console.log(
+              "Loading 3D model from:",
+              furniture.metadata.model3D.glb
+            );
+            const model = await loadGLBModel(furniture.metadata.model3D.glb);
+
             if (!model) {
               console.warn(
                 "Failed to load model:",
@@ -326,9 +323,9 @@ const Viewer3D = () => {
             bbox.getSize(modelSize);
 
             // 실제 크기에 맞게 스케일 조정
-            const scaleX = metadata.width / 10 / modelSize.x;
-            const scaleY = metadata.height / 10 / modelSize.y;
-            const scaleZ = metadata.depth / 10 / modelSize.z;
+            const scaleX = furniture.metadata.width / modelSize.x;
+            const scaleY = furniture.metadata.height / modelSize.y;
+            const scaleZ = furniture.metadata.depth / modelSize.z;
 
             // NaN이나 Infinity 방지
             const scale = isFinite(Math.min(scaleX, scaleY, scaleZ))

@@ -2355,7 +2355,7 @@ class FloorPlanner {
       lockMovementY: false,
       hasBorders: true,
       type: "furniture-group",
-      metadata: { ...furnitureData.metadata },
+      metadata: furnitureData.metadata, // 중첩 없이 직접 metadata 할당
     });
 
     // 이동 시 스냅 동작 추가
