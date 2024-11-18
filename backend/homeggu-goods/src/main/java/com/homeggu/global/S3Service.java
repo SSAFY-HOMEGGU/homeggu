@@ -1,6 +1,7 @@
 package com.homeggu.global;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,12 @@ public class S3Service {
 
     public String uploadFile(MultipartFile file) throws IOException {
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        amazonS3Client.putObject(bucket, fileName, file.getInputStream(), null);
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
+
+        amazonS3Client.putObject(bucket, fileName, file.getInputStream(), metadata);
         return amazonS3Client.getUrl(bucket, fileName).toString(); // 업로드된 파일의 URL 반환
     }
 
