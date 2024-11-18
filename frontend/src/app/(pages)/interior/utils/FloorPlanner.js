@@ -2274,9 +2274,20 @@ class FloorPlanner {
     const canvas = this.getCanvas();
     const center = canvas.getCenter();
     console.log("Creating furniture with data:", furnitureData); // 디버깅용
-    // metadata에서 필요한 값들을 추출
-    const { width, depth, height, name } = furnitureData.metadata;
+    // metadata에서 필요한 값들을 추출하고 기본값 설정
+    const {
+      width = 100,
+      depth = 100,
+      height = 100,
+      name = "가구",
+      id = "unknown",
+    } = furnitureData.metadata || {};
 
+    // 유효성 검사
+    if (!width || !depth || !height) {
+      console.error("Invalid furniture dimensions:", { width, depth, height });
+      return;
+    }
     // 격자 크기에 맞게 스케일 조정 (1 그리드 = 10cm)
     const scaledWidth = (width / 10) * this.gridSize;
     const scaledDepth = (depth / 10) * this.gridSize;
@@ -2287,17 +2298,18 @@ class FloorPlanner {
       top: 0,
       width: scaledWidth,
       height: scaledDepth,
-      fill: "#B5936B",
+      fill: "#b9e5f0",
       stroke: "#8B7355",
       strokeWidth: 2,
       originX: "center",
       originY: "center",
-      name: name,
+      name: String(name), // 문자열로 변환
       type: "furniture",
       metadata: furnitureData.metadata,
     });
     // 가구 이름 텍스트
-    const text = new fabric.Text(name, {
+    const displayName = String(name || "가구");
+    const text = new fabric.Text(displayName, {
       left: 0,
       top: 0,
       fontSize: 12,
@@ -2305,6 +2317,7 @@ class FloorPlanner {
       originX: "center",
       originY: "center",
       selectable: false,
+      metadata: { type: "furniture-label" },
     });
 
     // 그룹으로 묶기
@@ -2320,27 +2333,35 @@ class FloorPlanner {
       lockMovementY: false,
       hasBorders: true,
       type: "furniture-group",
-      metadata: furnitureData.metadata,
+      metadata: {
+        ...furnitureData.metadata,
+        id: id,
+        name: displayName,
+      },
     });
-
     // 이동 시 스냅 동작 추가
     group.on("moving", (e) => {
       if (this.mode !== "select") return;
-
-      const pointer = group.getCenterPoint();
+      const pointer = this.snapToGrid
+        ? this.snapToGridPoint(this.canvas.getPointer(e.e))
+        : this.canvas.getPointer(e.e);
       const snapPoint = this.findNearestWallPoint(pointer);
-
       if (snapPoint) {
-        group.left = snapPoint.x - group.width / 2;
-        group.top = snapPoint.y - group.height / 2;
+        group.set({
+          left: snapPoint.x,
+          top: snapPoint.y,
+        });
       }
     });
-
-    console.log("Created furniture group with metadata:", group.metadata); // 디버깅용
 
     // 클릭 시 선택 상태 반영
     group.on("mousedown", () => {
       canvas.setActiveObject(group);
+    });
+    console.log("Created furniture group:", {
+      name: displayName,
+      dimensions: { width, depth, height },
+      metadata: group.metadata,
     });
 
     canvas.add(group);

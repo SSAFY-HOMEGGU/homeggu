@@ -86,25 +86,32 @@ const Catalog = ({ open, onClose }) => {
         setMode("wall");
       }
     } else if (item.type === "furniture") {
+      console.log("Selected furniture item:", item); // 디버깅용
+
+      // 데이터 유효성 검사
+      if (!item.id || !item.name) {
+        console.error("Invalid furniture item:", item);
+        return;
+      }
       // 3D 모델 정보를 포함하여 가구 추가
       const furnitureData = {
         type: "furniture",
         metadata: {
           type: "furniture",
-          id: item.id,
-          name: item.name,
-          width: item.width,
-          depth: item.depth,
-          height: item.height,
+          id: String(item.id),
+          name: String(item.name),
+          width: Number(item.width) || 100,
+          depth: Number(item.depth) || 100,
+          height: Number(item.height) || 100,
           model3D: {
             glb: `/3d/${item.id}.glb`,
-            width: item.width,
-            height: item.height,
-            depth: item.depth,
+            width: Number(item.width) || 100,
+            height: Number(item.height) || 100,
+            depth: Number(item.depth) || 100,
           },
         },
       };
-      console.log("Adding furniture with data:", furnitureData); // 디버깅용
+      console.log("Prepared furniture data:", furnitureData); // 디버깅용
 
       addFurniture(furnitureData);
     }
