@@ -72,53 +72,22 @@ export const salesBoard = (formData) => {
 //     throw error;
 //   }
 // };
-export const uploadGoodsImage = async (file) => {
+export const uploadGoodsImage = async (files) => {
   const formData = new FormData();
-  formData.append('files', file);  // 서버의 @RequestParam("files")와 일치하도록 'files'로 설정
-
-  console.log('전송할 파일 정보:', {
-    name: file.name,
-    type: file.type,
-    size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
-  });
-
-  // FormData 내용 확인을 위한 로깅
-  for (let pair of formData.entries()) {
-    console.log('FormData entry:', {
-      key: pair[0],
-      value: pair[1],
-      fileName: pair[1] instanceof File ? pair[1].name : 'not a file',
-      type: pair[1] instanceof File ? pair[1].type : 'not a file',
-      size: pair[1] instanceof File ? pair[1].size : 'not a file'
-    });
+  
+  // files가 배열이든 단일 파일이든 처리할 수 있도록
+  if (Array.isArray(files)) {
+    files.forEach(file => formData.append('files', file));
+  } else {
+    formData.append('files', files);
   }
 
   try {
-    const response = await productInstance.post('/board/image', formData, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'multipart/form-data',
-      }
-    });
-
-    console.log('이미지 업로드 성공:', response.data);
+    const response = await productInstance.post('/board/image', formData);
     return response.data;
   } catch (error) {
-    console.error('업로드 실패 상세:', {
-      requestConfig: {
-        url: error.config?.url,
-        method: error.config?.method,
-        headers: error.config?.headers,
-      },
-      response: {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers
-      },
-      message: error.message
-    });
-    throw new Error(`이미지 업로드 실패: ${error.response?.data?.message || error.message}`);
+    console.error('업로드 실패:', error);
+    throw error;
   }
 };
 
