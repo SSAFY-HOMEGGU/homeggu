@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/app/components/ui/tooltip";
+import NavigationController from "./NavigationController";
 
 const Canvas = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +20,8 @@ const Canvas = () => {
   const canvasRef = useRef(null);
   const floorPlannerRef = useRef(null);
   const containerRef = useRef(null);
+  const isDragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
 
   const {
     setCanvas,
@@ -28,6 +31,65 @@ const Canvas = () => {
     gridVisible,
     snapToGrid,
   } = useCanvasStore();
+
+  // 패닝 핸들러
+  const handlePan = useCallback((deltaX, deltaY) => {
+    if (floorPlannerRef.current?.canvas) {
+      const canvas = floorPlannerRef.current.canvas;
+      const vpt = canvas.viewportTransform;
+      vpt[4] += deltaX;
+      vpt[5] += deltaY;
+      canvas.requestRenderAll();
+      floorPlannerRef.current.createGrid();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const container = containerRef.current;
+
+    const handleMouseDown = (e) => {
+      if (e.button === 2) {
+        // 우클릭
+        isDragging.current = true;
+        lastPos.current = { x: e.clientX, y: e.clientY };
+        container.style.cursor = "grabbing";
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isDragging.current) return;
+
+      const deltaX = e.clientX - lastPos.current.x;
+      const deltaY = e.clientY - lastPos.current.y;
+
+      handlePan(deltaX, deltaY);
+
+      lastPos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        container.style.cursor = "default";
+      }
+    };
+
+    const preventContextMenu = (e) => e.preventDefault();
+
+    container.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    container.addEventListener("contextmenu", preventContextMenu);
+
+    return () => {
+      container.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      container.removeEventListener("contextmenu", preventContextMenu);
+    };
+  }, [handlePan]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -39,8 +101,96 @@ const Canvas = () => {
     }
 
     const container = containerRef.current;
-    const canvas = canvasRef.current;
+    let isPanning = false;
+    let lastX = 0;
+    let lastY = 0;
+    let isSpacePressed = false;
 
+    // 키보드 이벤트 리스너
+    const handleKeyDown = (e) => {
+      if (e.code === "Space" && !isSpacePressed) {
+        isSpacePressed = true;
+        container.style.cursor = "grab";
+        // 패닝 모드일 때 캔버스 선택 기능 비활성화
+        if (floorPlannerRef.current?.canvas) {
+          floorPlannerRef.current.canvas.selection = false;
+        }
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.code === "Space") {
+        isSpacePressed = false;
+        container.style.cursor = "default";
+        // 패닝 모드 해제 시 캔버스 선택 기능 복원
+        if (floorPlannerRef.current?.canvas) {
+          floorPlannerRef.current.canvas.selection = true;
+        }
+      }
+    };
+
+    // 마우스 이벤트 리스너
+    const handleMouseDown = (e) => {
+      if (e.button === 2 || (isSpacePressed && e.button === 0)) {
+        isPanning = true;
+        isPanningRef.current = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        container.style.cursor = "grabbing";
+
+        // 패닝 시작 시 캔버스 선택 기능 비활성화
+        if (floorPlannerRef.current?.canvas) {
+          floorPlannerRef.current.canvas.selection = false;
+          floorPlannerRef.current.canvas.discardActiveObject();
+          floorPlannerRef.current.canvas.renderAll();
+        }
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isPanning) return;
+
+      const deltaX = e.clientX - lastX;
+      const deltaY = e.clientY - lastY;
+
+      if (floorPlannerRef.current?.canvas) {
+        const canvas = floorPlannerRef.current.canvas;
+        const vpt = canvas.viewportTransform;
+        vpt[4] += deltaX;
+        vpt[5] += deltaY;
+        canvas.requestRenderAll();
+        floorPlannerRef.current.createGrid();
+      }
+
+      lastX = e.clientX;
+      lastY = e.clientY;
+    };
+
+    const handleMouseUp = () => {
+      if (isPanning) {
+        isPanning = false;
+        isPanningRef.current = false;
+        container.style.cursor = isSpacePressed ? "grab" : "default";
+
+        // 패닝 종료 시 캔버스 선택 기능 복원
+        if (floorPlannerRef.current?.canvas) {
+          floorPlannerRef.current.canvas.selection = true;
+        }
+      }
+    };
+
+    // 컨텍스트 메뉴 방지
+    const preventContextMenu = (e) => e.preventDefault();
+
+    // 이벤트 리스너 등록
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    container.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    container.addEventListener("contextmenu", preventContextMenu);
+
+    const canvas = canvasRef.current;
     const width = container.clientWidth;
     const height = container.clientHeight;
 
@@ -75,6 +225,7 @@ const Canvas = () => {
 
       // Selection events
       floorPlanner.canvas.on("selection:created", (e) => {
+        if (isPanningRef.current) return; // 패닝 중에는 선택 이벤트 무시
         const target = e.selected[0];
         if (target) {
           setSelectedObject({
@@ -119,7 +270,15 @@ const Canvas = () => {
     window.addEventListener("resize", handleResize);
 
     return () => {
+      // Cleanup all event listeners
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      container.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      container.removeEventListener("contextmenu", preventContextMenu);
       window.removeEventListener("resize", handleResize);
+
       if (floorPlannerRef.current?.canvas) {
         floorPlannerRef.current.canvas.dispose();
       }
@@ -199,51 +358,12 @@ const Canvas = () => {
       />
       {isLoading && <div>Loading...</div>}
 
-      <div className="absolute top-4 right-4 flex flex-col gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="bg-white shadow-md"
-                onClick={handleZoomIn}
-              >
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Zoom In</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="bg-white shadow-md"
-                onClick={handleZoomOut}
-              >
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Zoom Out</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="bg-white shadow-md"
-                onClick={handleResetView}
-              >
-                <RotateCw className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Reset View</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+      <NavigationController
+        onMove={handlePan}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onReset={handleResetView}
+      />
     </div>
   );
 };
