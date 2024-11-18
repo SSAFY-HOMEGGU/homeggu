@@ -8,7 +8,7 @@ import Chat from './components/Chat';
 import ChatPage from './components/ChatPage';
 import Image from 'next/image';
 
-export default function ChatContainer() {
+export default function ChatLayout() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedSalesBoardId, setSelectedSalesBoardId] = useState(null);
   const [selectedPartnerId, setselectedPartnerId] = useState(null);
