@@ -84,13 +84,27 @@ export const uploadGoodsImage = async (file) => {
   });
 
   try {
-    const response = await productInstance.post('/board/image', formData);
+    const response = await productInstance.post('/board/image', formData, {
+      headers: {
+        'Accept': 'application/json',
+        // multipart/form-data의 Content-Type은 자동으로 설정되도록 함
+        // boundary 파라미터가 자동으로 생성됨
+      },
+      transformRequest: [(data) => {
+        // FormData는 변형하지 않음
+        return data;
+      }],
+    });
+
     console.log('이미지 업로드 성공:', response.data);
     return response.data;
   } catch (error) {
-    console.error('이미지 업로드 실패:', {
+    console.error('업로드 실패 상세:', {
       status: error.response?.status,
-      message: error.response?.data?.message || error.message
+      statusText: error.response?.statusText,
+      headers: error.response?.headers,
+      data: error.response?.data,
+      message: error.message
     });
     throw error;
   }
