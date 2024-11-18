@@ -298,12 +298,18 @@ const Viewer3D = () => {
         .getObjects()
         .filter((obj) => obj.type === "furniture-group");
 
-      console.log("Found furniture items:", furnitureItems.length);
+      console.log("Processing furniture items:", furnitureItems);
 
       for (const furniture of furnitureItems) {
-        console.log("Processing furniture:", furniture.metadata); // metadata 확인
+        if (!furniture.metadata) {
+          console.warn("No metadata found for furniture:", furniture);
+          continue;
+        }
 
-        if (metadata?.model3D?.glb) {
+        console.log("Processing furniture metadata:", furniture.metadata);
+
+        const model3D = furniture.metadata.model3D;
+        if (model3D?.glb) {
           console.log("Loading 3D model from:", furniture.metadata.model3D.glb);
 
           try {
@@ -359,7 +365,7 @@ const Viewer3D = () => {
             continue;
           }
         } else {
-          console.warn("No 3D model data found for furniture:", furniture);
+          console.warn("No 3D model data for furniture:", furniture.metadata);
         }
       }
 

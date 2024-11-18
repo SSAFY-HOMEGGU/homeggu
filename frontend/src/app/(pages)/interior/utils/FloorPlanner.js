@@ -55,6 +55,17 @@ class FloorPlanner {
     this.lengthText = null;
     this.isDrawingWall = false;
     this.areaText = null;
+    // fabric.Object에 기본 metadata 설정
+    fabric.Object.prototype.toObject = (function (toObject) {
+      return function (propertiesToInclude) {
+        return fabric.util.object.extend(
+          toObject.call(this, propertiesToInclude),
+          {
+            metadata: this.metadata || { type: "unknown" },
+          }
+        );
+      };
+    })(fabric.Object.prototype.toObject);
 
     this.initialize();
   }
@@ -2291,14 +2302,17 @@ class FloorPlanner {
     const canvas = this.getCanvas();
     const center = canvas.getCenter();
     console.log("Creating furniture with data:", furnitureData); // 디버깅용
+
     // metadata에서 필요한 값들을 추출하고 기본값 설정
-    const {
-      width = 100,
-      depth = 100,
-      height = 100,
-      name = "가구",
-      id = "unknown",
-    } = furnitureData.metadata || {};
+    const metadata = {
+      type: "furniture",
+      id: String(furnitureData.metadata.id || "unknown"),
+      name: String(furnitureData.metadata.name || "가구"),
+      width: Number(furnitureData.metadata.width || 100),
+      depth: Number(furnitureData.metadata.depth || 100),
+      height: Number(furnitureData.metadata.height || 100),
+      model3D: furnitureData.metadata.model3D || null,
+    };
 
     // 유효성 검사
     if (!width || !depth || !height) {
@@ -2309,24 +2323,22 @@ class FloorPlanner {
     const scaledWidth = (width / 10) * this.gridSize;
     const scaledDepth = (depth / 10) * this.gridSize;
 
-    // 가구 생성
+    // 가구 객체
     const furnitureObj = new fabric.Rect({
       left: 0,
       top: 0,
       width: scaledWidth,
       height: scaledDepth,
-      fill: "#b9e5f0",
+      fill: "#B5936B",
       stroke: "#8B7355",
       strokeWidth: 2,
       originX: "center",
       originY: "center",
-      name: String(name), // 문자열로 변환
-      type: "furniture",
-      metadata: furnitureData.metadata,
+      metadata: metadata,
     });
+
     // 가구 이름 텍스트
-    const displayName = String(name || "가구");
-    const text = new fabric.Text(displayName, {
+    const text = new fabric.Text(metadata.name, {
       left: 0,
       top: 0,
       fontSize: 12,
@@ -2350,11 +2362,7 @@ class FloorPlanner {
       lockMovementY: false,
       hasBorders: true,
       type: "furniture-group",
-      metadata: {
-        ...furnitureData.metadata,
-        id: id,
-        name: displayName,
-      },
+      metadata: metadata,
     });
     // 이동 시 스냅 동작 추가
     group.on("moving", (e) => {
@@ -2384,9 +2392,38 @@ class FloorPlanner {
     canvas.add(group);
     canvas.renderAll();
 
+    console.log("Created furniture group with metadata:", group.metadata);
+
     return group;
   }
+  ensureMetadata(obj, type = "unknown") {
+    if (!obj.metadata) {
+      obj.metadata = { type };
+    }
+    return obj.metadata;
+  }
 
+  getObjectMetadata(obj) {
+    return obj.metadata || { type: "unknown" };
+  }
+
+  setObjectMetadata(obj, metadata) {
+    obj.metadata = { ...obj.metadata, ...metadata };
+    return obj;
+  }
+
+  validateMetadata(metadata) {
+    if (!metadata) return false;
+    if (metadata.type === "furniture") {
+      return;
+      metadata.id &&
+        metadata.name &&
+        typeof metadata.width === "number" &&
+        typeof metadata.depth === "number" &&
+        typeof metadata.height === "number";
+    }
+    return true;
+  }
   findNearestWallPoint(point) {
     let nearestPoint = null;
     let minDistance = Infinity;
