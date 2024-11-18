@@ -164,8 +164,14 @@ export default function ImageUpload({ onUpload }) {
       });
   
       console.log('4. FormData 키 목록:');
-      for (let key of formData.keys()) {
-        console.log('- FormData 키:', key);
+      // FormData 내용 확인
+      for (let [key, value] of formData.entries()) {
+        console.log('FormData 항목:', {
+          key: key,
+          fileName: value instanceof File ? value.name : 'not a file',
+          type: value instanceof File ? value.type : typeof value,
+          size: value instanceof File ? value.size : 'N/A'
+        });
       }
   
       console.log('5. API 호출 직전');
