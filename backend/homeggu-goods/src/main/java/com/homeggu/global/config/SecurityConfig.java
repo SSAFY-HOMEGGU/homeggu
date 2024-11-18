@@ -23,9 +23,6 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> httpBasic.disable()) // HTTP Basic 인증 비활성화
                 .authorizeExchange(exchange -> exchange
                         .anyExchange().permitAll());
-//                .addFilterAt(new JwtFilter(jwtProvider), SecurityWebFiltersOrder.AUTHENTICATION);
-
         return http.build();
     }
 }
-
