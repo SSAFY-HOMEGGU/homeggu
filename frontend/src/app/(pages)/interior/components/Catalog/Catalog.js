@@ -99,7 +99,7 @@ const Catalog = ({ open, onClose }) => {
 
         <div className="relative mb-4">
           <Input
-            placeholder="이름 또는 판매자명 검색"
+            placeholder="이름 또는 제품명 검색"
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -182,8 +182,8 @@ const Catalog = ({ open, onClose }) => {
                           <Image
                             src={item.image}
                             alt={item.name}
-                            width={100}
-                            height={100}
+                            width={110}
+                            height={110}
                             className="rounded"
                           />
                         </div>
@@ -193,9 +193,6 @@ const Catalog = ({ open, onClose }) => {
                         </p>
                         <p className="text-sm text-gray-600">
                           가격: {item.price.toLocaleString()}원
-                        </p>
-                        <p className="text-sm text-gray-500 mt-2">
-                          {item.sellerId}
                         </p>
                       </div>
                     ))}
