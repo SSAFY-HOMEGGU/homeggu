@@ -7,6 +7,8 @@ module.exports = {
   ],
   theme: {
     extend: {
+      scrollbar: ["rounded"],
+
       fontFamily: {
         sans: ["Noto Sans kr", "sans-serif"],
         tmoney: ["Tmoney RoundWind", "sans-serif"],
@@ -25,5 +27,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwind-scrollbar")],
 };

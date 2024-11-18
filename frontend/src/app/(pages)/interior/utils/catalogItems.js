@@ -1,4 +1,7 @@
-// /utils/catalogItems.js
+//interior/utils/catalogItems.js
+import { productInstance } from "@/app/api/axiosInstance";
+
+// 벽 타입은 그대로 유지 (API에서 가져오지 않음)
 export const wallTypes = [
   {
     id: "normal-wall",
@@ -9,100 +12,34 @@ export const wallTypes = [
     description: "그냥 벽이구먼요",
   },
   {
-    id: "room-wall",
+    id: "rectangular-room",
     name: "직사각형 방",
     thickness: 10,
     height: 240,
     image: "/images/newPlanSquare.jpg",
     description: "가로4m, 세로3m 직사각형 방",
-    // 방에 사용된 벽 구성 정보
     walls: [
-      { x1: 0, y1: 0, x2: 400, y2: 0 }, // 상단 벽
-      { x1: 400, y1: 0, x2: 400, y2: 300 }, // 우측 벽
-      { x1: 400, y1: 300, x2: 0, y2: 300 }, // 하단 벽
-      { x1: 0, y1: 300, x2: 0, y2: 0 }, // 좌측 벽
+      { x1: 0, y1: 0, x2: 400, y2: 0 },
+      { x1: 400, y1: 0, x2: 400, y2: 300 },
+      { x1: 400, y1: 300, x2: 0, y2: 300 },
+      { x1: 0, y1: 300, x2: 0, y2: 0 },
     ],
   },
   {
-    id: "room-wall",
+    id: "L-room",
     name: "L자형 방",
     thickness: 10,
     height: 240,
     image: "/images/newPlanL.jpg",
     description: "아무튼 L자모양 방",
-    // 방에 사용된 벽 구성 정보
     walls: [
-      { x1: 0, y1: 0, x2: 400, y2: 0 }, // 상단 벽
-      { x1: 400, y1: 0, x2: 400, y2: 200 }, // 오른쪽 상단 벽
-      { x1: 400, y1: 200, x2: 200, y2: 200 }, // 내부 아래쪽 벽 (오른쪽에서 꺾임)
-      { x1: 200, y1: 200, x2: 200, y2: 400 }, // 내부 왼쪽 아래 벽
-      { x1: 200, y1: 400, x2: 0, y2: 400 }, // 하단 벽
-      { x1: 0, y1: 400, x2: 0, y2: 0 }, // 왼쪽 벽
+      { x1: 0, y1: 0, x2: 400, y2: 0 },
+      { x1: 400, y1: 0, x2: 400, y2: 200 },
+      { x1: 400, y1: 200, x2: 200, y2: 200 },
+      { x1: 200, y1: 200, x2: 200, y2: 400 },
+      { x1: 200, y1: 400, x2: 0, y2: 400 },
+      { x1: 0, y1: 400, x2: 0, y2: 0 },
     ],
-  },
-];
-
-export const furnitureItems = [
-  {
-    id: "DESK",
-    name: "식탁이구먼",
-    width: 100,
-    depth: 60,
-    height: 110,
-    image: "/images/table1.jpg",
-    sellerId: "졸려가구",
-    category: "DESK",
-    model3D: null,
-  },
-  {
-    id: "DESK",
-    name: "a",
-    width: 140,
-    depth: 80,
-    height: 100,
-    image: "/images/desk1.jpg",
-    sellerId: "졸려가구",
-    category: "DESK",
-    model3D: {
-      obj: "/3d/a.obj",
-      mtl: "/3d/a.mtl",
-      scale: 50,
-      rotationY: 0, // 필요한 경우 기본 회전값 설정
-      offsetY: 50, // 필요한 경우 높이 오프셋 설정
-    },
-  },
-  {
-    id: "CHAIR",
-    name: "CHAIR",
-    width: 200,
-    depth: 85,
-    height: 80,
-    image: "/images/sofa1.jpg",
-    sellerId: "졸려가구",
-    category: "CHAIR",
-    model3D: null,
-  },
-  {
-    id: "BED",
-    name: "싸다싸가구",
-    width: 200,
-    depth: 150,
-    height: 80,
-    image: "/images/bed2.png",
-    sellerId: "홈꾸가구",
-    category: "BED",
-    model3D: null,
-  },
-  {
-    id: "BED",
-    name: "집에가구파",
-    width: 200,
-    depth: 150,
-    height: 80,
-    image: "/images/bed3.png",
-    sellerId: "두리가구",
-    category: "BED",
-    model3D: null,
   },
 ];
 
@@ -120,3 +57,51 @@ export const FURNITURE_CATEGORIES = [
   { id: "LIGHTING", name: "조명기구" },
   { id: "DECOR_ITEM", name: "데코 아이템" },
 ];
+
+// API로부터 가구 아이템을 가져오는 함수
+export const getFurnitureItems = async (category = "", page = 0, size = 20) => {
+  try {
+    const response = await productInstance.get("/board", {
+      params: {
+        category,
+        page,
+        size,
+        isSell: "AVAILABLE", // 판매 가능한 상품만 가져오기
+      },
+    });
+
+    // API 응답 데이터를 furnitureItems 형식으로 변환
+    const items = response.data.content.map((item) => ({
+      id: item.salesBoardId.toString(),
+      name: item.title,
+      width: item.goods_x,
+      depth: item.goods_y,
+      height: item.goods_z,
+      image: item.goodsImagePaths[0] || "/images/placeholder.jpg", // 첫 번째 2D 이미지
+      glbPath: item.threeDimensionsGoodsImagePaths[0] || null, // 3D .glb 파일 경로
+      sellerId: `판매자 ${item.userId}`,
+      category: item.category,
+      price: item.price,
+      status: item.status,
+      deliveryPrice: item.deliveryPrice,
+    }));
+
+    return {
+      items,
+      totalPages: response.data.totalPages,
+      totalElements: response.data.totalElements,
+      currentPage: response.data.number,
+    };
+  } catch (error) {
+    console.error("가구 데이터 로딩 실패:", error);
+    return {
+      items: [],
+      totalPages: 0,
+      totalElements: 0,
+      currentPage: 0,
+    };
+  }
+};
+
+// 초기 상태는 빈 배열로 설정
+export const furnitureItems = [];

@@ -1,4 +1,4 @@
-//interior/page.js
+//interior/components/ProjectList/NewProjectDialog.js
 "use client";
 
 import React from "react";
@@ -9,16 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/app/components/ui/dialog.jsx";
-import { Input } from "@/app/components/ui/input.jsx";
-import { Button } from "@/app/components/ui/button.jsx";
-import { Label } from "@/app/components/ui/label.js";
-import { ScrollArea } from "@/app/components/ui/scroll-area.js";
-import useProjectStore from "./store/projectStore";
+} from "@/app/components/ui/dialog";
+import { Input } from "@/app/components/ui/input";
+import { Button } from "@/app/components/ui/button";
+import { Label } from "@/app/components/ui/label";
+import { ScrollArea } from "@/app/components/ui/scroll-area";
+import useProjectStore from "../../store/projectStore";
 import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
 import { Pencil, Trash2 } from "lucide-react";
-import { toast } from "react-toastify";
 
 const Page = () => {
   const router = useRouter();
@@ -32,38 +30,23 @@ const Page = () => {
     e.preventDefault();
     if (projectName.trim()) {
       const project = createProject(projectName.trim());
-      if (project && project.id) {
-        setProjectName("");
-        setIsNewProjectOpen(false);
-        toast.success("새 프로젝트가 생성되었습니다.");
-        router.push(`/interior/${project.id}`);
-      } else {
-        toast.error("프로젝트 생성에 실패했습니다.");
-      }
+      setProjectName("");
+      setIsNewProjectOpen(false);
+      router.push(`/interior/${project.id}`);
     }
   };
 
   const handleSelectProject = (project) => {
-    if (project && project.id) {
-      loadProject(project.id);
-      setIsProjectListOpen(false);
-      router.push(`/interior/${project.id}`);
-    } else {
-      toast.error("프로젝트를 불러올 수 없습니다.");
-    }
+    loadProject(project.id);
+    setIsProjectListOpen(false);
+    router.push(`/interior/${project.id}`);
   };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Create New Project Card */}
-        <Dialog
-          open={isNewProjectOpen}
-          onOpenChange={(open) => {
-            console.log("Dialog open state changed:", open); // 디버깅 로그
-            setIsNewProjectOpen(open);
-          }}
-        >
+        <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
           <DialogTrigger asChild>
             <div className="group relative rounded-3xl bg-blue-100 hover:bg-blue-200 transition-colors cursor-pointer overflow-hidden h-[500px] flex items-center justify-center">
               <div className="text-center">
@@ -83,11 +66,8 @@ const Page = () => {
                 <Input
                   id="projectName"
                   value={projectName}
-                  onChange={(e) => {
-                    console.log("Project name input:", e.target.value); // 디버깅 로그
-                    setProjectName(e.target.value);
-                  }}
-                  placeholder="프로젝트 이름을 입력하세요"
+                  onChange={(e) => setProjectName(e.target.value)}
+                  placeholder="방 이름을 입력하세요"
                 />
               </div>
               <Button type="submit" className="w-full">
@@ -98,13 +78,7 @@ const Page = () => {
         </Dialog>
 
         {/* View Projects List Card */}
-        <Dialog
-          open={isProjectListOpen}
-          onOpenChange={(open) => {
-            console.log("Project list dialog open state changed:", open); // 디버깅 로그
-            setIsProjectListOpen(open);
-          }}
-        >
+        <Dialog open={isProjectListOpen} onOpenChange={setIsProjectListOpen}>
           <DialogTrigger asChild>
             <div className="group relative rounded-3xl bg-white border-2 border-gray-100 hover:border-gray-200 transition-colors cursor-pointer overflow-hidden h-[500px] flex items-center justify-center">
               <div className="text-center">
@@ -142,12 +116,10 @@ const Page = () => {
                           <p className="text-sm text-gray-500">
                             마지막 수정:{" "}
                             {formatDistanceToNow(
-                              new Date(project.lastModified),
-                              { locale: ko }
+                              new Date(project.lastModified)
                             )}{" "}
                             전
                           </p>
-                          ;
                         </div>
                         <div className="flex items-center gap-2">
                           <Button
@@ -157,7 +129,6 @@ const Page = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               router.push(`/interior/${project.id}`);
-                              console.log("Editing project:", project.id); // 디버깅 로그
                             }}
                           >
                             <Pencil className="h-4 w-4" />
@@ -168,7 +139,6 @@ const Page = () => {
                             className="h-8 w-8 text-red-500 hover:text-red-600"
                             onClick={(e) => {
                               e.stopPropagation();
-                              console.log("Deleting project:", project.id); // 디버깅 로그
                               deleteProject(project.id);
                             }}
                           >
