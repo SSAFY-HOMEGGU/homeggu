@@ -46,13 +46,7 @@ export default function KakaoCallback() {
             console.error('토큰 디코딩 에러:', error);
           }
           
-          // 설문 초기화 하기
-          try {
-            const preferenceResponse = await preferenceInit();
-            console.log('초기 선호도 설정 응답:', preferenceResponse);
-          } catch (error) {
-            console.error('선호도 초기화 에러:', error);
-          }
+          
 
           // router.push('/');
           if (response.firstLogin) {

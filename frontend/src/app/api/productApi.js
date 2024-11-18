@@ -1,4 +1,5 @@
-import { productInstance } from "./axiosInstance";
+// import { productInstance } from "./axiosInstance";
+import { productInstance } from "./axiosInstanceLocal";
 
 
 // 물건 등록
