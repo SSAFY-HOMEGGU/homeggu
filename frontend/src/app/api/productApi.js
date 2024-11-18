@@ -44,11 +44,21 @@ export const uploadGoodsImage = async (files) => {
 
   // FormData 내용 확인
   for (let pair of formData.entries()) {
-    console.log('FormData contains:', pair[0], pair[1]);
+    console.log('FormData entry:', {
+      key: pair[0],
+      value: pair[1],
+      fileName: pair[1] instanceof File ? pair[1].name : 'not a file',
+      type: pair[1] instanceof File ? pair[1].type : 'not a file',
+      size: pair[1] instanceof File ? pair[1].size : 'not a file'
+    });
   }
 
   try {
-    const response = await productInstance.post('/board/image', formData);
+    const response = await productInstance.post('/board/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('이미지 업로드 에러:', {
