@@ -23,7 +23,7 @@ export const userInstance = axios.create({
 
 // 3. 채팅 API용 axios instance (8080 포트, 토큰 필요)
 export const chatInstance = axios.create({
-  baseURL: "https://k11b206.p.ssafy.io/api/chat",
+  baseURL: "https://k11b206.p.ssafy.io/api/",
   timeout: 5000000,
   withCredentials: true,
   headers: {
