@@ -94,7 +94,7 @@ export const uploadGoodsImage = async (file) => {
 
   try {
     // 현재 사용할 FormData 선택
-    const formData = formData3;  // 여기서 시도할 버전 선택
+    const formData = formData2;  // 여기서 시도할 버전 선택
     const response = await productInstance.post('/board/image', formData, {
       headers: {
         'Accept': 'application/json',
