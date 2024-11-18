@@ -31,21 +31,39 @@ const Viewer3D = () => {
       const loader = new GLTFLoader();
       const manager = new THREE.LoadingManager();
 
-      // 로딩 매니저 설정
+      manager.onStart = (url) => {
+        console.log("Started loading GLB:", url);
+      };
+
+      manager.onProgress = (url, loaded, total) => {
+        console.log("Loading GLB progress:", url, (loaded / total) * 100 + "%");
+      };
+
       manager.onError = (url) => {
         console.error("Error loading GLB:", url);
-        // 기본 에러 핸들링 후 폴백 모델 시도
+        // 로드 실패 시 경로 문제인지 확인
+        console.log(
+          "Full resolved path:",
+          new URL(modelPath, window.location.href).href
+        );
+        // 폴백 모델 시도
         tryLoadFallbackModel(reject);
       };
 
       loader.setManager(manager);
 
       const tryLoadModel = (path) => {
+        // 경로가 /로 시작하는지 확인
+        const processedPath = path.startsWith("/") ? path : `/${path}`;
+        console.log("Processed model path:", processedPath);
+
         loader.load(
           path,
           (gltf) => {
             try {
               const model = gltf.scene;
+              console.log("GLB model loaded successfully:", model);
+
               const bbox = new THREE.Box3().setFromObject(model);
               const size = new THREE.Vector3();
               bbox.getSize(size);
@@ -74,13 +92,11 @@ const Viewer3D = () => {
             }
           },
           (progress) => {
-            console.log(
-              "Loading progress:",
-              (progress.loaded / progress.total) * 100 + "%"
-            );
+            const percentage = (progress.loaded / progress.total) * 100;
+            console.log(`Loading progress: ${percentage.toFixed(2)}%`);
           },
           (error) => {
-            console.error("GLB loading error:", error);
+            console.error("GLB loading error details:", error);
             tryLoadFallbackModel(reject);
           }
         );
@@ -282,11 +298,16 @@ const Viewer3D = () => {
         .getObjects()
         .filter((obj) => obj.type === "furniture-group");
 
+      console.log("Found furniture items:", furnitureItems.length);
+
       for (const furniture of furnitureItems) {
         const metadata = furniture.getObjects()[0].metadata;
+        console.log("Furniture metadata:", metadata);
 
         if (metadata?.model3D?.glb) {
           try {
+            console.log("Attempting to load 3D model:", metadata.model3D.glb);
+
             const model = await loadGLBModel(metadata.model3D.glb);
 
             if (!model) {
@@ -328,8 +349,11 @@ const Viewer3D = () => {
             // 렌더링 업데이트
             renderer.render(scene, camera);
           } catch (error) {
-            console.error("Error processing furniture item:", error);
+            console.error("Failed to load furniture model:", error);
+            continue;
           }
+        } else {
+          console.log("No GLB path found for furniture:", furniture);
         }
       }
 
