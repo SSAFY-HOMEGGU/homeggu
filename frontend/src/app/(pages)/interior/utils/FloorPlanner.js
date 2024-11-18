@@ -2315,7 +2315,7 @@ class FloorPlanner {
       hasControls: false,
       lockScalingX: true,
       lockScalingY: true,
-      lockRotation: true,
+      lockRotation: false, // 회전 허용
       lockMovementX: false,
       lockMovementY: false,
       hasBorders: true,
@@ -2323,6 +2323,7 @@ class FloorPlanner {
       metadata: {
         type: "furniture",
         ...furniture,
+        model3D: furniture.metadata?.model3D || null,
       },
     });
 
