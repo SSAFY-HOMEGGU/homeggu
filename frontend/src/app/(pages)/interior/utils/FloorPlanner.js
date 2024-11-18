@@ -2274,8 +2274,8 @@ class FloorPlanner {
     const center = canvas.getCenter();
 
     // 격자 크기에 맞게 스케일 조정 (1 그리드 = 10cm)
-    const scaledWidth = (width / 10) * this.gridSize;
-    const scaledDepth = (depth / 10) * this.gridSize;
+    const scaledWidth = ((width / 10) * this.gridSize) / 10;
+    const scaledDepth = ((depth / 10) * this.gridSize) / 10;
 
     // 가구 생성
     const furnitureObj = new fabric.Rect({

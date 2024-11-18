@@ -29,66 +29,98 @@ const Viewer3D = () => {
   const loadGLBModel = async (modelPath) => {
     return new Promise((resolve, reject) => {
       const loader = new GLTFLoader();
+      const manager = new THREE.LoadingManager();
 
       // 로딩 매니저 설정
-      const manager = new THREE.LoadingManager();
       manager.onError = (url) => {
         console.error("Error loading GLB:", url);
-        reject(new Error(`Failed to load: ${url}`));
+        // 기본 에러 핸들링 후 폴백 모델 시도
+        tryLoadFallbackModel(reject);
       };
 
-      loader.setPath("/");
-      loader.load(
-        modelPath,
-        (gltf) => {
-          try {
-            const model = gltf.scene;
+      loader.setManager(manager);
 
-            // 모델의 바운딩 박스 계산
-            const bbox = new THREE.Box3().setFromObject(model);
-            const size = new THREE.Vector3();
-            bbox.getSize(size);
+      const tryLoadModel = (path) => {
+        loader.load(
+          path,
+          (gltf) => {
+            try {
+              const model = gltf.scene;
+              const bbox = new THREE.Box3().setFromObject(model);
+              const size = new THREE.Vector3();
+              bbox.getSize(size);
 
-            // 모델 중심점 계산
-            const center = new THREE.Vector3();
-            bbox.getCenter(center);
+              // 모델 중심점 계산
+              const center = new THREE.Vector3();
+              bbox.getCenter(center);
+              model.position.sub(center);
 
-            // 모델을 원점으로 이동
-            model.position.sub(center);
-
-            // 그림자 설정
-            model.traverse((node) => {
-              if (node.isMesh) {
-                node.castShadow = true;
-                node.receiveShadow = true;
-
-                // 재질 설정 최적화
-                if (node.material) {
-                  node.material.needsUpdate = true;
-                  node.material.side = THREE.DoubleSide;
+              // 그림자 설정
+              model.traverse((node) => {
+                if (node.isMesh) {
+                  node.castShadow = true;
+                  node.receiveShadow = true;
+                  if (node.material) {
+                    node.material.needsUpdate = true;
+                    node.material.side = THREE.DoubleSide;
+                  }
                 }
-              }
-            });
+              });
 
-            resolve(model);
-          } catch (error) {
-            console.error("Error processing GLB model:", error);
+              resolve(model);
+            } catch (error) {
+              console.error("Error processing GLB model:", error);
+              tryLoadFallbackModel(reject);
+            }
+          },
+          (progress) => {
+            console.log(
+              "Loading progress:",
+              (progress.loaded / progress.total) * 100 + "%"
+            );
+          },
+          (error) => {
+            console.error("GLB loading error:", error);
+            tryLoadFallbackModel(reject);
+          }
+        );
+      };
+
+      // 폴백 모델 로드 시도
+      const tryLoadFallbackModel = (reject) => {
+        const fallbackPath = "/3d/fallback.glb"; // 기본 큐브 모델 경로
+        console.warn(`Trying fallback model from: ${fallbackPath}`);
+
+        loader.load(
+          fallbackPath,
+          (gltf) => {
+            try {
+              const model = gltf.scene;
+              model.traverse((node) => {
+                if (node.isMesh) {
+                  node.material = new THREE.MeshStandardMaterial({
+                    color: 0x808080,
+                    transparent: true,
+                    opacity: 0.7,
+                  });
+                }
+              });
+              resolve(model);
+            } catch (error) {
+              console.error("Error loading fallback model:", error);
+              reject(error);
+            }
+          },
+          undefined,
+          (error) => {
+            console.error("Failed to load fallback model:", error);
             reject(error);
           }
-        },
-        // 로딩 진행상황
-        (progress) => {
-          console.log(
-            "Loading progress:",
-            (progress.loaded / progress.total) * 100 + "%"
-          );
-        },
-        // 에러 처리
-        (error) => {
-          console.error("GLB loading error:", error);
-          reject(error);
-        }
-      );
+        );
+      };
+
+      // 원본 모델 로드 시도
+      tryLoadModel(modelPath);
     });
   };
 
@@ -271,7 +303,11 @@ const Viewer3D = () => {
             const scaleX = metadata.width / modelSize.x;
             const scaleY = metadata.height / modelSize.y;
             const scaleZ = metadata.depth / modelSize.z;
-            const scale = Math.min(scaleX, scaleY, scaleZ);
+
+            // NaN이나 Infinity 방지
+            const scale = isFinite(Math.min(scaleX, scaleY, scaleZ))
+              ? Math.min(scaleX, scaleY, scaleZ)
+              : 1;
 
             model.scale.set(scale, scale, scale);
 
