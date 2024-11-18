@@ -245,9 +245,9 @@ export default function Sell() {
   // };
 
   const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    // if (!validateForm()) {
+    //   return;
+    // }
   
     try {
       setIsLoading(true);
