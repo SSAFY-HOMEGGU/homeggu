@@ -72,23 +72,20 @@ export const salesBoard = (formData) => {
 //     throw error;
 //   }
 // };
-export const uploadGoodsImage = async (file) => {
-  const formData = new FormData();
-  formData.append('files[]', file); 
-
-  for (let pair of formData.entries()) {
-    console.log('formData 내용:', pair[0], pair[1]);
-  }
-  
+export const uploadGoodsImage = async (formData) => {
   try {
-    const response = await productInstance.post('/board/image', formData);
+    const response = await axios.post('/api/goods/board/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('업로드 실패:', error);
     throw error;
   }
- };
-
+};
+  
 // 물건 3D 이미지 등록
 export const uploadGoods3DImage = async (files) => {
   const formData = new FormData();

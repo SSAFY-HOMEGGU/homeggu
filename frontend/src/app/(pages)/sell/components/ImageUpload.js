@@ -145,37 +145,24 @@ export default function ImageUpload({ onUpload }) {
     setIsUploading(true);
   
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        console.log('업로드할 파일:', file);
-        console.log('파일 타입:', file.type);
-        console.log('파일 크기:', file.size);
-        
-        if (uploadedImages >= 10) {
-          alert('이미지는 최대 10개까지만 업로드 가능합니다.');
-          break;
-        }
-  
-        const formData = new FormData();
+      const formData = new FormData();
+      // 모든 파일을 동일한 키로 추가
+      Array.from(files).forEach(file => {
         formData.append('files', file);
-        
-        const uploadedUrl = await uploadGoodsImage(file);
-        
-        if (uploadedUrl) {
-          const previewUrl = URL.createObjectURL(file);
-          setImagePreviews(prev => [...prev, previewUrl]);
-          setUploadedUrls(prev => [...prev, uploadedUrl]);
-          setUploadedImages(prev => prev + 1);
+      });
   
-          if (uploadedImages === 0) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setGoodsImages([uploadedUrl]); // 첫 이미지
-            };
-            reader.readAsDataURL(file);
-          } else {
-            setGoodsImages([...uploadedUrls, uploadedUrl]); // 추가 이미지
-          }
+      const uploadedUrl = await uploadGoodsImage(formData); // formData 직접 전달
+      
+      if (uploadedUrl) {
+        const previewUrl = URL.createObjectURL(file);
+        setImagePreviews(prev => [...prev, previewUrl]);
+        setUploadedUrls(prev => [...prev, uploadedUrl]);
+        setUploadedImages(prev => prev + 1);
+  
+        if (uploadedImages === 0) {
+          setGoodsImages([uploadedUrl]);
+        } else {
+          setGoodsImages([...uploadedUrls, uploadedUrl]);
         }
       }
     } catch (error) {
@@ -185,7 +172,7 @@ export default function ImageUpload({ onUpload }) {
       setIsUploading(false);
     }
   };
-  
+
   const removeImage = (indexToRemove) => {
     const updatedPreviews = imagePreviews.filter((_, index) => index !== indexToRemove);
     const updatedFiles = imageFiles.filter((_, index) => index !== indexToRemove);
