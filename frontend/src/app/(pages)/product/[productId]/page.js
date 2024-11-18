@@ -18,11 +18,12 @@
 import { ErrorBoundary } from 'react-error-boundary';
 import ProductInfo from './components/ProductInfo';
 
-function ErrorFallback({ error }) {
+function ErrorFallback({ error,componentStack  }) {
   return (
     <div>
       <h2>Something went wrong:</h2>
       <pre>{error.message}</pre>
+      <pre>{componentStack}</pre>
     </div>
   );
 }
