@@ -88,12 +88,17 @@ const Catalog = ({ open, onClose }) => {
     } else if (item.type === "furniture") {
       // 3D 모델 정보를 포함하여 가구 추가
       const furnitureData = {
+        type: "furniture",
         ...item,
         metadata: {
           type: "furniture",
-          ...item,
+          id: item.id,
+          name: item.name,
+          width: item.width,
+          depth: item.depth,
+          height: item.height,
           model3D: {
-            glb: item.glbPath,
+            glb: `/3d/${item.id}.glb`, // salesBoardId를 이용한 경로 설정
             width: item.width,
             height: item.height,
             depth: item.depth,

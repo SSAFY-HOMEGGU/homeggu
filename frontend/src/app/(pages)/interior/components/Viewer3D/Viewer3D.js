@@ -301,17 +301,19 @@ const Viewer3D = () => {
       console.log("Found furniture items:", furnitureItems.length);
 
       for (const furniture of furnitureItems) {
-        const metadata = furniture.metadata;
-        console.log("Processing furniture:", metadata);
+        console.log("Processing furniture:", furniture.metadata); // metadata 확인
 
         if (metadata?.model3D?.glb) {
-          try {
-            console.log("Attempting to load 3D model:", metadata.model3D.glb);
+          console.log("Loading 3D model from:", furniture.metadata.model3D.glb);
 
-            const model = await loadGLBModel(metadata.model3D.glb);
+          try {
+            const model = await loadGLBModel(furniture.metadata.model3D.glb);
 
             if (!model) {
-              console.warn("Failed to load model:", metadata.model3D.glb);
+              console.warn(
+                "Failed to load model:",
+                furniture.metadata.model3D.glb
+              );
               continue;
             }
 
@@ -349,11 +351,15 @@ const Viewer3D = () => {
             // 렌더링 업데이트
             renderer.render(scene, camera);
           } catch (error) {
-            console.error("Failed to load furniture model:", error);
+            console.error(
+              "Error processing furniture item:",
+              error,
+              furniture.metadata
+            );
             continue;
           }
         } else {
-          console.log("No GLB path found for furniture:", furniture);
+          console.warn("No 3D model data found for furniture:", furniture);
         }
       }
 

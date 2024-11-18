@@ -2269,9 +2269,9 @@ class FloorPlanner {
   createFurniture(furniture) {
     if (!furniture) return;
 
-    const { width, depth, name, model3D } = furniture;
     const canvas = this.getCanvas();
     const center = canvas.getCenter();
+    console.log("Creating furniture with data:", furniture); // 디버깅용
 
     // 격자 크기에 맞게 스케일 조정 (1 그리드 = 10cm)
     const scaledWidth = (width / 10) * this.gridSize;
@@ -2288,9 +2288,9 @@ class FloorPlanner {
       strokeWidth: 2,
       originX: "center",
       originY: "center",
-      name: name,
+      name: furniture.name,
       type: "furniture",
-      metadata: furniture.metadata,
+      metadata: furniture.metadata, // 전체 metadata 포함
     });
 
     // 가구 이름 텍스트
@@ -2317,7 +2317,7 @@ class FloorPlanner {
       lockMovementY: false,
       hasBorders: true,
       type: "furniture-group",
-      metadata: furniture.metadata, // 그룹에도 metadata 설정
+      metadata: furniture.metadata, // metadata를 그룹에도 설정
     });
 
     // 이동 시 스냅 동작 추가
