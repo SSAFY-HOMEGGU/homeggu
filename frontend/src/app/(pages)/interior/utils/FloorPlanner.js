@@ -2295,30 +2295,25 @@ class FloorPlanner {
   }
 
   createFurniture(furnitureData) {
-    if (!furnitureData || !furnitureData.metadata) {
+    if (!furnitureData?.metadata) {
       console.error("Invalid furniture data:", furnitureData);
-      return;
+      return null;
     }
     const canvas = this.getCanvas();
     const center = canvas.getCenter();
     console.log("Creating furniture with data:", furnitureData); // 디버깅용
 
     // metadata에서 필요한 값들을 추출하고 기본값 설정
-    const metadata = {
-      type: "furniture",
-      id: String(furnitureData.metadata.id || "unknown"),
-      name: String(furnitureData.metadata.name || "가구"),
-      width: Number(furnitureData.metadata.width || 100),
-      depth: Number(furnitureData.metadata.depth || 100),
-      height: Number(furnitureData.metadata.height || 100),
-      model3D: furnitureData.metadata.model3D || null,
-    };
+    // metadata에서 직접 값을 추출
+    const {
+      width = 100,
+      depth = 100,
+      height = 100,
+      name = "가구",
+      id = "unknown",
+      model3D = null,
+    } = furnitureData.metadata;
 
-    // 유효성 검사
-    if (!width || !depth || !height) {
-      console.error("Invalid furniture dimensions:", { width, depth, height });
-      return;
-    }
     // 격자 크기에 맞게 스케일 조정 (1 그리드 = 10cm)
     const scaledWidth = (width / 10) * this.gridSize;
     const scaledDepth = (depth / 10) * this.gridSize;
@@ -2334,11 +2329,11 @@ class FloorPlanner {
       strokeWidth: 2,
       originX: "center",
       originY: "center",
-      metadata: metadata,
+      metadata: { ...furnitureData.metadata },
     });
 
     // 가구 이름 텍스트
-    const text = new fabric.Text(metadata.name, {
+    const text = new fabric.Text(String(name), {
       left: 0,
       top: 0,
       fontSize: 12,
@@ -2346,7 +2341,6 @@ class FloorPlanner {
       originX: "center",
       originY: "center",
       selectable: false,
-      metadata: { type: "furniture-label" },
     });
 
     // 그룹으로 묶기
@@ -2362,21 +2356,25 @@ class FloorPlanner {
       lockMovementY: false,
       hasBorders: true,
       type: "furniture-group",
-      metadata: metadata,
+      metadata: { ...furnitureData.metadata },
     });
+
     // 이동 시 스냅 동작 추가
     group.on("moving", (e) => {
       if (this.mode !== "select") return;
-      const pointer = this.snapToGrid
-        ? this.snapToGridPoint(this.canvas.getPointer(e.e))
-        : this.canvas.getPointer(e.e);
+      const pointer = group.getCenterPoint();
       const snapPoint = this.findNearestWallPoint(pointer);
       if (snapPoint) {
         group.set({
-          left: snapPoint.x,
-          top: snapPoint.y,
+          left: snapPoint.x - group.width / 2,
+          top: snapPoint.y - group.height / 2,
         });
       }
+    });
+    console.log("Created furniture group:", {
+      name,
+      dimensions: { width, depth, height },
+      metadata: group.metadata,
     });
 
     // 클릭 시 선택 상태 반영
@@ -2391,8 +2389,6 @@ class FloorPlanner {
 
     canvas.add(group);
     canvas.renderAll();
-
-    console.log("Created furniture group with metadata:", group.metadata);
 
     return group;
   }

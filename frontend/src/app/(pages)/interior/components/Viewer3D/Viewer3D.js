@@ -298,23 +298,20 @@ const Viewer3D = () => {
         .getObjects()
         .filter((obj) => obj.type === "furniture-group");
 
-      console.log("Processing furniture items:", furnitureItems);
+      console.log("Found furniture items:", furnitureItems.length);
 
       for (const furniture of furnitureItems) {
         if (!furniture.metadata) {
-          console.warn("No metadata found for furniture:", furniture);
+          console.warn("Missing metadata for furniture:", furniture);
           continue;
         }
 
-        console.log("Processing furniture metadata:", furniture.metadata);
+        const { model3D } = furniture.metadata;
+        console.log("Processing furniture:", furniture.metadata);
 
-        const model3D = furniture.metadata.model3D;
         if (model3D?.glb) {
-          console.log("Loading 3D model from:", furniture.metadata.model3D.glb);
-
           try {
-            const model = await loadGLBModel(furniture.metadata.model3D.glb);
-
+            const model = await loadGLBModel(model3D.glb);
             if (!model) {
               console.warn(
                 "Failed to load model:",

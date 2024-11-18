@@ -100,18 +100,18 @@ const Catalog = ({ open, onClose }) => {
           type: "furniture",
           id: String(item.id),
           name: String(item.name),
-          width: Number(item.width) || 100,
-          depth: Number(item.depth) || 100,
-          height: Number(item.height) || 100,
+          width: Number(item.width),
+          depth: Number(item.depth),
+          height: Number(item.height),
           model3D: {
             glb: `/3d/${item.id}.glb`,
-            width: Number(item.width) || 100,
-            height: Number(item.height) || 100,
-            depth: Number(item.depth) || 100,
+            width: Number(item.width),
+            height: Number(item.height),
+            depth: Number(item.depth),
           },
         },
       };
-      console.log("Prepared furniture data:", furnitureData); // 디버깅용
+      console.log("Prepared furniture data:", furnitureData);
 
       addFurniture(furnitureData);
     }
