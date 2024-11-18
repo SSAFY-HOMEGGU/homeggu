@@ -57,7 +57,7 @@ const Catalog = ({ open, onClose }) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Open Catalog</DialogTitle>
+          <DialogTitle>카달로그 보기</DialogTitle>
         </DialogHeader>
 
         <div className="relative mb-4">
