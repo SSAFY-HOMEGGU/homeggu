@@ -301,8 +301,8 @@ const Viewer3D = () => {
       console.log("Found furniture items:", furnitureItems.length);
 
       for (const furniture of furnitureItems) {
-        const metadata = furniture.getObjects()[0].metadata;
-        console.log("Furniture metadata:", metadata);
+        const metadata = furniture.metadata;
+        console.log("Processing furniture:", metadata);
 
         if (metadata?.model3D?.glb) {
           try {
@@ -321,9 +321,9 @@ const Viewer3D = () => {
             bbox.getSize(modelSize);
 
             // 실제 크기에 맞게 스케일 조정
-            const scaleX = metadata.width / modelSize.x;
-            const scaleY = metadata.height / modelSize.y;
-            const scaleZ = metadata.depth / modelSize.z;
+            const scaleX = metadata.width / 10 / modelSize.x;
+            const scaleY = metadata.height / 10 / modelSize.y;
+            const scaleZ = metadata.depth / 10 / modelSize.z;
 
             // NaN이나 Infinity 방지
             const scale = isFinite(Math.min(scaleX, scaleY, scaleZ))
@@ -336,7 +336,7 @@ const Viewer3D = () => {
             const position = furniture.getCenterPoint();
             model.position.set(
               position.x,
-              metadata.height / 2, // Y축은 높이의 절반으로 설정
+              metadata.height / 10 / 2, // Y축은 높이의 절반으로 설정
               position.y
             );
 
