@@ -34,9 +34,15 @@ const handleImageUpload = async (event) => {
       
       // 미리보기 생성
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+
+      const formData = new FormData();
+      newFiles.forEach((file) => {
+        formData.append('files', file); // 'files'라는 이름으로 각 파일을 추가
+      });
+
       
       // 서버에 업로드
-      const uploadedData = await uploadGoodsImage(newFiles);
+      const uploadedData = await uploadGoodsImage(formData);
       const newUrls = Array.isArray(uploadedData) ? uploadedData : [];
 
       // base64 변환
