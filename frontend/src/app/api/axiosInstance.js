@@ -16,6 +16,7 @@ export const userInstance = axios.create({
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",
+    "userId" : "11005"
   },
   withCredentials: true,
 });
@@ -27,6 +28,7 @@ export const chatInstance = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
+    "userId" : "11005"
   },
 });
 
@@ -37,6 +39,7 @@ export const productInstance = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
+    "userId" : "11005"
   },
 });
 
@@ -47,7 +50,7 @@ export const payInstance = axios.create({
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
-    "userId" : 11005
+    "userId" : "11005"
   },
 });
 
