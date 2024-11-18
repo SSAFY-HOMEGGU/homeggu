@@ -119,7 +119,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import useProductStore from '@/app/store/useProductStore';
+// import useProductStore from '@/app/store/useProductStore';
+import useProductStore from '../store/useProductManageStore';
 
 export default function Product({ product }) {
   const { toggleLike, fetchProduct } = useProductStore();
