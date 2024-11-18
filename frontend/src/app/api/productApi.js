@@ -48,11 +48,7 @@ export const uploadGoodsImage = async (files) => {
   }
 
   try {
-    const response = await productInstance.post('/board/image', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    });
+    const response = await productInstance.post('/board/image', formData);
     return response.data;
   } catch (error) {
     console.error('이미지 업로드 에러:', {
