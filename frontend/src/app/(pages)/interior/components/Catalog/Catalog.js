@@ -1,8 +1,7 @@
-//interior/components/Catalog/Catalog.js
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,24 +19,62 @@ import { Search } from "lucide-react";
 import useCanvasStore from "../../store/canvasStore";
 import {
   wallTypes,
-  furnitureItems,
   FURNITURE_CATEGORIES,
+  getFurnitureItems,
 } from "../../utils/catalogItems";
 
 const Catalog = ({ open, onClose }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentCategory, setCurrentCategory] = useState("");
+  const [furnitureItems, setFurnitureItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+  });
+
   const { canvas, setMode } = useCanvasStore();
   const addFurniture = useCanvasStore((state) => state.addFurniture);
 
+  // 가구 데이터 로딩 함수
+  const loadFurnitureData = async (category) => {
+    setIsLoading(true);
+    try {
+      const response = await getFurnitureItems(
+        category,
+        pagination.currentPage
+      );
+      setFurnitureItems(response.items);
+      setPagination({
+        currentPage: response.currentPage,
+        totalPages: response.totalPages,
+        totalElements: response.totalElements,
+      });
+    } catch (error) {
+      console.error("가구 데이터 로딩 실패:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 카테고리 변경시 데이터 로딩
+  useEffect(() => {
+    if (currentCategory && currentCategory !== "walls") {
+      loadFurnitureData(currentCategory);
+    }
+  }, [currentCategory]);
+
+  // 검색어로 필터링
   const filteredFurniture = furnitureItems.filter(
     (item) =>
-      item.name.includes(searchQuery) || item.sellerId.includes(searchQuery)
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.sellerId.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSelectItem = (item) => {
     if (item.type === "wall") {
       if (item.id === "room-wall") {
-        // Room Wall이 선택된 경우 방 추가
         useCanvasStore.getState().addPredefinedRoom(item.id);
       } else {
         const wallType = {
@@ -70,7 +107,11 @@ const Catalog = ({ open, onClose }) => {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
         </div>
 
-        <Tabs defaultValue="walls" className="flex-1">
+        <Tabs
+          defaultValue="walls"
+          className="flex-1"
+          onValueChange={(value) => setCurrentCategory(value)}
+        >
           <TabsList className="w-full">
             <TabsTrigger value="walls">벽 & 방</TabsTrigger>
             {FURNITURE_CATEGORIES.map((category) => (
@@ -121,36 +162,45 @@ const Catalog = ({ open, onClose }) => {
               value={category.id}
               className="mt-4 h-[calc(100vh-300px)] overflow-y-auto"
             >
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {filteredFurniture
-                  .filter((item) => item.category === category.id)
-                  .map((item) => (
-                    <div
-                      key={item.id}
-                      className="border rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors"
-                      onClick={() =>
-                        handleSelectItem({ type: "furniture", ...item })
-                      }
-                    >
-                      <div className="w-full h-32 bg-gray-100 rounded mb-2 flex items-center justify-center">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          width={100}
-                          height={100}
-                          className="rounded"
-                        />
+              {isLoading ? (
+                <div className="flex justify-center items-center h-full">
+                  로딩중...
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {filteredFurniture
+                    .filter((item) => item.category === category.id)
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        className="border rounded-lg p-4 cursor-pointer hover:border-blue-500 transition-colors"
+                        onClick={() =>
+                          handleSelectItem({ type: "furniture", ...item })
+                        }
+                      >
+                        <div className="w-full h-32 bg-gray-100 rounded mb-2 flex items-center justify-center">
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            width={100}
+                            height={100}
+                            className="rounded"
+                          />
+                        </div>
+                        <h3 className="font-semibold">{item.name}</h3>
+                        <p className="text-sm text-gray-600">
+                          {item.width}x{item.depth}x{item.height}cm
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          가격: {item.price.toLocaleString()}원
+                        </p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          {item.sellerId}
+                        </p>
                       </div>
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-sm text-gray-600">
-                        {item.width}x{item.depth}x{item.height}cm
-                      </p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        {item.sellerId}
-                      </p>
-                    </div>
-                  ))}
-              </div>
+                    ))}
+                </div>
+              )}
             </TabsContent>
           ))}
         </Tabs>
