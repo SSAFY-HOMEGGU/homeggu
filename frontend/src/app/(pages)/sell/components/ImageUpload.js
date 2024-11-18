@@ -25,53 +25,110 @@ export default function ImageUpload({ onUpload }) {
   }, [uploadedUrls, imagePreviews, uploadedImages, mainImageIndex]);
 
 
+  // const handleImageUpload = async (event) => {
+  //   const files = event.target.files;
+  //   if (files && files.length > 0) {
+  //     setIsUploading(true);
+  //     try {
+  //       // 파일 개수 제한
+  //       const newFiles = Array.from(files).slice(0, 10 - imagePreviews.length);
+        
+  //       // UI용 미리보기 URL 생성
+  //       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+  //       setImagePreviews(prev => [...prev, ...newPreviews]);
+  
+  //       // 실제 파일 업로드 - 원본 파일을 전송
+  //       const uploadedData = await uploadGoodsImage(newFiles);
+  //       const newUrls = Array.isArray(uploadedData) ? uploadedData : [];
+  
+  //       // base64 변환이 필요한 경우
+  //       let base64 = null;
+  //       if (newFiles[mainImageIndex]) {
+  //         base64 = await new Promise((resolve) => {
+  //           const reader = new FileReader();
+  //           reader.onloadend = () => resolve(reader.result);
+  //           reader.readAsDataURL(newFiles[mainImageIndex]);
+  //         });
+  //       }
+        
+  //       // 상태 업데이트
+  //       setUploadedUrls(prev => {
+  //         const updatedUrls = [...prev, ...newUrls];
+  //         console.log('최종 이미지 URL 목록:', updatedUrls);
+          
+  //         // 부모 컴포넌트에 전달
+  //         onUpload?.({
+  //           goodsImagePaths: updatedUrls,
+  //           mainImageUrl: base64 || updatedUrls[mainImageIndex]
+  //         });
+          
+  //         return updatedUrls;
+  //       });
+  
+  //       setUploadedImages(prev => prev + newFiles.length);
+  
+  //     } catch (error) {
+  //       console.error('Image upload failed:', error);
+  //     } finally {
+  //       setIsUploading(false);
+  //     }
+  //   }
+  // };
+  
   const handleImageUpload = async (event) => {
     const files = event.target.files;
-    if (files && files.length > 0) {
-      setIsUploading(true);
-      try {
-        // 파일 개수 제한
-        const newFiles = Array.from(files).slice(0, 10 - imagePreviews.length);
+    if (!files || files.length === 0) return;
+  
+    setIsUploading(true);
+  
+    try {
+      // 각 파일을 개별적으로 처리
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         
-        // UI용 미리보기 URL 생성
-        const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-        setImagePreviews(prev => [...prev, ...newPreviews]);
-  
-        // 실제 파일 업로드 - 원본 파일을 전송
-        const uploadedData = await uploadGoodsImage(newFiles);
-        const newUrls = Array.isArray(uploadedData) ? uploadedData : [];
-  
-        // base64 변환이 필요한 경우
-        let base64 = null;
-        if (newFiles[mainImageIndex]) {
-          base64 = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(newFiles[mainImageIndex]);
-          });
+        // 이미지 개수 체크
+        if (uploadedImages >= 10) {
+          alert('이미지는 최대 10개까지만 업로드 가능합니다.');
+          break;
         }
+  
+        // 단일 파일 업로드 및 응답 처리
+        const uploadedUrl = await uploadGoodsImage(file);
         
-        // 상태 업데이트
-        setUploadedUrls(prev => {
-          const updatedUrls = [...prev, ...newUrls];
-          console.log('최종 이미지 URL 목록:', updatedUrls);
+        if (uploadedUrl) {
+          // 미리보기 URL 생성
+          const previewUrl = URL.createObjectURL(file);
+          setImagePreviews(prev => [...prev, previewUrl]);
           
-          // 부모 컴포넌트에 전달
-          onUpload?.({
-            goodsImagePaths: updatedUrls,
-            mainImageUrl: base64 || updatedUrls[mainImageIndex]
-          });
+          // 업로드된 URL 저장
+          setUploadedUrls(prev => [...prev, uploadedUrl]);
           
-          return updatedUrls;
-        });
+          // 업로드된 이미지 수 증가
+          setUploadedImages(prev => prev + 1);
   
-        setUploadedImages(prev => prev + newFiles.length);
-  
-      } catch (error) {
-        console.error('Image upload failed:', error);
-      } finally {
-        setIsUploading(false);
+          // store 업데이트 (첫 번째 이미지를 대표 이미지로 설정)
+          if (uploadedImages === 0) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setProductImages({
+                goodsImagePaths: [uploadedUrl],
+                mainImageUrl: reader.result
+              });
+            };
+            reader.readAsDataURL(file);
+          } else {
+            setProductImages(prev => ({
+              ...prev,
+              goodsImagePaths: [...prev.goodsImagePaths, uploadedUrl]
+            }));
+          }
+        }
       }
+    } catch (error) {
+      console.error('이미지 업로드 중 오류 발생:', error);
+      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsUploading(false);
     }
   };
   const removeImage = (indexToRemove) => {
