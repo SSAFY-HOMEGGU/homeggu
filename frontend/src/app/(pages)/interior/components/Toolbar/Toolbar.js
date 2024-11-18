@@ -7,16 +7,15 @@ import {
   MousePointer,
   MinusSquare,
   DoorOpen,
-  Square, // Window 대신 Square 사용
+  Square,
   Undo2,
   Redo2,
   Trash2,
-  Grid,
-  Magnet,
-  ZoomIn,
   Download,
   Upload,
   Book,
+  FileDown,
+  Image as ImageIcon,
 } from "lucide-react";
 import Catalog from "../Catalog/Catalog";
 import { Button } from "@/app/components/ui/button";
@@ -26,19 +25,106 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
+import jsPDF from "jspdf";
 
 const Toolbar = () => {
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
-  const {
-    canvas,
-    mode,
-    setMode,
-    gridVisible,
-    toggleGrid,
-    toggleSnapToGrid,
-    snapToGrid,
-    selectedObject,
-  } = useCanvasStore(); // selectedObject 가져오기
+  const { canvas, mode, setMode, selectedObject } = useCanvasStore();
+
+  const handleExport = (type) => {
+    if (!canvas || !canvas.canvas) return;
+
+    const fabricCanvas = canvas.canvas;
+
+    // 현재 캔버스 상태 저장
+    const currentZoom = fabricCanvas.getZoom();
+    const currentViewport = fabricCanvas.viewportTransform;
+
+    // 캔버스를 임시로 조정
+    fabricCanvas.setZoom(1);
+    fabricCanvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+
+    // 현재 배경색 저장
+    const currentBackground = fabricCanvas.backgroundColor;
+    // 배경색을 흰색으로 설정
+    fabricCanvas.setBackgroundColor("#ffffff", () => {
+      fabricCanvas.renderAll();
+
+      // 캔버스의 경계 계산
+      const objects = fabricCanvas.getObjects();
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+
+      objects.forEach((obj) => {
+        const bound = obj.getBoundingRect();
+        minX = Math.min(minX, bound.left);
+        minY = Math.min(minY, bound.top);
+        maxX = Math.max(maxX, bound.left + bound.width);
+        maxY = Math.max(maxY, bound.top + bound.height);
+      });
+
+      // 여백 추가
+      const margin = 50;
+      minX -= margin;
+      minY -= margin;
+      maxX += margin;
+      maxY += margin;
+
+      const width = maxX - minX;
+      const height = maxY - minY;
+
+      if (type === "jpg") {
+        // JPG로 내보내기
+        const dataUrl = fabricCanvas.toDataURL({
+          format: "jpeg",
+          quality: 1.0,
+          left: minX,
+          top: minY,
+          width: width,
+          height: height,
+        });
+
+        const link = document.createElement("a");
+        link.download = "floorplan.jpg";
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else if (type === "pdf") {
+        // PDF로 내보내기
+        const pdf = new jsPDF({
+          orientation: width > height ? "landscape" : "portrait",
+          unit: "px",
+          format: [width, height],
+        });
+
+        const dataUrl = fabricCanvas.toDataURL({
+          format: "jpeg",
+          quality: 1.0,
+          left: minX,
+          top: minY,
+          width: width,
+          height: height,
+        });
+
+        pdf.addImage(dataUrl, "JPEG", 0, 0, width, height);
+        pdf.save("floorplan.pdf");
+      }
+
+      // 원래의 배경색으로 복구
+      fabricCanvas.setBackgroundColor(currentBackground, () => {
+        // 원래의 뷰포트 상태로 복구
+        fabricCanvas.setZoom(currentZoom);
+        fabricCanvas.setViewportTransform(currentViewport);
+        fabricCanvas.renderAll();
+      });
+    });
+
+    setShowExportMenu(false);
+  };
 
   const handleCatalogItemSelect = (item) => {
     if (!canvas || !item) return;
@@ -72,7 +158,7 @@ const Toolbar = () => {
       id: "window",
       icon: Square,
       label: "Add Window",
-      action: () => handleModeChange("window"), // canvas.createWindow 대신 모드 변경
+      action: () => handleModeChange("window"),
     },
   ];
 
@@ -86,30 +172,6 @@ const Toolbar = () => {
 
   const handleDelete = () => {
     canvas?.deleteSelected?.();
-  };
-
-  const handleZoomToFit = () => {
-    canvas?.zoomToFit?.();
-  };
-
-  const handleExport = () => {
-    if (!canvas) return;
-
-    const json = canvas.toJSON?.();
-    if (!json) return;
-
-    const blob = new Blob([JSON.stringify(json, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "floorplan.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   const handleImport = () => {
@@ -165,10 +227,10 @@ const Toolbar = () => {
                 onClick={() => handleModeChange("door")}
               >
                 <DoorOpen className="h-4 w-4" />
-                <span className="ml-2 text-xs">Door</span>
+                <span className="ml-2 text-xs">문 추가</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Add Door</TooltipContent>
+            <TooltipContent>문 추가하기</TooltipContent>
           </Tooltip>
 
           {/* Window Tool */}
@@ -181,10 +243,10 @@ const Toolbar = () => {
                 onClick={() => handleModeChange("window")}
               >
                 <Square className="h-4 w-4" />
-                <span className="ml-2 text-xs">Window</span>
+                <span className="ml-2 text-xs">창문</span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Add Window</TooltipContent>
+            <TooltipContent>창문 추가하기</TooltipContent>
           </Tooltip>
         </div>
       </TooltipProvider>
@@ -236,69 +298,50 @@ const Toolbar = () => {
         </TooltipProvider>
       </div>
 
-      {/* View Controls */}
-      <div className="flex gap-1">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={gridVisible ? "primary" : "ghost"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={toggleGrid} // actions.toggleGrid 대신
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Toggle Grid</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={snapToGrid ? "primary" : "ghost"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={toggleSnapToGrid} // actions.toggleSnap 대신
-              >
-                <Magnet className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Toggle Snap</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={handleZoomToFit}
-              >
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Zoom to Fit</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-
       {/* File Controls */}
       <div className="flex gap-1">
         <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={handleExport}
-              >
-                <Download className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Export</TooltipContent>
-          </Tooltip>
+          {/* Export 버튼과 드롭다운 */}
+          <div className="relative">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>2D도면 내보내기</TooltipContent>
+            </Tooltip>
+
+            {showExportMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowExportMenu(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                  <button
+                    className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100 flex items-center"
+                    onClick={() => handleExport("jpg")}
+                  >
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Export as JPG
+                  </button>
+                  <button
+                    className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100 flex items-center"
+                    onClick={() => handleExport("pdf")}
+                  >
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Export as PDF
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -315,6 +358,14 @@ const Toolbar = () => {
           </Tooltip>
         </TooltipProvider>
       </div>
+
+      {/* 드롭다운 메뉴가 열려있을 때 클릭 이벤트를 감지하여 닫기 위한 오버레이 */}
+      {showExportMenu && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setShowExportMenu(false)}
+        />
+      )}
 
       {/* Object Properties Panel */}
       {selectedObject && (
