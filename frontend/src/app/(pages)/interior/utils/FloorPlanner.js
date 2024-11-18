@@ -2309,7 +2309,6 @@ class FloorPlanner {
       depth = 100,
       height = 100,
       name = "가구",
-      id = "unknown",
       model3D = null,
     } = furnitureData.metadata;
 
@@ -2328,7 +2327,7 @@ class FloorPlanner {
       strokeWidth: 2,
       originX: "center",
       originY: "center",
-      metadata: { ...furnitureData.metadata },
+      metadata: furnitureData.metadata, // 중첩 없이 직접 할당
     });
 
     // 가구 이름 텍스트

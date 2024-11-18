@@ -292,6 +292,10 @@ const Viewer3D = () => {
         scene.add(wallMesh);
         meshesRef.current.set(wall.id, wallMesh);
       });
+      const furnitureItems = canvas.canvas
+        .getObjects()
+        .filter((obj) => obj.type === "furniture-group");
+      console.log("Found furniture items:", furnitureItems.length);
 
       // 가구 아이템 처리
       for (const furniture of furnitureItems) {
@@ -303,7 +307,7 @@ const Viewer3D = () => {
         console.log("Processing furniture metadata:", furniture.metadata);
 
         // metadata 내부의 model3D 정보를 확인
-        const model3DInfo = furniture.metadata.model3D;
+        const model3DInfo = furniture.metadata?.model3D;
 
         if (model3DInfo?.glb) {
           try {
@@ -337,7 +341,7 @@ const Viewer3D = () => {
             const position = furniture.getCenterPoint();
             model.position.set(
               position.x,
-              height / 200, // Y축은 높이의 절반으로 설정 (미터 단위로 변환)
+              height / 20, // Y축은 높이의 절반으로 설정 (미터 단위로 변환)
               position.y
             );
 
