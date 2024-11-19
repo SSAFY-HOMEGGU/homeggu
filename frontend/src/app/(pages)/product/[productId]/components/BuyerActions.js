@@ -219,28 +219,33 @@ function BuyerActions({ product, onLikeChange, onChatCreate }) {
     }
   };
 
-  const handlePurchase = async () => {
-    try {
-      // await purchaseProduct(productId);
-      setSelectedProduct(product)
-      router.push('/order')
-    } catch (error) {
-      console.error('구매 실패:', error);
-      setSelectedProduct(null)
-    }
-  }
   // const handlePurchase = async () => {
   //   try {
-  //     // 상태 관리에 상품 저장
-  //     setSelectedProduct(product);
-  //     console.log('선택된 상품 저장 완료:', product);
-
-  //     // 구매 후 성공 페이지로 이동
-  //     router.push('/order');
+  //     // await purchaseProduct(productId);
+  //     setSelectedProduct(product)
+  //     router.push('/order')
   //   } catch (error) {
   //     console.error('구매 실패:', error);
+  //     setSelectedProduct(null)
   //   }
-  // };
+  // }
+  const handlePurchase = async () => {
+    try {
+      const productData = {
+        ...product,
+        salesBoardId: product.salesBoardId, // 필수 필드 명시적 포함
+        goodsImagePaths: product.goodsImagePaths
+      };
+      // 상태 관리에 상품 저장
+      setSelectedProduct(productData);
+      console.log('선택된 상품 저장 완료:', product);
+
+      // 구매 후 성공 페이지로 이동
+      router.push('/order');
+    } catch (error) {
+      console.error('구매 실패:', error);
+    }
+  };
 
 
   return (
