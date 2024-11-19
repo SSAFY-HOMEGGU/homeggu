@@ -227,55 +227,55 @@ export default function Sell() {
     updateProduct('goods_z', Number(goods_z) || 0);
   };
 
-  // const handleSubmit = async () => {
-  //   // if (!isFormValid) return;
-  
-  //   try {
-  //     setIsLoading(true);
-  //     const formData = {
-  //       salesBoardDTO,
-  //       goodsImagePaths
-  //     };
-  //     await backgroundConversionService.startConversion(mainImageUrl, formData);
-  //     router.push('/');
-  //   } catch (error) {
-  //     console.error('상품 등록 실패:', error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const handleSubmit = async () => {
-    // if (!validateForm()) {
-    //   return;
-    // }
+    // if (!isFormValid) return;
   
     try {
       setIsLoading(true);
-      const formData = getFormData();
-      
-      if (mainImageUrl) {
-        // 이미지가 있는 경우 3D 변환 진행
-        await backgroundConversionService.startConversion(mainImageUrl, formData);
-      } else {
-        // 이미지가 없는 경우 일반 상품으로 등록
-        console.log('일반 상품 등록 시작');
-        await salesBoard(formData);
-        // toast.success('상품이 등록되었습니다', {
-        //   position: 'bottom-left'
-        // });
-      }
-      
+      const formData = {
+        salesBoardDTO,
+        goodsImagePaths
+      };
+      await backgroundConversionService.startConversion(mainImageUrl, formData);
       router.push('/');
     } catch (error) {
       console.error('상품 등록 실패:', error);
-      // toast.error(error.message || '상품 등록에 실패했습니다', {
-      //   position: 'bottom-left'
-      // });
     } finally {
       setIsLoading(false);
     }
   };
+
+  // const handleSubmit = async () => {
+  //   // if (!validateForm()) {
+  //   //   return;
+  //   // }
+  
+  //   try {
+  //     setIsLoading(true);
+  //     const formData = getFormData();
+      
+  //     if (mainImageUrl) {
+  //       // 이미지가 있는 경우 3D 변환 진행
+  //       await backgroundConversionService.startConversion(mainImageUrl, formData);
+  //     } else {
+  //       // 이미지가 없는 경우 일반 상품으로 등록
+  //       console.log('일반 상품 등록 시작');
+  //       await salesBoard(formData);
+  //       // toast.success('상품이 등록되었습니다', {
+  //       //   position: 'bottom-left'
+  //       // });
+  //     }
+      
+  //     router.push('/');
+  //   } catch (error) {
+  //     console.error('상품 등록 실패:', error);
+  //     // toast.error(error.message || '상품 등록에 실패했습니다', {
+  //     //   position: 'bottom-left'
+  //     // });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
   
   return (
     <div className='flex flex-col gap-4'>

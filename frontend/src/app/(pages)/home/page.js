@@ -265,7 +265,7 @@ function HomeContent() {
 
       <ModelReadyModal
         isOpen={!!modalData}
-        // onClose={() => setModalData(null)}
+        onClose={() => setModalData(null)}
         objUrl={modalData?.objUrl}
         onUploadComplete={modalData?.onUploadComplete}
       />

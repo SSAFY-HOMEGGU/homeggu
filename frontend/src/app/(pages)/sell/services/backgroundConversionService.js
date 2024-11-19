@@ -537,7 +537,7 @@ class BackgroundConversionService {
       const meshyResponse = await axios.post(
         'https://api.meshy.ai/v1/image-to-3d',
         {
-          image_url: mainImageUrl,
+          image_url: formData.goodsImagePaths?.[0],
           enable_pbr: true
         },
         { 
