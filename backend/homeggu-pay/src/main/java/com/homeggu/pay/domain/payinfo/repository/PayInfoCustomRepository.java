@@ -10,7 +10,9 @@ import com.homeggu.pay.global.client.UserServiceClient;
 import com.homeggu.pay.global.client.dto.response.SalesBoardResponse;
 import com.homeggu.pay.global.client.dto.response.UserResponse;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class PayInfoCustomRepository {
 
     private final JPAQueryFactory queryFactory;
@@ -82,12 +85,24 @@ public class PayInfoCustomRepository {
     }
 
     private HistoryResponse convertTransfer(Transfer transfer, Long userId) {
-        SalesBoardResponse title = goodsServiceClient.getGoods(transfer.getSalesBoardId());
+        SalesBoardResponse title = null;
+        try {
+            title = goodsServiceClient.getGoods(transfer.getSalesBoardId());
+        } catch (FeignException ex) {
+            log.error(ex.getMessage());
+        }
+
 
         Long counterpartyId = transfer.getSenderId() == userId ? // 조회하는 사람이 해당 송금내역의 "송금자"인가?
                             transfer.getReceiverId() :           // 맞으면 상대방은 "수취자"
                             transfer.getSenderId();              // 아니면 상대방은 "송금자"
-        UserResponse counterparty = userServiceClient.getUserProfile(counterpartyId);
+        UserResponse counterparty = null;
+        try {
+            counterparty = userServiceClient.getUserProfile(counterpartyId);
+        } catch (FeignException ex) {
+            log.error(ex.getMessage());
+        }
+
 
         return HistoryResponse.builder()
                 .historyCategory(transfer.getStateCategory() == null ? HistoryCategory.NORMAL_TRANSFER : HistoryCategory.SAFE_TRANSFER)
