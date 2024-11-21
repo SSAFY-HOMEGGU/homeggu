@@ -93,4 +93,4 @@ class ContentBasedRecommender:
 
         # 결과 반환
         top_recommendations = self.items_db.sort_values(by="total_score", ascending=False).head(top_n)
-        return top_recommendations[["item_id", "category", "mood", "total_score"]].to_dict(orient="records")
+        return top_recommendations[["sales_board_id", "category", "mood", "total_score"]].to_dict(orient="records")

@@ -1,42 +1,3 @@
-# from fastapi import APIRouter, HTTPException
-# from pydantic import BaseModel
-# from typing import Dict
-# import pickle
-
-# router = APIRouter()
-
-# # 모델 로드
-# try:
-#     with open("app/models/trained_model.pkl", "rb") as f:
-#         recommender = pickle.load(f)
-# except FileNotFoundError:
-#     raise RuntimeError("Trained model file not found. Run the model training script first.")
-
-# # 요청 데이터 스키마 정의
-# class Preferences(BaseModel):
-#     category_preferences: Dict[str, float]
-#     mood_preferences: Dict[str, float]
-#     top_n: int = 10  # 기본값 10개 추천
-
-# @router.post("/recommend")
-# def recommend_items(preferences: Preferences):
-#     """
-#     FastAPI 엔드포인트: 추천 리스트 반환
-#     """
-#     try:
-#         print("Received request data:")
-#         print(preferences.dict())
-
-#         # 추천 수행
-#         recommendations = recommender.recommend(
-#             category_preferences=preferences.category_preferences,
-#             mood_preferences=preferences.mood_preferences,
-#             top_n=preferences.top_n
-#         )
-#         return {"recommendations": recommendations}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Recommendation error: {str(e)}")
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Dict
@@ -63,9 +24,9 @@ def fetch_goods_from_server():
         # DataFrame 생성
         items_db = pd.DataFrame(goods_data.get("content", []))
 
-        # 'item_id' 열 생성 (필요한 경우)
-        if "item_id" not in items_db.columns:
-            items_db["item_id"] = range(1, len(items_db) + 1)
+        # 'sales_board_id' 열 생성
+        if "sales_board_id" not in items_db.columns:
+            items_db["sales_board_id"] = range(1, len(items_db) + 1)
 
         print(items_db.head())  # 데이터 확인
         return items_db
