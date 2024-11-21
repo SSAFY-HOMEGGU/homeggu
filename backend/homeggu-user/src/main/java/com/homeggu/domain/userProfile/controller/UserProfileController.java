@@ -48,17 +48,17 @@ public class UserProfileController {
     }
 
     // 프로필 이미지 등록
-    @PostMapping("/profile/image")
-    public ResponseEntity<?> uploadUserImage(@RequestParam("file") MultipartFile file)throws IOException {
-         if(file.isEmpty()) {
-            return new ResponseEntity<>("파일이 비어있습니다.",HttpStatus.BAD_REQUEST);
-         }
-        try{
-            String userImagePath = s3Service.uploadFile(file);
-            return new ResponseEntity<>(userImagePath, HttpStatus.CREATED);
-        }catch (Exception e) {
-            return new ResponseEntity<>("서버에서 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @PostMapping("/profile/image")
+//    public ResponseEntity<?> uploadUserImage(@RequestParam("file") MultipartFile file)throws IOException {
+//         if(file.isEmpty()) {
+//            return new ResponseEntity<>("파일이 비어있습니다.",HttpStatus.BAD_REQUEST);
+//         }
+//        try{
+//            String userImagePath = s3Service.uploadFile(file);
+//            return new ResponseEntity<>(userImagePath, HttpStatus.CREATED);
+//        }catch (Exception e) {
+//            return new ResponseEntity<>("서버에서 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
 }
