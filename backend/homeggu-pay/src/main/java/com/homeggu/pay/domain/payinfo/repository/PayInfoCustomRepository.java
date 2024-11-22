@@ -13,6 +13,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,7 @@ public class PayInfoCustomRepository {
     private final JPAQueryFactory queryFactory;
     private final GoodsServiceClient goodsServiceClient;
     private final UserServiceClient userServiceClient;
+    private final CircuitBreakerFactory circuitBreakerFactory;
 
     public Page<HistoryResponse> getHistory(Long userId, String filter, Pageable pageable) {
         List<HistoryResponse> historyList;
@@ -85,24 +88,17 @@ public class PayInfoCustomRepository {
     }
 
     private HistoryResponse convertTransfer(Transfer transfer, Long userId) {
-        SalesBoardResponse title = null;
-        try {
-            title = goodsServiceClient.getGoods(transfer.getSalesBoardId());
-        } catch (FeignException ex) {
-            log.error(ex.getMessage());
-        }
-
+        CircuitBreaker circuitBreaker = circuitBreakerFactory.create("circuitbreaker");
+        SalesBoardResponse salesBoard = circuitBreaker.run(() -> goodsServiceClient.getGoods(transfer.getSalesBoardId()),
+                                                            throwable -> new SalesBoardResponse(null));
+//        SalesBoardResponse salesBoard = goodsServiceClient.getGoods(transfer.getSalesBoardId());
 
         Long counterpartyId = transfer.getSenderId() == userId ? // 조회하는 사람이 해당 송금내역의 "송금자"인가?
                             transfer.getReceiverId() :           // 맞으면 상대방은 "수취자"
                             transfer.getSenderId();              // 아니면 상대방은 "송금자"
-        UserResponse counterparty = null;
-        try {
-            counterparty = userServiceClient.getUserProfile(counterpartyId);
-        } catch (FeignException ex) {
-            log.error(ex.getMessage());
-        }
-
+        UserResponse counterparty = circuitBreaker.run(() -> userServiceClient.getUserProfile(counterpartyId),
+                                                        throwable -> new UserResponse(null));
+//        UserResponse counterparty = userServiceClient.getUserProfile(counterpartyId);
 
         return HistoryResponse.builder()
                 .historyCategory(transfer.getStateCategory() == null ? HistoryCategory.NORMAL_TRANSFER : HistoryCategory.SAFE_TRANSFER)
@@ -114,7 +110,7 @@ public class PayInfoCustomRepository {
                         transfer.getSenderBalance()       // 유저가 "송금자"인 경우, 내역에 송금 "보낸" 후의 잔액을 기록
                         : transfer.getReceiverBalance())  // 유저가 "수취자"인 경우, 내역에 송금 "받은" 후의 잔액을 기록
                 .salesBoardId(transfer.getSalesBoardId())
-                .title(title.getTitle())
+                .title(salesBoard.getTitle())
                 .counterpartyName(counterparty.getNickname())
                 .stateCategory(transfer.getStateCategory() == null ? null : transfer.getStateCategory().toString())
                 .build();
