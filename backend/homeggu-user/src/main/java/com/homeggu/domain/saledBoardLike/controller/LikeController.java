@@ -37,7 +37,7 @@ public class LikeController {
     }
 
     // 찜 여부 확인
-    @GetMapping("/like/isLike")
+    @PostMapping("/like/isLike")
     public ResponseEntity<Boolean> isLike(@RequestHeader("userId") Long userId, @RequestBody LikeRequest likeRequest) {
         return ResponseEntity.ok().body(likeService.checkIsLiked(userId, likeRequest.getSalesBoardId()));
     }

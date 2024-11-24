@@ -30,11 +30,11 @@ public class LikeService {
         likeRepository.save(salesBoardLike);
 
         return LikeResponse.builder()
-                .salesBoardLike(salesBoardLike)
+                .salesBoardId(salesBoardId)
                 .isLiked(true)
                 .build();
     }
-    
+
     // 찜 해제
     public LikeResponse deleteLike(Long userId, Long salesBoardId) {
         User user = userRepository.findById(userId).orElse(null);
@@ -43,7 +43,7 @@ public class LikeService {
         if (salesBoardLike != null) {
             likeRepository.delete(salesBoardLike);
             return LikeResponse.builder()
-                    .salesBoardLike(salesBoardLike)
+                    .salesBoardId(salesBoardId)
                     .isLiked(false)
                     .build();
         }
