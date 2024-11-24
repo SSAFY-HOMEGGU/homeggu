@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from app.routers import recommendation
-from app.models import ContentBasedRecommender
 
 app = FastAPI()
 

@@ -28,7 +28,7 @@ public class PreferenceService {
         this.userRepository = userRepository;
         this.preferenceRepository = preferenceRepository;
         this.redisTemplate = redisTemplate;
-        this.webClient = webClientBuilder.baseUrl("http://recommendation-backend:8001").build();
+        this.webClient = webClientBuilder.baseUrl("http://localhost:8000").build();
     }
 
     // 회원가입 시 사용자의 카테고리, 분위기 초기화
@@ -253,36 +253,37 @@ public class PreferenceService {
         }
     }
 
-    // 추천 상품 리스트
     public Mono<Map<String, Object>> getRecommendations(Long userId) {
-        // 사용자 선호도 가져오기
         return Mono.fromCallable(() -> {
             Preference preference = preferenceRepository.findById(userId).orElse(null);
+
             if (preference == null) {
                 throw new IllegalArgumentException("User preference not found");
             }
+
+            // 사용자 선호도 데이터를 JSON으로 생성
             Map<String, Double> categoryPreferences = preference.getCategoryPreferences();
             Map<String, Double> moodPreferences = preference.getMoodPreferences();
 
-            // 쿼리 파라미터에 사용자 선호도 데이터 추가
-            String categoryPreferencesParam = categoryPreferences.toString();
-            String moodPreferencesParam = moodPreferences.toString();
-
-            return Map.of(
-                    "categoryPreferences", categoryPreferencesParam,
-                    "moodPreferences", moodPreferencesParam
+            Map<String, Object> preferences = Map.of(
+                    "category_preferences", categoryPreferences,
+                    "mood_preferences", moodPreferences,
+                    "top_n", 10
             );
+
+            // 전송 전에 데이터 확인
+            System.out.println("Request payload:");
+            System.out.println(preferences);
+
+            return preferences;
         }).flatMap(preferences ->
-                // FastAPI로 GET 요청 전송
-                this.webClient.get()
-                        .uri(uriBuilder -> uriBuilder
-                                .path("/fast-api/recommend")
-                                .queryParam("category_preferences", preferences.get("categoryPreferences"))
-                                .queryParam("mood_preferences", preferences.get("moodPreferences"))
-                                .build())
+                // FastAPI로 POST 요청 전송
+                this.webClient.post()
+                        .uri("/fast-api/recommend")  // POST 요청으로 변경
+                        .bodyValue(preferences)     // JSON 데이터를 요청 본문에 포함
                         .retrieve()
                         .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {
-                        }) // 반환 타입 명시
+                        })
         );
     }
 }
