@@ -1,6 +1,6 @@
 'use client'
-// import { payInstance } from "./axiosInstance";
-import { payInstance } from "./axiosInstanceLocal";
+import { payInstance } from "./axiosInstance";
+// import { payInstance } from "./axiosInstanceLocal";
 
 // 홈꾸머니 정보 조회
 // export const fetchPayInfo = async () => {
