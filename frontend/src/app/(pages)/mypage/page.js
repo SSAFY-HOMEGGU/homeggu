@@ -7,6 +7,7 @@ import { fetchRecentViewedItems } from "../../api/userApi";
 import { salesBoardList } from "../../api/productApi";
 import Product from "@/app/components/Product";
 import Image from "next/image";
+import { detailSalesBoard } from "../../api/productApi";
 
 export default function Dashboard() {
   const user = {
@@ -21,16 +22,38 @@ export default function Dashboard() {
   const [recentViewedItems, setRecentViewedItems] = useState([]);
   const [myProducts, setMyProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [recentViewedProducts,setrecentViewedProducts] = useState([]);
 
   useEffect(() => {
-    // 최근 본 상품 가져오기
-    fetchRecentViewedItems()
-      .then((data) => {
-        setRecentViewedItems(data);
-      })
-      .catch((error) =>
-        console.error("최근 본 상품 데이터 불러오기 실패:", error)
-      );
+    /// 최근 본 상품 가져오기
+  fetchRecentViewedItems()
+  .then(async (data) => {
+    try {
+      console.log('받아온 초기 데이터:', data);
+
+      const detailPromises = data.map(async (boardId) => {
+        try {
+          const response = await detailSalesBoard(boardId);
+          return response;
+        } catch (error) {
+          console.error(`상품 ID ${boardId}의 상세 정보 조회 실패:`, error);
+          return null;
+        }
+      });
+
+      const detailResults = await Promise.all(detailPromises);
+      
+      // 상세 정보
+      setrecentViewedProducts(detailResults);
+      console.log('최근 본 상품 리스트',recentViewedProducts)
+      console.log('최근 본 상품 상세 정보', detailResults);
+    } catch (error) {
+      console.error("상품 상세 정보 조회 실패:", error);
+    }
+  })
+  .catch((error) =>
+    console.error("최근 본 상품 데이터 불러오기 실패:", error)
+  );
 
     // 내 판매 상품 목록 가져오기
     salesBoardList({})
@@ -64,6 +87,10 @@ export default function Dashboard() {
 
     setFilteredProducts(filtered);
   }, [activeTab, activeFilter, myProducts]);
+
+  useEffect(() => {
+    console.log('현재 recentViewedItems:', recentViewedItems);
+  }, [recentViewedItems]);
 
   return (
     <>
@@ -129,7 +156,10 @@ export default function Dashboard() {
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-4 gap-3">
               {filteredProducts.map((product) => (
-                <Product key={product.sales_board_id} product={product} />
+                <Product 
+                  key={product.sales_board_id} 
+                  product={product} 
+                  size="small"/>
               ))}
             </div>
           ) : (
@@ -147,7 +177,23 @@ export default function Dashboard() {
           <div className="absolute bottom-[-1rem] w-full h-px bg-[#C2C8CB]" />
         </div>
 
-        <div className="mt-4 relative">
+        <div className="mt-8 relative">
+          {recentViewedProducts.length > 0 ? (
+            <div className="grid grid-cols-4 gap-3">
+              {recentViewedProducts.map((product) => (
+                <Product 
+                  key={product.sales_board_id} 
+                  product={product} 
+                  size="small"/>
+              ))}
+            </div>
+          ) : (
+            <div className="h-[280px] bg-gray-100 rounded-lg flex items-center justify-center">
+              <p className="text-[#828C94]">최근 본 상품이 없습니다.</p>
+            </div>
+          )}
+        </div>
+        {/* <div className="mt-4 relative">
           {recentViewedItems.length > 0 ? (
             <div className="overflow-x-auto overflow-y-hidden">
               <div className="flex gap-6 pb-4">
@@ -165,14 +211,6 @@ export default function Dashboard() {
                         className="object-cover rounded-lg"
                       />
                     </div>
-                      {/* <img
-                        src={
-                          item.goodsImagePaths?.[0] ||
-                          "/api/placeholder/200/200"
-                        }
-                        alt={item.title}
-                        className="w-full h-full object-cover rounded-lg"
-                      /> */}
                     </div>
                     <div className="flex flex-col gap-1">
                       <h3 className="font-medium text-gray-900 line-clamp-2">
@@ -194,7 +232,7 @@ export default function Dashboard() {
               <p className="text-[#828C94]">최근 본 상품이 없습니다.</p>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </>
   );

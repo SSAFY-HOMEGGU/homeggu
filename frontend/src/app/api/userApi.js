@@ -1,5 +1,9 @@
-import { authInstance, userInstance } from "./axiosInstance";
-// import { authInstance,userInstance } from "./axiosInstanceLocal";
+'use client';
+
+
+// import { headers } from "next/headers";
+// import { authInstance, userInstance } from "./axiosInstance";
+import { authInstance,userInstance } from "./axiosInstanceLocal";
 
 
 // 로그인
@@ -70,9 +74,14 @@ export const goodsLikeList = () => {
 
 // 찜 등록
 export const goodsLike = (salesBoardId) => {
+  const userId = localStorage.getItem('userId')
   return userInstance
     .post("/like", { salesBoardId: salesBoardId })
-    .then((response) => response.data)
+    .then((response) =>{
+
+    const like = response.data
+    console.log('like',like)
+    })
     .catch((error) => {
       console.error("상세 에러 정보:", error);
       throw error;
@@ -82,7 +91,10 @@ export const goodsLike = (salesBoardId) => {
 // 찜 해제
 export const goodsUnlike = (salesBoardId) => {
   return userInstance
-    .delete("/like", { salesBoardId: salesBoardId })
+    .delete("/like", {
+      data: { salesBoardId: salesBoardId}
+      
+    })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -93,8 +105,13 @@ export const goodsUnlike = (salesBoardId) => {
 // 찜 여부 확인
 export const goodsIsLike = (salesBoardId) => {
   console.log("찜 여부 확인", salesBoardId);
+  const userId = localStorage.getItem('userId')
   return userInstance
-    .get("/like/isLike", { salesBoardId: salesBoardId })
+    .post("/like/isLike", { salesBoardId: salesBoardId },{
+      headers:{
+        'Content-Type': 'application/json',
+      }
+    })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -218,6 +235,8 @@ export const preferenceBuy = (formData) => {
 
 // 최근 본 상품 조회
 export const fetchRecentViewedItems = () => {
+  const userId = localStorage.getItem('userId')
+  const accessToken = localStorage.getItem('accessToken')
   return userInstance
     .get("/goods/latest")
     .then((response) => response.data)
@@ -227,10 +246,12 @@ export const fetchRecentViewedItems = () => {
     });
 };
 
+
 // 추천 상품
 export const preferenceList = () => {
+  const userId = localStorage.getItem('userId')
   return userInstance
-    .get("/preference/list")
+    .get('/preference/list')
     .then((response) => response.data)
     .catch((error) => {
       console.error("최근 본 상품 조회 에러:", error);

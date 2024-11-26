@@ -63,13 +63,13 @@
 
 
 
-import { chatInstance } from "./axiosInstance";
-// import { chatInstance } from "./axiosInstanceLocal";
+// import { chatInstance } from "./axiosInstance";
+import { chatInstance } from "./axiosInstanceLocal";
 
 
 // 채팅 목록 내역
 export const getChatList = (userId) => {
-  return chatInstance.get(`chat/${userId}`)
+  return chatInstance.get(`api/chat/${userId}`)
   .then(response => response.data) 
   .catch(error => {
     console.error('상세 에러 정보:', error);
@@ -80,7 +80,7 @@ export const getChatList = (userId) => {
 
 // 채팅 History
 export const getChatHistory = (chatRoomId, recent) => {
-  return chatInstance.get(`chat/room/${chatRoomId}`, {
+  return chatInstance.get(`api/chat/room/${chatRoomId}`, {
     params: {
       recent: recent
     }
@@ -97,7 +97,7 @@ export const getChatHistory = (chatRoomId, recent) => {
 // 채팅방 생성
 export const createChatRoom = (salesBoardId, formData) => {
   console.log('api',formData)
-  return chatInstance.post(`chat/room/${salesBoardId}`, formData)
+  return chatInstance.post(`api/chat/room/${salesBoardId}`, formData)
     .then(response => response.data)
     .catch(error => {
       console.error('상세 에러 정보:', error);

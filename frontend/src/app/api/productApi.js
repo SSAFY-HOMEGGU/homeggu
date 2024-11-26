@@ -1,10 +1,15 @@
-import { productInstance } from "./axiosInstance";
-// import { productInstance } from "./axiosInstanceLocal";
+// import { productInstance } from "./axiosInstance";
+import { productInstance } from "./axiosInstanceLocal";
 
 
 // 물건 등록
 export const salesBoard = (formData) => {
-  return productInstance.post('/board',formData)
+  const userId = localStorage.getItem('userId')
+  return productInstance.post('/board',formData,{
+    headers:{
+      userId : userId
+    }
+  })
     .then(response => response.data)
     .catch(error => {
       console.error('상세 에러 정보:', error);
@@ -144,8 +149,10 @@ export const uploadGoods3DImage = async (files) => {
 
 // 물건 수정
 export const updateSalesBoard = (boardId,formData) => {
+  const userId = localStorage.getItem('userId')
   return productInstance.put(`/board/${boardId}`,formData,{
-    timeout:1000000
+    timeout:1000000,
+    headers: {userId : userId}
   })
     .then(response => response.data)
     .catch(error => {

@@ -30,7 +30,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      const accessTokenStr = sessionStorage.getItem('accessToken');
+      const accessTokenStr = localStorage.getItem('accessToken');
       if (accessTokenStr) {
         const accessToken = accessTokenStr;
         console.log(accessToken);
@@ -38,7 +38,7 @@ export default function Header() {
         const response = await fetchLogout(accessToken);
         console.log('서버 응답:', response);
   
-        sessionStorage.removeItem('accessToken');
+        localStorage.removeItem('accessToken');
         localStorage.removeItem('userId');
         setLoginStatus(false);
         setIsDropdownOpen(false);
@@ -57,7 +57,7 @@ export default function Header() {
 
   const handleMyPageClick = (e) => {
     e.preventDefault();
-    if (sessionStorage.getItem('accessToken')) {
+    if (localStorage.getItem('accessToken')) {
       // 로그인 상태일 때만 드롭다운 메뉴 열기
       setIsDropdownOpen(!isDropdownOpen);
     } else {
@@ -135,7 +135,7 @@ export default function Header() {
           </button>
 
           {/* 드롭다운 메뉴 */}
-          {isDropdownOpen && sessionStorage.getItem('accessToken') && (
+          {isDropdownOpen && localStorage.getItem('accessToken') && (
             <div className="absolute left-1/2 transform -translate-x-1/2 top-[2rem] mt-1 w-[6rem] bg-white border border-gray-300 rounded shadow-lg z-50">
               <Link href="/mypage" className="block px-4 py-2 text-[0.8rem] hover:bg-gray-200">마이페이지</Link>
               <button 
