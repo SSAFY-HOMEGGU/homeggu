@@ -111,7 +111,7 @@ const OrderSuccessPage = () => {
         console.log('선호도 업데이트 완료:', preferenceData);
 
         if (product.isSafe) {
-          const transferId = response.data.transferId;
+          const transferId = response.transferId;
           const message = `메시지_구매확정_${transferId}`;
           const success = await sendSafePurchaseMessage(
             userId,

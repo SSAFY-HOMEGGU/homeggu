@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import useCanvasStore from "../../store/canvasStore";
@@ -25,6 +26,119 @@ const Viewer3D = () => {
   const controlsRef = useRef(null);
   const meshesRef = useRef(new Map());
   const modelRef = useRef(new Map());
+  const loadGLBModel = async (modelPath) => {
+    return new Promise((resolve, reject) => {
+      const loader = new GLTFLoader();
+      const manager = new THREE.LoadingManager();
+
+      manager.onStart = (url) => {
+        console.log("Started loading GLB:", url);
+      };
+
+      manager.onProgress = (url, loaded, total) => {
+        console.log("Loading GLB progress:", url, (loaded / total) * 100 + "%");
+      };
+
+      manager.onError = (url) => {
+        console.error("Error loading GLB:", url);
+        // 로드 실패 시 경로 문제인지 확인
+        console.log(
+          "Full resolved path:",
+          new URL(modelPath, window.location.href).href
+        );
+        // 폴백 모델 시도
+        tryLoadFallbackModel(reject);
+      };
+
+      loader.setManager(manager);
+
+      const tryLoadModel = (path) => {
+        // 경로가 /로 시작하는지 확인
+        const processedPath = path.startsWith("/") ? path : `/${path}`;
+        console.log("Processed model path:", processedPath);
+
+        loader.load(
+          path,
+          (gltf) => {
+            try {
+              const model = gltf.scene;
+              console.log("GLB model loaded successfully:", model);
+
+              const bbox = new THREE.Box3().setFromObject(model);
+              const size = new THREE.Vector3();
+              bbox.getSize(size);
+
+              // 모델 중심점 계산
+              const center = new THREE.Vector3();
+              bbox.getCenter(center);
+              model.position.sub(center);
+
+              // 그림자 설정
+              model.traverse((node) => {
+                if (node.isMesh) {
+                  node.castShadow = true;
+                  node.receiveShadow = true;
+                  if (node.material) {
+                    node.material.needsUpdate = true;
+                    node.material.side = THREE.DoubleSide;
+                  }
+                }
+              });
+
+              resolve(model);
+            } catch (error) {
+              console.error("Error processing GLB model:", error);
+              tryLoadFallbackModel(reject);
+            }
+          },
+          (progress) => {
+            const percentage = (progress.loaded / progress.total) * 100;
+            console.log(`Loading progress: ${percentage.toFixed(2)}%`);
+          },
+          (error) => {
+            console.error("GLB loading error details:", error);
+            tryLoadFallbackModel(reject);
+          }
+        );
+      };
+
+      // 폴백 모델 로드 시도
+      const tryLoadFallbackModel = (reject) => {
+        const fallbackPath = "/3d/fallback.glb"; // 기본 큐브 모델 경로
+        console.warn(`Trying fallback model from: ${fallbackPath}`);
+
+        loader.load(
+          fallbackPath,
+          (gltf) => {
+            try {
+              const model = gltf.scene;
+              model.traverse((node) => {
+                if (node.isMesh) {
+                  node.material = new THREE.MeshStandardMaterial({
+                    color: 0x808080,
+                    transparent: true,
+                    opacity: 0.7,
+                  });
+                }
+              });
+              resolve(model);
+            } catch (error) {
+              console.error("Error loading fallback model:", error);
+              reject(error);
+            }
+          },
+          undefined,
+          (error) => {
+            console.error("Failed to load fallback model:", error);
+            reject(error);
+          }
+        );
+      };
+
+      // 원본 모델 로드 시도
+      tryLoadModel(modelPath);
+    });
+  };
 
   useEffect(() => {
     if (!containerRef.current || !canvas) return;
@@ -178,51 +292,74 @@ const Viewer3D = () => {
         scene.add(wallMesh);
         meshesRef.current.set(wall.id, wallMesh);
       });
-
-      // Load and add furniture models
       const furnitureItems = canvas.canvas
         .getObjects()
         .filter((obj) => obj.type === "furniture-group");
+      console.log("Found furniture items:", furnitureItems.length);
 
-      console.log("Found furniture items:", furnitureItems);
-
+      // 가구 아이템 처리
       for (const furniture of furnitureItems) {
-        const metadata = furniture.getObjects()[0].metadata;
-        console.log("Furniture metadata:", metadata);
+        if (!furniture.metadata) {
+          console.warn("Missing metadata for furniture:", furniture);
+          continue;
+        }
 
-        if (metadata?.name === "a" && metadata.model3D) {
+        console.log("Processing furniture metadata:", furniture.metadata);
+
+        // metadata 내부의 model3D 정보를 확인
+        const model3DInfo = furniture.metadata?.model3D;
+
+        if (model3DInfo?.glb) {
           try {
-            const model = await loadModel(
-              metadata.model3D.obj,
-              metadata.model3D.mtl
-            );
+            console.log("Loading 3D model from:", model3DInfo.glb);
+            const model = await loadGLBModel(model3DInfo.glb);
 
-            // 현재 모델의 바운딩 박스 크기 계산
+            if (!model) {
+              console.warn("Failed to load model:", model3DInfo.glb);
+              continue;
+            }
+
+            // 모델의 바운딩 박스 계산
             const bbox = new THREE.Box3().setFromObject(model);
             const modelSize = new THREE.Vector3();
             bbox.getSize(modelSize);
 
             // 실제 크기에 맞게 스케일 조정
-            const scaleX = metadata.width / modelSize.x;
-            const scaleY = metadata.height / modelSize.y;
-            const scaleZ = metadata.depth / modelSize.z;
+            const { width, height, depth } = furniture.metadata;
 
-            model.scale.set(scaleX, scaleY, scaleZ);
+            // 스케일 계산 (단위 변환 고려: cm to meters)
+            const scaleX = width / 100 / (modelSize.x || 1);
+            const scaleY = height / 100 / (modelSize.y || 1);
+            const scaleZ = depth / 100 / (modelSize.z || 1);
 
-            // Get the furniture's position from the 2D canvas
+            // 균일한 스케일 적용
+            const scale = Math.min(scaleX, scaleY, scaleZ);
+            console.log("Applying scale:", scale, "to model");
+            model.scale.set(scale, scale, scale);
+
+            // 2D 캔버스의 위치를 3D 공간에 매핑
             const position = furniture.getCenterPoint();
+            model.position.set(
+              position.x,
+              height / 20, // Y축은 높이의 절반으로 설정 (미터 단위로 변환)
+              position.y
+            );
 
-            // 높이 조정하여 바닥 위에 위치시키기
-            model.position.set(position.x, metadata.height / 2, position.y);
+            // 회전 적용
+            model.rotation.y = -((furniture.angle || 0) * Math.PI) / 180;
 
-            // Add the model to the scene
             scene.add(model);
-            modelRef.current.set(furniture.id, model);
+            modelRef.current.set(furniture.metadata.id, model);
 
-            console.log("3D model added successfully");
+            console.log("Successfully added 3D model to scene");
           } catch (error) {
             console.error("Error loading 3D model:", error);
           }
+        } else {
+          console.warn(
+            "No 3D model GLB path found in metadata:",
+            furniture.metadata
+          );
         }
       }
 

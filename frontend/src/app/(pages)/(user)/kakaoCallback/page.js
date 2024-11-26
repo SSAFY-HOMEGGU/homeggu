@@ -35,6 +35,7 @@ export default function KakaoCallback() {
 
         if (response) {
           localStorage.setItem('accessToken', response.accessToken);
+          // sessionStorage.setItem('accessToken', response.accessToken);
 
           try {
             const decodedToken = jwtDecode(response.accessToken);

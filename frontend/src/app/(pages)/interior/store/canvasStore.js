@@ -120,6 +120,19 @@ const useCanvasStore = create(
         }
       },
 
+      // 벽 패턴 관련 상태 추가
+      wallPattern: "wallpattern.jpg", // 기본값
+
+      // 벽 패턴 변경 메서드
+      setWallPattern: (pattern) => {
+        const { canvas } = get();
+        set({ wallPattern: pattern });
+
+        if (canvas) {
+          canvas.updateWallPattern(pattern);
+        }
+      },
+
       // 가구 추가 메서드
       addFurniture: (furniture) => {
         const { canvas } = get();

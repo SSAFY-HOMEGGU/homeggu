@@ -291,6 +291,7 @@ const useProductStore = create(
           )
         }));
 
+
         // API 호출
     //     if (!prevIsLiked) {
     //       await goodsLike(productId);
@@ -328,13 +329,14 @@ const useProductStore = create(
     //   }
     // },
     // 재시도 로직 추가
-    const maxRetries = 2;
+    const maxRetries = 1;
     let retryCount = 0;
     let success = false;
 
     while (!success && retryCount < maxRetries) {
       try {
         if (!prevIsLiked) {
+          const likeResponse = await goodsLike(productId);
           await goodsLike(productId);
           await preferenceUpdate({
             category: product.category,
@@ -481,7 +483,30 @@ const useProductStore = create(
     //     },
     //     loading: true
     //   }));
-  
+     // 선택된 상품 업데이트 함수 추가
+     updateSelectedProduct: (updates) => {
+      set((state) => {
+        if (!state.selectedProduct) return state;
+
+        const updatedProduct = {
+          ...state.selectedProduct,
+          ...updates,
+        };
+
+        // products 배열에도 동일한 업데이트 적용
+        const updatedProducts = state.products.map(product => 
+          product.salesBoardId === updatedProduct.salesBoardId
+            ? updatedProduct
+            : product
+        );
+
+        return {
+          selectedProduct: updatedProduct,
+          products: updatedProducts,
+        };
+      });
+    },
+    
     //   // API 요청 데이터 구조
     updateProductStatus: async (product, newStatus) => {
       console.log('상태 변경:', product.isSell, '->', newStatus);

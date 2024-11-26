@@ -1,8 +1,9 @@
-//interior/components/Toolbar/Toolbar.js
-
+/// src/app/interior/components/Toolbar/Toolbar.js
 "use client";
+
 import React, { useState } from "react";
 import useCanvasStore from "../../store/canvasStore";
+import useProjectStore from "../../store/projectStore";
 import {
   MousePointer,
   MinusSquare,
@@ -14,6 +15,7 @@ import {
   Download,
   Upload,
   Book,
+  Save,
   FileDown,
   Image as ImageIcon,
 } from "lucide-react";
@@ -25,12 +27,120 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/components/ui/tooltip";
+import { useToast } from "@/app/components/ui/use-toast";
+import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 
+const WALL_PATTERNS = [
+  { label: "흰색 민무늬", value: "wallpattern.jpg" },
+  { label: "벽돌", value: "wallpattern1.jpg" },
+  { label: "벽돌(흰색)", value: "wallpattern2.jpg" },
+  { label: "나무", value: "wallpattern3.jpg" },
+];
+
 const Toolbar = () => {
+  const { setWallPattern, wallPattern } = useCanvasStore();
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const { canvas, mode, setMode, selectedObject } = useCanvasStore();
+  const { saveProject, currentProject } = useProjectStore();
+  const { Toast } = useToast(); // useToast에서 addToast를 가져옵니다
+
+  // 저장 처리 함수
+  const handleSave = () => {
+    if (!canvas?.canvas || !currentProject) {
+      toast.error("캔버스가 초기화되지 않았거나 프로젝트가 없습니다.");
+      return;
+    }
+
+    try {
+      // 2D 상태만 저장
+      const canvasState = {
+        // 벽 데이터
+        walls: canvas.walls.map((wall) => ({
+          x1: wall.x1,
+          y1: wall.y1,
+          x2: wall.x2,
+          y2: wall.y2,
+          thickness: wall.thickness || canvas.currentWallType.thickness,
+          height: wall.height || canvas.currentWallType.height,
+        })),
+
+        // 문 데이터
+        doors: canvas.canvas
+          .getObjects()
+          .filter((obj) => obj.type === "door")
+          .map((door) => ({
+            left: door.left,
+            top: door.top,
+            width: door.width || 60,
+            height: door.height || canvas.currentWallType.thickness,
+            angle: door.angle,
+          })),
+
+        // 창문 데이터
+        windows: canvas.canvas
+          .getObjects()
+          .filter((obj) => obj.type === "window")
+          .map((window) => ({
+            left: window.left,
+            top: window.top,
+            width: window.width || 40,
+            height: window.height || canvas.currentWallType.thickness,
+            angle: window.angle,
+          })),
+
+        // 가구 데이터 수정
+        furniture: canvas.canvas
+          .getObjects()
+          .filter((obj) => obj.type === "furniture-group")
+          .map((furniture) => ({
+            id: furniture.metadata?.id,
+            name: furniture.metadata?.name,
+            left: furniture.left,
+            top: furniture.top,
+            width: furniture.metadata?.width || furniture.width,
+            height: furniture.metadata?.height || furniture.height,
+            depth: furniture.metadata?.depth,
+            angle: furniture.angle,
+            type: "furniture",
+            metadata: {
+              ...furniture.metadata,
+              model3D: furniture.metadata?.model3D
+                ? {
+                    ...furniture.metadata.model3D,
+                    glb: `/3d/${furniture.metadata.id}.glb`,
+                  }
+                : null,
+            },
+          })),
+
+          
+        // 뷰포트/줌 상태
+        viewportTransform: canvas.canvas.viewportTransform,
+        zoom: canvas.canvas.getZoom(),
+
+        // 설정 상태
+        settings: {
+          gridVisible: canvas.gridVisible,
+          snapToGrid: canvas.snapToGrid,
+          gridSize: canvas.gridSize,
+          currentWallType: canvas.currentWallType,
+        },
+      };
+
+      // 프로젝트 저장
+      saveProject({
+        ...currentProject,
+        data: { canvasState },
+      });
+
+      toast.success("프로젝트가 성공적으로 저장되었습니다.");
+    } catch (error) {
+      console.error("Save failed:", error);
+      toast.error("저장 중 오류가 발생했습니다: " + error.message);
+    }
+  };
 
   const handleExport = (type) => {
     if (!canvas || !canvas.canvas) return;
@@ -214,6 +324,26 @@ const Toolbar = () => {
         <span className="ml-2">Catalog</span>
       </Button>
 
+      {/* Save Button 추가 */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full"
+              onClick={handleSave}
+            >
+              <Save className="h-4 w-4" />
+              <span className="ml-2">저장</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>프로젝트 저장하기</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       {/* Tools */}
       <TooltipProvider>
         <div className="grid grid-cols-2 gap-1">
@@ -357,6 +487,17 @@ const Toolbar = () => {
             <TooltipContent>Import</TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        <select
+          value={wallPattern}
+          onChange={(e) => setWallPattern(e.target.value)}
+          className="px-3 py-2 bg-white border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          {WALL_PATTERNS.map((pattern) => (
+            <option key={pattern.value} value={pattern.value}>
+              {pattern.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* 드롭다운 메뉴가 열려있을 때 클릭 이벤트를 감지하여 닫기 위한 오버레이 */}

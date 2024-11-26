@@ -4,7 +4,12 @@ import { productInstance } from "./axiosInstance";
 
 // 물건 등록
 export const salesBoard = (formData) => {
-  return productInstance.post('/board',formData)
+  const userId = localStorage.getItem('userId')
+  return productInstance.post('/board',formData,{
+    headers:{
+      userId : userId
+    }
+  })
     .then(response => response.data)
     .catch(error => {
       console.error('상세 에러 정보:', error);
@@ -72,64 +77,20 @@ export const salesBoard = (formData) => {
 //     throw error;
 //   }
 // };
-export const uploadGoodsImage = async (file) => {
-  // 시도 1: 단일 파일로 전송
-  const formData1 = new FormData();
-  formData1.append('file', file);  // 키를 'file'로 변경
-
-  // 시도 2: 배열 형태로 전송
-  const formData2 = new FormData();
-  formData2.append('files[]', file);  // 키를 'files[]'로 설정
-
-  // 시도 3: 원래 방식
-  const formData3 = new FormData();
-  formData3.append('files', file);
-
-  // FormData 내용 출력
-  console.log('전송할 파일 정보:', {
-    name: file.name,
-    type: file.type,
-    size: `${(file.size / 1024 / 1024).toFixed(2)}MB`
-  });
-
+export const uploadGoodsImage = async (formData) => {
   try {
-    // 현재 사용할 FormData 선택
-    const formData = formData2;  // 여기서 시도할 버전 선택
     const response = await productInstance.post('/board/image', formData, {
       headers: {
-        'Accept': 'application/json',
-        // multipart/form-data의 Content-Type은 자동으로 설정되도록 함
-        // boundary 파라미터가 자동으로 생성됨
-      },
-      transformRequest: [(data) => {
-        // FormData는 변형하지 않음
-        return data;
-      }],
+        'Content-Type': 'multipart/form-data',
+      }
     });
-
-    console.log('이미지 업로드 성공:', response.data);
     return response.data;
   } catch (error) {
-    console.error('업로드 실패 상세:', {
-      requestConfig: {
-        url: error.config?.url,
-        method: error.config?.method,
-        headers: error.config?.headers,
-        data: error.config?.data instanceof FormData ? 
-          'FormData 객체 (내용 로깅 불가)' : error.config?.data
-      },
-      response: {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers
-      },
-      message: error.message
-    });
-    throw new Error(`이미지 업로드 실패: ${error.response?.data?.message || error.message}`);
+    console.error('업로드 실패:', error);
+    throw error;
   }
 };
-
+  
 // 물건 3D 이미지 등록
 export const uploadGoods3DImage = async (files) => {
   const formData = new FormData();
@@ -188,8 +149,10 @@ export const uploadGoods3DImage = async (files) => {
 
 // 물건 수정
 export const updateSalesBoard = (boardId,formData) => {
+  const userId = localStorage.getItem('userId')
   return productInstance.put(`/board/${boardId}`,formData,{
-    timeout:1000000
+    timeout:1000000,
+    headers: {userId : userId}
   })
     .then(response => response.data)
     .catch(error => {

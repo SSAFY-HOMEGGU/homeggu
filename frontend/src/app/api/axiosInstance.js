@@ -38,7 +38,7 @@ export const productInstance = axios.create({
   timeout: 5000000,
   withCredentials: true,
   headers: {
-    // "Content-Type": "application/json",
+    "Content-Type": "application/json",
     "userId" : "11007"
   },
 });
@@ -58,7 +58,8 @@ export const payInstance = axios.create({
 const addTokenInterceptor = (instance) => {
   instance.interceptors.request.use(
     (config) => {
-      const accessToken = localStorage.getItem("accessToken");
+      // const accessToken = localStorage.getItem("accessToken");
+      const accessToken = sessionStorage.getItem("accessToken");
       console.log('Interceptor token:', accessToken);
       if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
@@ -86,19 +87,19 @@ const addResponseInterceptor = (instance) => {
         originalRequest._retry = true;
 
         try {
-          const refreshToken = localStorage.getItem("refreshToken");
+          const refreshToken = sessionStorage.getItem("refreshToken");
           const response = await authInstance.post("/api/auth/refresh", {
             refreshToken,
           });
           const newToken = response.data.accessToken;
 
-          localStorage.setItem("accessToken", newToken);
+          sessionStorage.setItem("accessToken", newToken);
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
           return instance(originalRequest);
         } catch (refreshError) {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
+          sessionStorage.removeItem("accessToken");
+          sessionStorage.removeItem("refreshToken");
           window.location.href = "/login";
           return Promise.reject(refreshError);
         }

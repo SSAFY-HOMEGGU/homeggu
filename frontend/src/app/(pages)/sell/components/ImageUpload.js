@@ -13,7 +13,9 @@ export default function ImageUpload({ onUpload }) {
 
 
   // Store에서 이미지 관련 상태와 액션 가져오기
-  const setProductImages = useProductStore((state) => state.setProductImages);
+  // const setProductImages = useProductStore((state) => state.setProductImages);
+  const setGoodsImages = useProductStore((state) => state.setGoodsImages);  // store의 실제 함수명 사용
+
 
   useEffect(() => {
     console.log('============ 현재 이미지 목록 ============');
@@ -75,62 +77,133 @@ export default function ImageUpload({ onUpload }) {
   //   }
   // };
   
+  // const handleImageUpload = async (event) => {
+  //   const files = event.target.files;
+  //   if (!files || files.length === 0) return;
+  
+  //   setIsUploading(true);
+  
+  //   try {
+  //     // 각 파일을 개별적으로 처리
+  //     for (let i = 0; i < files.length; i++) {
+  //       const file = files[i];
+  //       console.log('업로드할 파일:', file);  // 파일 객체 확인
+  //       console.log('파일 타입:', file.type); // 파일 타입 확인
+  //       console.log('파일 크기:', file.size); // 파일 크기 확인
+
+  //       // 이미지 개수 체크
+  //       if (uploadedImages >= 10) {
+  //         alert('이미지는 최대 10개까지만 업로드 가능합니다.');
+  //         break;
+  //       }
+  
+  //       // 단일 파일 업로드 및 응답 처리
+  //       const uploadedUrl = await uploadGoodsImage(file);
+        
+  //       if (uploadedUrl) {
+  //         // 미리보기 URL 생성
+  //         const previewUrl = URL.createObjectURL(file);
+  //         setImagePreviews(prev => [...prev, previewUrl]);
+  //         setUploadedUrls(prev => [...prev, uploadedUrl]);
+  //         setUploadedImages(prev => prev + 1);
+          
+  //         // 업로드된 URL 저장
+  //         setUploadedUrls(prev => [...prev, uploadedUrl]);
+          
+  //         // 업로드된 이미지 수 증가
+  //         setUploadedImages(prev => prev + 1);
+  
+  //         // store 업데이트 (첫 번째 이미지를 대표 이미지로 설정)
+  //         if (uploadedImages === 0) {
+  //           const reader = new FileReader();
+  //           reader.onloadend = () => {
+  //             setProductImages({
+  //               goodsImagePaths: [uploadedUrl],
+  //               mainImageUrl: reader.result
+  //             });
+  //           };
+  //           reader.readAsDataURL(file);
+  //         } else {
+  //           setProductImages(prev => ({
+  //             ...prev,
+  //             goodsImagePaths: [...prev.goodsImagePaths, uploadedUrl]
+  //           }));
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('이미지 업로드 중 오류 발생:', error);
+  //     alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
   const handleImageUpload = async (event) => {
     const files = event.target.files;
+    console.log('1. 선택된 파일:', files);
+    
     if (!files || files.length === 0) return;
   
+    if (uploadedImages + files.length > 10) {
+      alert('최대 10개의 이미지만 업로드할 수 있습니다.');
+      return;
+    }
+  
     setIsUploading(true);
+    console.log('2. 현재 업로드된 이미지 수:', uploadedImages);
   
     try {
-      // 각 파일을 개별적으로 처리
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // 이미지 개수 체크
-        if (uploadedImages >= 10) {
-          alert('이미지는 최대 10개까지만 업로드 가능합니다.');
-          break;
-        }
+      const formData = new FormData();
+      Array.from(files).forEach(file => {
+        console.log('3. 파일 정보:', {
+          이름: file.name,
+          타입: file.type,
+          크기: `${(file.size / 1024 / 1024).toFixed(2)}MB`
+        });
+        formData.append('files', file);
+      });
   
-        // 단일 파일 업로드 및 응답 처리
-        const uploadedUrl = await uploadGoodsImage(file);
-        
-        if (uploadedUrl) {
-          // 미리보기 URL 생성
-          const previewUrl = URL.createObjectURL(file);
-          setImagePreviews(prev => [...prev, previewUrl]);
-          
-          // 업로드된 URL 저장
-          setUploadedUrls(prev => [...prev, uploadedUrl]);
-          
-          // 업로드된 이미지 수 증가
-          setUploadedImages(prev => prev + 1);
+      console.log('4. FormData 키 목록:');
+      // FormData 내용 확인
+      for (let [key, value] of formData.entries()) {
+        console.log('FormData 항목:', {
+          key: key,
+          fileName: value instanceof File ? value.name : 'not a file',
+          type: value instanceof File ? value.type : typeof value,
+          size: value instanceof File ? value.size : 'N/A'
+        });
+      }
   
-          // store 업데이트 (첫 번째 이미지를 대표 이미지로 설정)
-          if (uploadedImages === 0) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setProductImages({
-                goodsImagePaths: [uploadedUrl],
-                mainImageUrl: reader.result
-              });
-            };
-            reader.readAsDataURL(file);
-          } else {
-            setProductImages(prev => ({
-              ...prev,
-              goodsImagePaths: [...prev.goodsImagePaths, uploadedUrl]
-            }));
-          }
-        }
+      console.log('5. API 호출 직전');
+      const uploadedUrls = await uploadGoodsImage(formData);
+      console.log('6. API 응답:', uploadedUrls);
+      
+      if (uploadedUrls && uploadedUrls.length > 0) {
+        const newPreviews = Array.from(files).map(file => URL.createObjectURL(file));
+        console.log('7. 생성된 미리보기 URL:', newPreviews);
+        
+        setImagePreviews(prev => [...prev, ...newPreviews]);
+        setUploadedUrls(prev => [...prev, ...uploadedUrls]);
+        setUploadedImages(prev => prev + files.length);
+        setGoodsImages([...uploadedUrls]);
+        
+        console.log('8. 상태 업데이트 완료', {
+          미리보기수: newPreviews.length,
+          업로드URL수: uploadedUrls.length
+        });
       }
     } catch (error) {
-      console.error('이미지 업로드 중 오류 발생:', error);
-      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+      console.error('9. 에러 상세 정보:', {
+        메시지: error.message,
+        응답데이터: error.response?.data,
+        상태코드: error.response?.status,
+        헤더: error.response?.headers
+      });
     } finally {
       setIsUploading(false);
     }
   };
+
   const removeImage = (indexToRemove) => {
     const updatedPreviews = imagePreviews.filter((_, index) => index !== indexToRemove);
     const updatedFiles = imageFiles.filter((_, index) => index !== indexToRemove);

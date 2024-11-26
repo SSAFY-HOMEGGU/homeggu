@@ -1,3 +1,4 @@
+'use client'
 import { payInstance } from "./axiosInstance";
 // import { payInstance } from "./axiosInstanceLocal";
 
@@ -18,9 +19,12 @@ import { payInstance } from "./axiosInstance";
 // };
 // 홈꾸머니 정보 조회
 export const fetchPayInfo = async () => {
+  const userId = localStorage.getItem('userId')
   try {
     console.log("홈꾸머니 정보 조회 요청 시작");
-    const response = await payInstance.get("/info");
+    const response = await payInstance.get("/info",{
+      headers:{userId: userId}
+    });
     console.log("홈꾸머니 정보 조회 응답 데이터:", response.data);
 
     const balance = parseInt(response.data.hgMoneyBalance, 10);
@@ -50,6 +54,7 @@ export const fetchPayInfo = async () => {
 
 // 이용내역 조회 API
 export const fetchPayHistory = async (page = 0, size = 20, filter = "") => {
+  const userId = localStorage.getItem('userId')
   try {
     let url = `/info/history?page=${page}&size=${size}`;
     if (filter) {
@@ -61,7 +66,9 @@ export const fetchPayHistory = async (page = 0, size = 20, filter = "") => {
       }
     }
 
-    const response = await payInstance.get(url);
+    const response = await payInstance.get(url,{
+      headers:{userId: userId}
+    });
     return response.data;
   } catch (error) {
     console.error("이용내역 조회 실패:", error);
@@ -71,10 +78,12 @@ export const fetchPayHistory = async (page = 0, size = 20, filter = "") => {
 
 //머니 충전 조회 API
 export const chargeMoney = async (chargeAmount) => {
+  const userId = localStorage.getItem('userId')
   try {
-    const response = await payInstance.post("/charge", {
-      chargeAmount: Number(chargeAmount), // 숫자로 변환하여 전송
-    });
+    const response = await payInstance.post("/charge", 
+      { chargeAmount: Number(chargeAmount) },  // body
+      { headers: { "userId": userId } }        // headers는 별도 객체로
+    );
     if (response.status === 201) {
       console.log("충전 성공");
       return response.data;
@@ -100,13 +109,16 @@ export const transferMoney = async (
   transferAmount,
   safePay
 ) => {
+  const userId = localStorage.getItem('userId')
   try {
     const response = await payInstance.post("/transfer", {
       salesBoardId: Number(salesBoardId), // Long 형식으로 전달
       receiverId: Number(receiverId),
       transferAmount: Number(transferAmount),
       safePay: Boolean(safePay),
-    });
+    },
+  {headers: {userId:userId}}
+  );
     if (response.status === 201) {
       console.log("송금 성공");
       return response.data;
@@ -127,8 +139,11 @@ export const transferMoney = async (
 
 // 안전 송금 확정
 export const transferConfirm = (transferId) => {
+  const userId = localStorage.getItem('userId')
   return payInstance
-    .patch("/transfer/confirm", transferId)
+    .patch("/transfer/confirm", transferId,{
+      headers:{userId: userId}
+    })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
@@ -138,8 +153,11 @@ export const transferConfirm = (transferId) => {
 
 // 안전 송금 취소
 export const transferCancel = (transferId) => {
+  const userId = localStorage.getItem('userId')
   return payInstance
-    .patch("/transfer/cancel", transferId)
+    .patch("/transfer/cancel", transferId,{
+      headers:{userId:userId}
+    })
     .then((response) => response.data)
     .catch((error) => {
       console.error("상세 에러 정보:", error);
