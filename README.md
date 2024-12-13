@@ -118,8 +118,14 @@ Ubuntu : 20.4.6 / Docker : 27.3.1 / NginX : 1.27.2 / Jenkins : 2.484
 
 
 ## 🏠 시스템 아키텍쳐
-<img src=""/>
+<img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/system_architecture.png"/>
 
+#### Next.js
+- 다양한 렌더링 방식(SSR, SSG, CSR 등)을 활용하고 검색엔진 최적화(SEO)를 위해, 프론트엔드 서버로 Next.js를 선택했습니다.
+
+#### MSA(Micro Service Architecture)
+- **시스템의 유연성과 확장성**을 도모하기 위해 아키텍처를 MSA로 설계했습니다. 이를 통해 각 서비스를 **독립적으로 개발/배포**할 수 있었습니다.
+- 또한 **장애 격리** 효과도 기대해볼 수 있습니다. 예컨대 pay 서비스에 장애가 발생하더라도 user, goods 등 다른 서비스는 정상적으로 동작되도록 하고자 했습니다.
 
 
 <br/><br/>
@@ -127,15 +133,24 @@ Ubuntu : 20.4.6 / Docker : 27.3.1 / NginX : 1.27.2 / Jenkins : 2.484
 
 ## ✅ 주요기능 소개
 
-## 📃 산출물(ERD, 명세서)
+## 📃 산출물
+### ERD
+- MSA의 장점을 극대화하기 위해 **각 서비스의 데이터베이스를 분리**했습니다.
+- 다른 서비스의 데이터가 필요한 경우 **FeignClient**을 활용하여 조회했습니다.
 
-![ERD]()
+![erd_user_goods](https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/erd_user_goods.png)
+![erd_pay_chat](https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/erd_pay_chat.png)
 
 <br/>
 
-![api 1]()
-![api 2]()
-![api_3]()
+### API 명세서
+- 프론트엔드와 백엔드의 효율적인 의사소통을 위해, **Notion**으로 각 API의 주소와 요청/응답 형식을 관리했습니다.
+- API 주소의 첫 부분에 서비스명을 명시해, **Spring Cloud Gateway**가 해당 서비스로 요청을 라우팅할 수 있도록 했습니다.
+
+![api user](https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/api_user.png)
+![api goods](https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/api_goods.png)
+![api_pay](https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/api_pay.png)
+![api_chat](https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/api_chat.png)
 
 <br/><br/>
 
