@@ -8,8 +8,8 @@
 ## ✅ 프로젝트 개요
 
 ### 기획 배경
-최근 고물가와 친환경에 대한 관심이 맞물려 중고 가구 시장이 빠르게 성장하고 있지만, 이와 관련된 서비스가 아직 눈에 띄지 않는 실정입니다.
-따라서 이러한 틈새시장을 공략하기 위해 **중고 가구 거래 플랫폼** '**홈꾸(HOMEGGU)**'를 기획하게 되었습니다.
+- 최근 고물가와 친환경에 대한 관심이 맞물려 중고 가구 시장이 빠르게 성장하고 있지만, 이와 관련된 서비스가 아직 눈에 띄지 않는 실정입니다. <br>
+- 따라서 이러한 틈새시장을 공략하기 위해 **중고 가구 거래 플랫폼** '**홈꾸(HOMEGGU)**'를 기획하게 되었습니다.
 
 <br/>
 
@@ -20,9 +20,9 @@
 <br/>
 
 ### 담당 역할
-| 이름 | 역할 | 개발 내용 |
+| <br/>이름<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br/>역할<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br/><div align="center">개발 내용</div><br/> |
 |:-:|:-:|:-:|
-| 이규빈 | 팀장, BackEnd | **MSA 설계**(Gateway, Discovery, FeignClient 등), **pay 서비스**(머니 충전 및 송금, 사용내역 조회 등) |
+| 이규빈 | 팀장, BackEnd | - **MSA 설계**(Gateway, Discovery, FeignClient 등) <br> - **pay 서비스**(머니 충전 및 송금, 사용내역 조회 등) |
 | 김태성 | BackEnd |  |
 | 안해찬 | BackEnd |  |
 | 최윤석 | BackEnd, Infra |  |
