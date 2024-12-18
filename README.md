@@ -122,7 +122,7 @@ Ubuntu : 20.4.6 / Docker : 27.3.1 / NginX : 1.27.2 / Jenkins : 2.484
 
 
 ## 🏠 시스템 아키텍쳐
-<img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/system_architecture.png"/>
+<p align="center"><img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/system_architecture.png" width="70%" /></p>
 
 #### Next.js
 - 다양한 렌더링 방식(SSR, SSG, CSR 등)을 활용하고 검색엔진 최적화(SEO)를 위해, 프론트엔드 서버로 Next.js를 선택했습니다.
