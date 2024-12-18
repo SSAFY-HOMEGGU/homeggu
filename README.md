@@ -22,7 +22,7 @@
 ### 담당 역할
 | <br/>이름<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br/>역할<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | <br/><div align="center">개발 내용</div><br/> |
 |:-:|:-:|:-:|
-| 이규빈 | 팀장, BackEnd | - **MSA 설계**(Gateway, Discovery, FeignClient 등) <br> - **pay 서비스**(머니 충전 및 송금, 사용내역 조회 등) |
+| 이규빈 | 팀장, BackEnd | - **MSA 설계**(Gateway, Discovery, FeignClient 등) <br> - **pay 서비스**(머니 충전 및 송금, 사용내역 조회, 데이터 동시성 제어 등) |
 | 김태성 | BackEnd |  |
 | 안해찬 | BackEnd |  |
 | 최윤석 | BackEnd, Infra |  |
@@ -136,21 +136,25 @@ Ubuntu : 20.4.6 / Docker : 27.3.1 / NginX : 1.27.2 / Jenkins : 2.484
 
 
 ## ✅ 주요기능 소개
-### 중고 가구 쇼핑 (구매자)
+### 중고 가구 쇼핑
 | 메인 | 상품 상세 | 구매 |
 |:-:|:-:|:-:|
 | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/1.%EB%A9%94%EC%9D%B8%ED%8E%98%EC%9D%B4%EC%A7%80%2B%EC%B6%94%EC%B2%9C%EC%83%81%ED%92%88.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/2.%EC%83%81%EC%84%B8%ED%8E%98%EC%9D%B4%EC%A7%80(%EA%B5%AC%EB%A7%A4%EC%9E%90).png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/3.%EA%B5%AC%EB%A7%A4%ED%8E%98%EC%9D%B4%EC%A7%80.png"/> |
 
 <br>
 
-### 상품 등록 및 이미지 변환 (판매자)
+### 상품 등록 및 이미지 변환
 | 상품 등록 | 이미지 변환 (2D to 3D) | 변환 완료 |
 |:-:|:-:|:-:|
 | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/5-1.%EC%83%81%ED%92%88%20%EB%93%B1%EB%A1%9D%20%EC%9E%85%EB%A0%A5.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/5-2.%EC%83%81%ED%92%88%EB%93%B1%EB%A1%9D%203D%20%EB%B0%B1%EA%B7%B8%EB%9D%BC%EC%9A%B4%EB%93%9C%20%EC%9D%B4%EB%AF%B8%EC%A7%80%20%EB%B3%80%ED%99%98.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/6-3.3D%EC%9D%B4%EB%AF%B8%EC%A7%80%20%EB%B3%80%ED%99%98%20%ED%9B%84%20%EC%83%81%ED%92%88%20%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8.png"/> |
 
+- 판매자는 중고가구 상품 등록시 이미지를 첨부할 수 있고, 이는 **백그라운드에서 3D로 변환**됩니다.
+- 사용자는 토스트 알림을 통해 변환 진행률을 확인할 수 있습니다 (중간 사진 좌측 하단). 이를 통해 변환 중 다른 작업을 할 수 있도록 하여 **사용자 경험을 개선**하였습니다.
+- 변환이 완료되면 3D 모델 파일을 다운로드 받을 수 있고, 이를 다시 업로드하여 3D 가구배치에 활용할 수 있습니다.
+
 <br>
 
-### 3D 가구배치 시뮬레이션 (구매자)
+### 3D 가구배치 시뮬레이션
 | 벽/방 샘플 | 가구 샘플 |
 |:-:|:-:|
 | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/8-1.2D%EB%8F%84%EB%A9%B4%20%EC%83%9D%EC%84%B1.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/8-3.%EC%9D%B8%ED%85%8C%EB%A6%AC%EC%96%B4%20%EC%83%81%ED%92%88%20%EC%84%A0%ED%83%9D.png"/> |
@@ -161,12 +165,18 @@ Ubuntu : 20.4.6 / Docker : 27.3.1 / NginX : 1.27.2 / Jenkins : 2.484
 |:-:|:-:|:-:|
 | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/8-2.2D%EB%8F%84%EB%A9%B4%20%ED%8E%98%EC%9D%B4%EC%A7%80.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/8-4.2D%EB%8F%84%EB%A9%B4%20%EB%B0%B0%EC%B9%98.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/8-5.3D%ED%99%94.png"/> |
 
+- 사용자는 빈 도면에 벽이나 방 샘플을 배치해 본인 집과 유사한 환경을 만들 수 있습니다.
+- 여기에 위에서 변환된 3D 가구 파일을 배치하여, **구매 전 미리 배치 결과를 시뮬레이션** 해볼 수 있습니다.
+
 <br>
 
 ### 맞춤형 상품 추천
 | 회원가입시 설문조사 | 상품 추천 |
 |:-:|:-:|
 | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/0.%ED%9A%8C%EC%9B%90%EA%B0%80%EC%9E%85%20%EC%84%A4%EB%AC%B8%EC%A1%B0%EC%82%AC.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/2-1%EC%83%81%EC%84%B8%ED%8E%98%EC%9D%B4%EC%A7%80(%ED%8C%90%EB%A7%A4%EC%9E%90).png"/> |
+
+- 회원가입시 설문조사를 통해 사용자의 인테리어 취향 정보를 수집합니다(**cold start**). 이를 통해 새로운 취향 발견이 어려운 **컨텐츠 기반 필터링의 한계를 보완**합니다.
+- 상품 조회시 **누적된 데이터(구매, 조회, 좋아요 등)와 위 설문조사 결과를 종합**하여, 사용자 맞춤형으로 추천상품을 보여줍니다.
 
 <br>
 
@@ -175,12 +185,18 @@ Ubuntu : 20.4.6 / Docker : 27.3.1 / NginX : 1.27.2 / Jenkins : 2.484
 |:-:|:-:|
 | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/7.%EC%B1%84%ED%8C%85%20%EB%AA%A8%EB%8B%AC.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/7-1.%EC%B1%84%ED%8C%85%ED%8E%98%EC%9D%B4%EC%A7%80.png"/> |
 
+- 구매자는 상품 상세 페이지에서 판매자에게 채팅을 보낼 수 있습니다.
+- 판매자는 구매자들의 채팅을 모아서 확인해볼 수 있습니다.
+
 <br>
 
 ### 머니 충전 및 송금
 | 이용내역 조회 | 안전거래 확정 |
 |:-:|:-:|
 | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/9.%20%EA%B1%B0%EB%9E%98%EB%82%B4%EC%97%AD.png"/> | <img src="https://github.com/SSAFY-HOMEGGU/homeggu/blob/main/README_image/9-3.%20%EC%95%88%EC%A0%84%EA%B1%B0%EB%9E%98.png"/> |
+
+- 사용자의 계좌를 이용해 홈꾸머니를 충전하고, 이 머니를 판매자에게 보내는 방식으로 송금 기능을 구현했습니다. 이때 **데이터 동시성 제어**를 위해 **비관적 락**을 적용했습니다.
+- 또한 구매자가 상품을 먼저 확인한 뒤 구매 확정을 해야만 비로소 판매자에게 입급되도록 하는 **안전거래(에스크로)** 기능을 구현했습니다.
 
 <br>
 
@@ -208,8 +224,10 @@ Ubuntu : 20.4.6 / Docker : 27.3.1 / NginX : 1.27.2 / Jenkins : 2.484
 ## 💯 프로젝트 회고
 
 ### ❤ 이규빈
-*
-*
+* 팀장을 처음 맡은데다 5주라는 짧은 기간 내 프로젝트를 완성하기 쉽지 않았습니다. 그러나 우리의 목표였던 **"기술적 성장"**을 위해 팀원 모두 열심히 임해준 덕분에 의미 있는 프로젝트를 완성할 수 있었다고 생각합니다.
+* **MSA 설계** 과정에서는 예상치 못한 에러들이 많이 발생해 어려움이 있었지만, 모놀리식 아키텍처와 비교했을 때 MSA의 장점인 유연성과 확장성을 체감할 수 있어 값진 경험이었습니다.
+* 평소 시도해보고 싶었던 **데이터 동시성 제어**를 실제 프로젝트에 적용해볼 수 있어 좋았습니다. 추후 학습을 통해 Redis를 활용한 분산 락도 적용해보고자 합니다.
+
 <br/>
 
 ### 🧡 김태성
